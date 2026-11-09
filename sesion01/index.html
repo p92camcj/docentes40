@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Docentes 4.0 · Sesión 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}
+/* Diseño: pizarra de proyección. Una diapositiva a pantalla completa, barra superior con el bloque y el reloj, navegación abajo. Letra grande y legible desde el fondo del aula. */
+:root {
+  --fondo: #f6f7f2;
+  --papel: #ffffff;
+  --tinta: #14262b;
+  --suave: #4d6166;
+  --linea: #d5dcd6;
+  --acento: #1d6b55;
+  --acento-tinta: #ffffff;
+  --acento-claro: #e2efe8;
+  --aviso: #b8730a;
+  --alarma: #b3261e;
+  --codigo-fondo: #10201f;
+  --codigo-tinta: #e6f0ea;
+  --f-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-codigo: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #0f1719; --papel: #172225; --tinta: #e8efec; --suave: #a3b4b1; --linea: #2c3b3e;
+    --acento: #4fbf96; --acento-tinta: #0b1a15; --acento-claro: #1b3129; --aviso: #f0b14a; --alarma: #ff7a6e;
+    --codigo-fondo: #0a1112; --codigo-tinta: #e6f0ea; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fondo: #0f1719; --papel: #172225; --tinta: #e8efec; --suave: #a3b4b1; --linea: #2c3b3e;
+  --acento: #4fbf96; --acento-tinta: #0b1a15; --acento-claro: #1b3129; --aviso: #f0b14a; --alarma: #ff7a6e;
+  --codigo-fondo: #0a1112; --codigo-tinta: #e6f0ea; color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--fondo); color: var(--tinta); font-family: var(--f-texto);
+  font-size: clamp(16px, 1.45vw, 26px); line-height: 1.45;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+button { font: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--aviso); outline-offset: 2px; }
+a { color: var(--acento); }
+
+/* Barra superior */
+.barra {
+  display: flex; align-items: center; gap: 1em; flex-wrap: wrap;
+  padding-block: .5em; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--linea); background: var(--papel); font-size: .8em;
+}
+.marca { font-family: var(--f-titulo); font-weight: 800; letter-spacing: .01em; }
+.bloque-actual { color: var(--suave); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reloj { font-variant-numeric: tabular-nums; font-weight: 700; }
+.crono {
+  font-variant-numeric: tabular-nums; border: 2px solid var(--linea); background: var(--fondo); color: var(--tinta);
+  border-radius: 999px; padding: .15em .8em; font-weight: 700;
+}
+.crono[data-estado="corre"] { border-color: var(--acento); color: var(--acento); }
+.crono[data-estado="poco"] { border-color: var(--aviso); color: var(--aviso); }
+.crono[data-estado="fin"] { border-color: var(--alarma); color: var(--alarma); }
+.icono { border: 1px solid var(--linea); background: transparent; color: var(--tinta); border-radius: .4em; padding: .15em .6em; }
+
+/* Diapositivas */
+main { flex: 1; min-height: 0; position: relative; }
+.diapo {
+  position: absolute; inset: 0; overflow-y: auto;
+  padding-block: 1.6em 2em; padding-left: max(16px, env(safe-area-inset-left, 0px), 4vw); padding-right: max(16px, env(safe-area-inset-right, 0px), 4vw);
+}
+.diapo:not(.activa) { display: none; }
+.interior { width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 1em; }
+.antetitulo { font-size: .8em; text-transform: uppercase; letter-spacing: .12em; color: var(--acento); font-weight: 700; }
+h1, h2 { font-family: var(--f-titulo); font-weight: 800; line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 { font-size: 3.6em; }
+h2 { font-size: 2.4em; }
+h3 { font-family: var(--f-titulo); font-weight: 600; font-size: 1.2em; margin: 0; }
+p { margin: 0; }
+.lema { font-size: 1.35em; color: var(--suave); }
+ol, ul { margin: 0; padding-left: 1.3em; display: grid; gap: .45em; }
+li::marker { color: var(--acento); font-weight: 700; }
+.columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18em), 1fr)); gap: 1em; }
+.columnas > * { min-width: 0; }
+.panel { background: var(--papel); border: 1px solid var(--linea); border-radius: .6em; padding: 1em 1.1em; display: flex; flex-direction: column; gap: .6em; }
+.panel.destacado, .tarjeta.destacado { background: var(--acento-claro); border-color: var(--acento); }
+.regla { font-size: 1.6em; font-family: var(--f-titulo); font-weight: 800; line-height: 1.15; }
+.nunca { color: var(--alarma); }
+.pista { font-size: .85em; color: var(--suave); }
+kbd, .ruta { font-family: var(--f-codigo); font-size: .85em; background: var(--papel); border: 1px solid var(--linea); border-radius: .3em; padding: 0 .35em; white-space: nowrap; }
+.logros { display: flex; flex-wrap: wrap; gap: .6em; }
+.logro { border: 2px solid var(--acento); border-radius: 999px; padding: .3em .9em; font-weight: 700; color: var(--acento); }
+
+/* Plan de la tarde */
+.plan { display: grid; gap: .35em; }
+.fila-plan { display: grid; grid-template-columns: 5.5em 3.6em 1fr; gap: .8em; align-items: baseline; padding: .4em .2em; border-bottom: 1px solid var(--linea); }
+.fila-plan b { font-family: var(--f-titulo); }
+.hora { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--acento); }
+.dur { font-variant-numeric: tabular-nums; color: var(--suave); }
+.inicio { display: flex; align-items: center; gap: .6em; flex-wrap: wrap; }
+.inicio input { font: inherit; padding: .1em .4em; border: 1px solid var(--linea); border-radius: .3em; background: var(--papel); color: var(--tinta); }
+
+/* Tarjetas de prompt */
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16em), 1fr)); gap: .9em; }
+.tarjeta { background: var(--papel); border: 1px solid var(--linea); border-radius: .6em; padding: .9em 1em; display: flex; flex-direction: column; gap: .6em; min-width: 0; }
+.tarjeta p { font-size: .9em; color: var(--suave); }
+.tarjetas.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .tarjetas.tres { grid-template-columns: 1fr; } }
+.enlaces { display: flex; flex-direction: column; gap: .5em; align-items: flex-start; }
+.btn.enlace { font-size: .95em; }
+.aviso-copia { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); z-index: 30; background: var(--aviso); color: var(--papel); font-family: var(--f-titulo); font-weight: 800; font-size: 2em; padding: .6em 1.1em; border-radius: .5em; box-shadow: 0 .4em 1.6em color-mix(in srgb, var(--tinta) 35%, transparent); text-align: center; max-width: 90vw; }
+.tarjetas.cuatro { grid-template-columns: repeat(auto-fit, minmax(min(100%, 20em), 1fr)); }
+.es { display: flex; flex-wrap: wrap; gap: .4em; }
+.es span { font-size: .85em; border: 1px solid var(--linea); border-radius: 999px; padding: .05em .6em; color: var(--tinta); }
+.es span + span { border-color: var(--acento); color: var(--acento); font-weight: 700; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+.acciones { display: flex; gap: .5em; flex-wrap: wrap; margin-top: auto; }
+.btn { border: 0; border-radius: .45em; padding: .45em .95em; font-weight: 700; background: var(--acento); color: var(--acento-tinta); }
+.btn.sec { background: transparent; color: var(--acento); border: 2px solid var(--acento); }
+.btn[data-copiado] { background: var(--tinta); color: var(--fondo); }
+pre.fuente { display: none; }
+.bloque-codigo {
+  background: var(--codigo-fondo); color: var(--codigo-tinta); font-family: var(--f-codigo);
+  font-size: .72em; line-height: 1.5; border-radius: .6em; padding: 1em 1.2em; margin: 0;
+  max-height: 30vh; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.4em; align-items: start; }
+@media (max-width: 900px) { .par { grid-template-columns: 1fr; } h1 { font-size: 2.4em; } h2 { font-size: 1.8em; } .fila-plan { grid-template-columns: 4.5em 3em 1fr; } }
+
+.errores { display: grid; gap: .5em; }
+.error { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: .8em; padding: .5em 0; border-bottom: 1px solid var(--linea); }
+.error b { color: var(--alarma); }
+.enorme { font-family: var(--f-titulo); font-weight: 800; font-size: 8em; line-height: 1; font-variant-numeric: tabular-nums; color: var(--acento); }
+.votos { display: flex; align-items: center; gap: .8em; margin-top: auto; }
+.votos .btn { font-size: 1.4em; min-width: 2.2em; padding: .1em .5em; }
+.cuenta { font-family: var(--f-titulo); font-weight: 800; font-size: 3em; line-height: 1; min-width: 1.4em; text-align: center; font-variant-numeric: tabular-nums; }
+.qr-caja { display: flex; gap: 1.2em; align-items: center; flex-wrap: wrap; }
+#qr { background: #ffffff; padding: .6em; border-radius: .4em; line-height: 0; }
+#qr img, #qr canvas { width: 10em; height: 10em; }
+.campo { display: flex; gap: .5em; flex-wrap: wrap; align-items: center; }
+.campo input { font: inherit; font-size: .85em; flex: 1; min-width: 12em; padding: .3em .5em; border: 1px solid var(--linea); border-radius: .3em; background: var(--papel); color: var(--tinta); }
+
+/* Navegación */
+.nav {
+  display: flex; align-items: center; gap: .8em;
+  padding-block: .45em calc(.45em + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-top: 1px solid var(--linea); background: var(--papel); font-size: .8em;
+}
+.puntos { flex: 1; display: flex; gap: .3em; flex-wrap: wrap; justify-content: center; min-width: 0; }
+.punto { width: 1.6em; height: .5em; border-radius: 999px; border: 0; padding: 0; background: var(--linea); }
+.punto[aria-current="true"] { background: var(--acento); }
+.num { font-variant-numeric: tabular-nums; color: var(--suave); min-width: 4em; text-align: center; }
+
+/* Ventana para ver un prompt en grande */
+.velo { position: fixed; inset: 0; background: color-mix(in srgb, var(--tinta) 55%, transparent); display: flex; align-items: center; justify-content: center; padding: 3vh max(16px, 3vw); z-index: 20; }
+.ventana { background: var(--papel); border-radius: .7em; width: min(100%, 1500px); max-height: 94vh; display: flex; flex-direction: column; gap: .8em; padding: 1.2em; }
+.ventana .bloque-codigo { max-height: none; flex: 1; font-size: .9em; }
+.ventana-cab { display: flex; gap: .8em; align-items: center; flex-wrap: wrap; }
+.ventana-cab h3 { flex: 1; }
+@media (prefers-reduced-motion: no-preference) { .diapo.activa .interior { animation: entra .25s ease-out; } }
+@keyframes entra { from { transform: translateY(.4em); opacity: .6; } to { transform: none; opacity: 1; } }
+</style>
+
+</head>
+<body>
+<header class="barra">
+  <span class="marca">Docentes 4.0</span>
+  <span class="bloque-actual" id="bloqueActual">Bienvenida</span>
+  <button class="crono" id="crono" type="button" title="Iniciar o parar la cuenta atrás del bloque (tecla T)">▶ 10:00</button>
+  <span class="reloj" id="reloj" aria-label="Hora">--:--</span>
+  <button class="icono" id="tema" type="button" title="Cambiar claro u oscuro">◐</button>
+  <button class="icono" id="descargar" type="button" title="Descargar esta presentación para usarla sin conexión">⤓</button>
+  <button class="icono" id="pantalla" type="button" title="Pantalla completa (tecla F)">⛶</button>
+</header>
+
+<main id="diapos">
+
+<!-- 1 · Portada -->
+<section class="diapo" data-bloque="Bienvenida" data-min="10">
+  <div class="interior">
+    <span class="antetitulo">Grupo de trabajo · IES Vega de Mar · Sesión 1 · 9 de noviembre</span>
+    <h1>Docentes 4.0:<br>inteligencia colectiva e IA</h1>
+    <p class="lema">Hoy no venimos a escuchar una charla. Venimos a salir con cosas hechas.</p>
+    <div class="logros">
+      <span class="logro">Mi agenda del profe, en mi Drive</span>
+      <span class="logro">Mi site personal</span>
+      <span class="logro">Mi proyecto del curso</span>
+    </div>
+    <p class="pista">Flechas o barra espaciadora para avanzar · T inicia la cuenta atrás del bloque · F pantalla completa</p>
+  </div>
+</section>
+
+<!-- 2 · Regla de oro -->
+<section class="diapo" data-bloque="Bienvenida" data-min="10">
+  <div class="interior">
+    <span class="antetitulo">Antes de empezar</span>
+    <h2>La regla de oro</h2>
+    <div class="columnas">
+      <div class="panel destacado">
+        <p class="regla">Solo herramientas de la Consejería, con tu cuenta @g.educaand.es.</p>
+        <p>Hoy usamos Gemini, Google Drive, Apps Script y Google Sites.</p>
+        <p class="pista">Gemini hay que activarlo antes en Séneca: Utilidades › Configuración de usuario › Cuentas corporativas › Cuenta GSuite › servicio «Gemini».</p>
+      </div>
+      <div class="panel">
+        <p class="regla nunca">Nunca datos del alumnado en la IA.</p>
+        <p>Ni nombres, ni notas, ni fotos, ni voz, ni trabajos. Si te hace falta un ejemplo, invéntalo.</p>
+      </div>
+    </div>
+    <div class="columnas">
+      <div class="panel"><h3>Cómo funcionamos</h3><p>Todos para todos: lo que uno descubre, lo comparte con el grupo.</p></div>
+      <div class="panel"><h3>Cuándo</h3><p>El primer lunes de cada mes por la tarde. Para certificar, el 80 % de las sesiones.</p></div>
+      <div class="panel destacado"><h3>También certifica STEAM 4.0</h3><p>Con el 80 % de asistencia, certificas además por el programa Código Escuela 4.0. Nuestra tarea para STEAM: divulgar y enseñar a otros compañeros lo que hacemos y aprendemos aquí.</p></div>
+      <div class="panel"><h3>Abierto</h3><p>Cualquier compañero puede venir a una sesión puntual a aprender o aportar.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · Plan -->
+<section class="diapo" data-bloque="Bienvenida" data-min="10">
+  <div class="interior">
+    <span class="antetitulo">La tarde de hoy</span>
+    <h2>Dos horas y media, cinco cosas hechas</h2>
+    <div class="inicio"><label for="horaInicio">Empezamos a las</label><input id="horaInicio" type="time" value="16:10"></div>
+    <div class="plan" id="plan"></div>
+  </div>
+</section>
+
+<!-- 4 · IA para el día a día -->
+<section class="diapo" data-bloque="IA para el día a día" data-min="20">
+  <div class="interior">
+    <span class="antetitulo">Bloque 1 · 4 casos, 5 minutos cada uno</span>
+    <h2>La IA para el día a día</h2>
+    <p>Gemini no solo escribe: lee documentos, PDF y fotos, y devuelve documentos, imágenes, apps e infografías. Y se conversa: después de la primera respuesta se pide «más corto», «otra viñeta», «cambia los colores».</p>
+    <div class="tarjetas cuatro">
+      <div class="tarjeta"><h3>Una lectura planificada para todos (DUA)</h3>
+        <p class="es"><span>Entra: el documento de la lectura</span><span>Sale: documento con lectura fácil y cómic</span></p>
+        <p>En Gemini: <b>+ › Drive</b> y elige la lectura de la carpeta del curso.</p>
+        <pre class="fuente" id="p-lectura">Te adjunto la lectura planificada de [curso] para [materia]. Quiero trabajarla con Diseño Universal para el Aprendizaje (DUA), para que todo el alumnado pueda acceder a ella. Crea un documento con:
+1. Una versión de lectura fácil: frases cortas, vocabulario sencillo y un glosario con las palabras difíciles.
+2. Un cómic de 6 viñetas que cuente la lectura, con imágenes que generes tú y un texto breve en cada viñeta.
+3. Un esquema visual con las ideas principales.
+4. Preguntas en tres niveles: literales, de inferencia y de opinión crítica.
+5. Tres formas de demostrar lo aprendido, a elegir por el alumnado: escrita, oral o visual.
+Respeta el contenido de la lectura: no inventes datos. Cuando termines, pásalo a Google Docs.</pre>
+        <div class="acciones" data-fuente="p-lectura"><a class="btn sec" href="https://drive.google.com/drive/folders/1ZTt-cKdle0e2YEjVkL9aCFQnHNtTOEgU" target="_blank" rel="noopener">Lecturas planificadas</a></div></div>
+      <div class="tarjeta"><h3>De rúbrica a app de evaluación</h3>
+        <p class="es"><span>Entra: una idea</span><span>Sale: app que exporta un PDF por alumno</span></p>
+        <p>En Gemini: <b>Herramientas › Canvas</b>.</p>
+        <pre class="fuente" id="p-rubrica">Crea una app web sencilla, en un solo archivo HTML, para evaluar con rúbrica una [exposición oral] de [materia] en [curso].
+- Arriba: nombre y apellidos del alumno, curso, materia y fecha (la de hoy por defecto).
+- Una tabla con [5] criterios y 4 niveles de logro: insuficiente, suficiente, notable y sobresaliente. Escribe tú los descriptores, una frase observable cada uno. Al pulsar una casilla, queda marcada.
+- Un cuadro de observaciones.
+- La nota de 1 a 10, calculada sola.
+- Botón «Exportar a PDF» que descargue directamente el PDF (puedes usar jsPDF) con el nombre Apellidos_Nombre_Curso_Materia_AAAA-MM-DD.pdf.
+- Botón «Siguiente alumno» que deje el formulario en blanco.
+- No guardes nada: los datos del alumno solo están en pantalla mientras evalúo.
+Todo en español, letra clara y botones grandes.</pre>
+        <div class="acciones" data-fuente="p-rubrica"></div></div>
+      <div class="tarjeta"><h3>De una orden del BOJA a una infografía</h3>
+        <p class="es"><span>Entra: el PDF del BOJA</span><span>Sale: tabla de tareas e infografía</span></p>
+        <p>Descarga el PDF y súbelo con <b>+ › Subir archivo</b>. Activa <b>Canvas</b>.</p>
+        <pre class="fuente" id="p-normativa">Te adjunto la Orden de 31 de agosto de 2026, por la que se establecen medidas para la mejora de la organización, el funcionamiento y la gestión del sistema educativo en las enseñanzas no universitarias de Andalucía.
+1. Hazme una tabla con lo que cambia para mí como [profesor / tutor / jefe de departamento]: qué tengo que hacer, desde cuándo y en qué artículo lo dice.
+2. Con esa tabla, crea en Canvas una infografía de una sola página, clara y visual, para colgarla en la sala de profesores.
+Si algo no aparece en la orden, dímelo en vez de suponerlo.</pre>
+        <div class="acciones" data-fuente="p-normativa"><a class="btn sec" href="https://www.juntadeandalucia.es/eboja/2026/168/c03/BOJA26-216803-00064-11426-01_00342656.pdf" target="_blank" rel="noopener">Orden en el BOJA</a></div></div>
+      <div class="tarjeta"><h3>De la pizarra a un juego de repaso</h3>
+        <p class="es"><span>Entra: foto de tu pizarra o tus apuntes</span><span>Sale: esquema y juego interactivo</span></p>
+        <p>Foto con el móvil, sin alumnos en ella. Subir con <b>+</b> y activar <b>Canvas</b>.</p>
+        <pre class="fuente" id="p-pizarra">Te adjunto una foto de mi pizarra (o de mis apuntes) de la clase de hoy de [materia] en [curso].
+1. Pásala a limpio como un esquema ordenado.
+2. Crea en Canvas un juego de repaso: 10 tarjetas con pregunta delante y respuesta detrás, que se giran al pulsarlas, y al final un test de 5 preguntas con la nota.
+Si algo de la foto no se lee bien, pregúntamelo en vez de inventarlo.</pre>
+        <div class="acciones" data-fuente="p-pizarra"></div></div>
+    </div>
+    <p class="pista">Después de cada uno: ¿había algún dato de un alumno? Si lo había, sobraba.</p>
+  </div>
+</section>
+
+<!-- 5 · Esto lo hice yo -->
+<section class="diapo" data-bloque="Parece difícil, se hace en minutos" data-min="20">
+  <div class="interior">
+    <span class="antetitulo">Bloque 2 · 20 minutos</span>
+    <h2>Parece difícil. Se hace en minutos.</h2>
+    <p>Sin saber programar: describiendo lo que necesitas, como se lo contarías a un compañero.</p>
+    <div class="columnas">
+      <div class="panel"><h3>Un profesor</h3><p>Herramientas de clase y de centro, hechas con IA.</p>
+        <div class="enlaces">
+          <a class="btn enlace" href="https://sites.google.com/g.educaand.es/juliocc/defensas-wordle" target="_blank" rel="noopener">Panel de citas de las defensas ↗</a>
+          <a class="btn enlace" href="https://p92camcj.github.io/vr-hand-tracking-app/" target="_blank" rel="noopener">Realidad virtual con las manos ↗</a>
+          <a class="btn enlace" href="https://sites.google.com/g.educaand.es/codeadviento2025/inicio" target="_blank" rel="noopener">Adviento de código, estilo Mastermind ↗</a>
+        </div></div>
+      <div class="panel"><h3>Alumnado de TIC II</h3><p>Aplicaciones de realidad virtual hechas con IA el curso pasado.</p>
+        <div class="enlaces">
+          <a class="btn enlace" href="https://sites.google.com/g.educaand.es/juliocc/tic2" target="_blank" rel="noopener">Apps de TIC II ↗</a>
+        </div></div>
+      <div class="panel destacado"><h3>Ahora tú</h3><p>¿Qué herramienta te gustaría tener y no existe? ¿Qué te parece imposible de hacer?</p>
+        <p class="pista">Elegimos una o dos y las construimos aquí, en directo.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Ideas de reserva -->
+<section class="diapo" data-bloque="Parece difícil, se hace en minutos" data-min="20">
+  <div class="interior">
+    <span class="antetitulo">Bloque 2 · Por si no salen ideas</span>
+    <h2>Seis apps de aula en cinco minutos</h2>
+    <p class="pista">En Gemini: Herramientas › Canvas, pegar y esperar. Si algo falla, se le dice qué falla.</p>
+    <div class="tarjetas tres">
+      <div class="tarjeta"><h3>Ruleta sin repetir</h3><p>Los nombres se escriben en la app, nunca en el prompt.</p>
+        <pre class="fuente" id="r-ruleta">Crea una app web en un solo archivo HTML: una ruleta grande y vistosa para elegir quién sale a la pizarra. Yo escribo la lista en la app (un nombre por línea), la ruleta gira con animación y sonido, y no repite a nadie hasta que hayan salido todos. Botón para reiniciar. Que se vea bien en una pizarra digital. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-ruleta"></div></div>
+      <div class="tarjeta"><h3>Grupos con roles</h3><p>Grupos al azar de 3 o 4.</p>
+        <pre class="fuente" id="r-grupos">Crea una app web en un solo archivo HTML que haga grupos aleatorios. Escribo cuántos alumnos hay y de cuántos son los grupos (3 o 4), y me muestra los grupos numerados con un rol para cada puesto: portavoz, secretario, moderador y controlador del tiempo. Botón para volver a sortear. Letra grande para la pizarra digital. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-grupos"></div></div>
+      <div class="tarjeta"><h3>Test con corrector</h3><p>Diez preguntas de tu tema.</p>
+        <pre class="fuente" id="r-test">Crea una app web en un solo archivo HTML con un test de 10 preguntas sobre [tema] para [curso]. Cuatro opciones por pregunta, de una en una. Al responder, dice si está bien y explica por qué en una frase. Al final, la nota sobre 10 y un botón para repetir con las preguntas en otro orden. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-test"></div></div>
+      <div class="tarjeta"><h3>Temporizador por fases</h3><p>Lectura, trabajo, puesta en común.</p>
+        <pre class="fuente" id="r-tempo">Crea una app web en un solo archivo HTML: un temporizador de clase por fases para proyectar. Por defecto: lectura 5 min, trabajo en grupo 10 min, puesta en común 3 min, pero puedo cambiar nombres y tiempos. Números enormes, un color por fase, aviso con sonido al cambiar de fase y botones de pausa y saltar. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-tempo"></div></div>
+      <div class="tarjeta"><h3>Calculadora de nota</h3><p>Con las ponderaciones de tu programación.</p>
+        <pre class="fuente" id="r-nota">Crea una app web en un solo archivo HTML para calcular la nota de un trimestre. Yo escribo los criterios o instrumentos con su peso en porcentaje (que avise si no suman 100), y luego las notas de cada uno. Muestra la nota final con dos decimales y la nota redondeada. Sin nombres de alumnos. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-nota"></div></div>
+      <div class="tarjeta"><h3>Concurso por equipos</h3><p>Repaso con marcador.</p>
+        <pre class="fuente" id="r-concurso">Crea una app web en un solo archivo HTML: un concurso de repaso por equipos para proyectar en clase. Un tablero de 4 categorías por 5 preguntas de 100 a 500 puntos sobre [tema] de [curso]. Al pulsar una casilla sale la pregunta; con otro botón, la respuesta. Marcador para 4 equipos con botones de sumar y restar. Todo en español.</pre>
+        <div class="acciones" data-fuente="r-concurso"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · Taller paso 1 -->
+<section class="diapo" data-bloque="Taller: mi agenda del profe" data-min="40">
+  <div class="interior">
+    <span class="antetitulo">Taller · Paso 1 de 3 · 20 minutos</span>
+    <h2>Mi agenda del profe: el prompt</h2>
+    <div class="par">
+      <ol>
+        <li>Abre <span class="ruta">gemini.google.com</span> con tu cuenta <b>@g.educaand.es</b>. ¿No te deja? En Séneca: <b>Utilidades › Configuración de usuario › Cuentas corporativas › Cuenta GSuite</b>, servicio «Gemini».</li>
+        <li>Pulsa <b>Herramientas › Canvas</b>.</li>
+        <li>Copia el prompt y pégalo en el chat, <b>sin enviarlo</b> todavía.</li>
+        <li>Borra los apartados que no quieras y cambia lo que va <b>[entre corchetes]</b>.</li>
+        <li>Envía. Prueba la agenda en la vista previa: aquí guarda en el navegador.</li>
+        <li>¿Falla algo? Díselo con tus palabras: «el botón de guardar no hace nada».</li>
+      </ol>
+      <div class="tarjeta">
+        <h3>Prompt de la agenda</h3>
+        <pre class="fuente" id="p-agenda">Quiero que me crees una aplicación web en un solo archivo HTML para organizar mi día a día como profesor de secundaria. Llámala «[Mi agenda del profe]».
+
+SOBRE MÍ
+- Doy [materia] en [cursos y grupos, por ejemplo 2.º ESO A, 2.º ESO B y 1.º Bachillerato C].
+- Mis clases duran [60] minutos. El curso termina el [23 de junio de 2027].
+
+REGLAS (no se pueden quitar)
+- Todo en español. Diseño limpio, que se use bien en el móvil y en el ordenador.
+- Un único archivo HTML con su CSS y su JavaScript, sin bibliotecas ni servidores externos.
+- La aplicación trabaja con grupos, nunca con alumnos: no tiene campos para nombres ni datos del alumnado.
+- Nunca uses innerHTML con textos que escribo yo: usa textContent.
+- Rellénala con datos de ejemplo inventados para que pueda probarla, y un botón para borrarlos y empezar.
+
+DÓNDE SE GUARDAN LOS DATOS (muy importante)
+La agenda será una aplicación web de Google Apps Script, creada desde una hoja de cálculo de mi Drive (Extensiones › Apps Script) y publicada para que solo yo pueda abrirla, desde cualquier dispositivo con mi cuenta. Dame dos archivos: Código.gs e Index.html.
+- Código.gs: doGet() sirve Index.html, adaptado al móvil. cargarDatos() devuelve todos mis datos como texto JSON, o null si aún no hay nada. guardarDatos(texto) los guarda en una hoja llamada «Datos» de esta misma hoja de cálculo y devuelve la hora del guardado. Una celda admite 50.000 caracteres: si el texto es más largo, repártelo en varias filas, y guárdalo como texto para que la hoja nunca lo tome por una fórmula. Usa LockService para que dos guardados no se pisen.
+- Index.html: todos los datos de la app van en un único objeto, que se guarda con JSON.stringify llamando a guardarDatos con google.script.run.
+- Si google.script no existe (aquí, en la vista previa de Gemini), usa localStorage para que pueda probarla.
+- Al abrir, muestra «Cargando…» hasta que lleguen los datos.
+- Guarda solo cuando haya cambios: 3 segundos después del último cambio y, si sigue habiendo cambios sin guardar, cada 30 segundos. Nunca dos guardados a la vez.
+- Arriba, siempre visible: «Guardado en Drive · 10:42», «Guardando…» o, en rojo, «Sin guardar · reintentando» si falla.
+- Al volver a la pestaña (visibilitychange), si no hay cambios pendientes, vuelve a cargar para ver lo que haya cambiado desde otro dispositivo.
+- Si intento cerrar con cambios sin guardar, avisa (beforeunload).
+- Botones «Exportar copia» (descarga un JSON) e «Importar copia».
+- Al final, explícame paso a paso dónde pego cada archivo y cómo la publico como aplicación web: ejecutar como yo, acceso solo yo.
+
+APARTADOS QUE QUIERO (borra los que no quieras)
+1. Horario semanal: tabla de lunes a viernes por franjas, con grupo y aula. Se edita pulsando en cada hueco.
+2. Vista «Hoy»: al abrir, mis clases de hoy en orden, destacando la que toca ahora según la hora.
+3. Programación de aula: por cada grupo, sus unidades o situaciones de aprendizaje, con las sesiones previstas para cada una.
+4. Diario de sesión: en cada clase apunto lo que tenía planificado y lo que hice de verdad, y la marco como hecha, a medias o no hecha.
+5. Arrastrar lo no hecho: lo que quede a medias o sin hacer pasa con un botón a la siguiente sesión de ese grupo.
+6. Sesiones que me quedan: con los festivos que yo escriba y las fechas de fin de trimestre, calcula cuántas sesiones me quedan con cada grupo y si voy adelantado o retrasado respecto a la programación.
+7. Exámenes y entregas: fechas por grupo, con aviso si faltan menos de 3 días o si un grupo tiene dos en la misma semana.
+8. Mis tareas: lista de pendientes (corregir, preparar, papeleo) con fecha y prioridad.
+9. Reuniones y guardias: claustros, equipos docentes, tutorías y guardias en el calendario.
+10. Material para mañana: lista que se genera sola con lo que he anotado que necesito para las clases del día siguiente.
+11. Notas del grupo: un comentario breve por clase sobre cómo fue el grupo.
+12. Reflexión semanal: los viernes, tres preguntas (qué funcionó, qué cambiaría, qué necesito).
+13. Imprimir la semana en una sola hoja.
+
+COLORES Y ESTILO
+- [Un color por grupo / colores suaves / modo oscuro]. [Añade aquí lo que quieras.]
+
+Empieza por los apartados 1, 2 y 4 y el guardado, y déjalos funcionando. Después añadiré los demás de uno en uno.</pre>
+        <pre class="bloque-codigo" data-espejo="p-agenda"></pre>
+        <div class="acciones" data-fuente="p-agenda"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · Taller paso 2 -->
+<section class="diapo" data-bloque="Taller: mi agenda del profe" data-min="40">
+  <div class="interior">
+    <span class="antetitulo">Taller · Paso 2 de 3</span>
+    <h2>Llevarla a mi Drive</h2>
+    <div class="columnas">
+      <div class="panel">
+        <ol>
+          <li>En <span class="ruta">drive.google.com</span>: <b>Nuevo › Hojas de cálculo</b>. Llámala «Mi agenda del profe».</li>
+          <li><b>Extensiones › Apps Script</b>.</li>
+          <li>En <b>Código.gs</b>, borra lo que hay y pega el Código.gs que te ha dado Gemini.</li>
+          <li>Junto a «Archivos», <b>+ › HTML</b> y llámalo <b>Index</b> (con mayúscula y sin .html), o con el nombre que te haya dicho Gemini.</li>
+          <li>Pega en él el Index.html de Gemini (en el Canvas, botón de código › <b>Copiar</b>), sustituyendo lo que trae.</li>
+          <li><b>Guardar</b> (el icono del disquete).</li>
+        </ol>
+      </div>
+      <div class="panel destacado">
+        <h3>Gemini lo ha escrito todo</h3>
+        <p>La pantalla y el servidor que guarda en tu Drive. Tú solo lo pegas donde te ha dicho.</p>
+        <p>¿Un error en rojo? Cópialo tal cual y pégaselo a Gemini: «me sale este error al guardar».</p>
+        <p class="pista">Si Gemini te ha dado los pasos con otros nombres, sigue los suyos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · Taller paso 3 -->
+<section class="diapo" data-bloque="Taller: mi agenda del profe" data-min="40">
+  <div class="interior">
+    <span class="antetitulo">Taller · Paso 3 de 3</span>
+    <h2>Publicarla solo para mí</h2>
+    <div class="columnas">
+      <div class="panel">
+        <ol>
+          <li><b>Implementar › Nueva implementación</b>. En el engranaje, <b>Aplicación web</b>.</li>
+          <li>Ejecutar como: <b>Yo</b>.</li>
+          <li>Quién tiene acceso: <b>Solo yo</b>.</li>
+          <li><b>Implementar › Autorizar acceso</b> y elige tu cuenta educaand.</li>
+          <li>Si sale «Google no ha verificado esta aplicación»: <b>Configuración avanzada › Ir a…</b> Es tu propio script.</li>
+          <li>Copia la URL que acaba en <span class="ruta">/exec</span>. Guárdala en marcadores, en el ordenador y en el móvil.</li>
+        </ol>
+      </div>
+      <div class="panel destacado">
+        <h3>Ya está</h3>
+        <p>Guarda sola en tu Drive a los 3 segundos de cada cambio. Solo la abres tú, desde cualquier dispositivo con tu cuenta educaand.</p>
+        <p>Arriba verás «Guardado en Drive · hora». Compruébalo: escribe algo, recarga la página y mira que sigue ahí.</p>
+        <p class="pista">Red de seguridad: en la hoja de cálculo, Archivo › Historial de versiones. Y el botón «Exportar copia».</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · Si algo falla -->
+<section class="diapo" data-bloque="Taller: mi agenda del profe" data-min="40">
+  <div class="interior">
+    <span class="antetitulo">Taller · Si algo falla, y para seguir</span>
+    <h2>Arreglarla y mejorarla</h2>
+    <div class="par">
+      <div class="errores">
+        <div class="error"><b>«Script function not found: cargarDatos»</b><span>Falta pegar Código.gs, no se guardó, o la función se llama de otra forma: pregúntale a Gemini.</span></div>
+        <div class="error"><b>Página en blanco o «no se encontró Index»</b><span>El archivo HTML no se llama exactamente Index.</span></div>
+        <div class="error"><b>«No tienes permiso» o pide otra cuenta</b><span>Hay varias cuentas abiertas en el navegador. Ábrela en una ventana de incógnito solo con la de educaand.</span></div>
+        <div class="error"><b>Pongo el código nuevo y no cambia nada</b><span>Implementar › Gestionar implementaciones › lápiz › Versión: nueva versión. Así la URL no cambia.</span></div>
+        <div class="error"><b>«Sin guardar · reintentando»</b><span>Abre el editor de Apps Script › Ejecuciones, copia el error y pégaselo a Gemini.</span></div>
+      </div>
+      <div class="tarjetas">
+        <div class="tarjeta"><h3>Añadir un apartado</h3>
+          <pre class="fuente" id="m-apartado">Ahora añade el apartado [6, Sesiones que me quedan] sin cambiar nada de lo que ya funciona. Mantén el guardado tal como está. Dame el archivo completo.</pre>
+          <div class="acciones" data-fuente="m-apartado"></div></div>
+        <div class="tarjeta"><h3>Contar lo que falla</h3>
+          <pre class="fuente" id="m-falla">Hay un fallo: cuando pulso [qué pulso], pasa [qué pasa], y yo esperaba que [qué debería pasar]. Arréglalo sin tocar lo demás y dame el archivo completo.</pre>
+          <div class="acciones" data-fuente="m-falla"></div></div>
+        <div class="tarjeta"><h3>Mejor en el móvil</h3>
+          <pre class="fuente" id="m-movil">Mejora el diseño para el móvil: botones grandes, la vista «Hoy» primero y el horario con desplazamiento lateral si no cabe. No cambies cómo se guardan los datos. Dame el archivo completo.</pre>
+          <div class="acciones" data-fuente="m-movil"></div></div>
+        <div class="tarjeta destacado"><h3>Plan B: un Código.gs que ya funciona</h3>
+          <p>Si el guardado se atasca, o prefieres ir sobre seguro: pega este Código.gs en lugar del de Gemini. Sirve con cualquier Index.html que use cargarDatos y guardarDatos, como pide el prompt.</p>
+          <pre class="fuente" id="p-codigo">/**
+ * Mi agenda del profe · Almacén en tu Drive
+ *
+ * Copia este archivo tal cual: no hace falta tocarlo.
+ * La agenda guarda sus datos en la hoja «Datos» de esta misma hoja de cálculo,
+ * en tu Drive de educaand. Solo tú puedes abrirla.
+ * Para recuperar una versión anterior: Archivo › Historial de versiones.
+ *
+ * @OnlyCurrentDoc
+ */
+var HOJA_DATOS = 'Datos';
+var TAMANO_TROZO = 45000; // una celda admite 50.000 caracteres
+
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('Mi agenda del profe')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function hojaDatos_() {
+  var libro = SpreadsheetApp.getActiveSpreadsheet();
+  var hoja = libro.getSheetByName(HOJA_DATOS);
+  if (!hoja) {
+    hoja = libro.insertSheet(HOJA_DATOS);
+    hoja.getRange('A1').setValue('No edites esta hoja: aquí guarda la agenda sus datos.');
+  }
+  return hoja;
+}
+
+/** Devuelve los datos guardados (texto JSON) o null si aún no hay nada. */
+function cargarDatos() {
+  var hoja = hojaDatos_();
+  var ultima = hoja.getLastRow();
+  if (ultima &lt; 3) return null;
+  var valores = hoja.getRange(3, 1, ultima - 2, 1).getValues();
+  var texto = valores.map(function (fila) {
+    var v = String(fila[0]);
+    return v.charAt(0) === '~' ? v.slice(1) : v;
+  }).join('');
+  return texto || null;
+}
+
+/** Guarda los datos (texto JSON) y devuelve la hora del guardado. */
+function guardarDatos(json) {
+  if (typeof json !== 'string' || json.length === 0 || json.length &gt; 2000000) {
+    throw new Error('Los datos no son válidos.');
+  }
+  JSON.parse(json); // si no es JSON válido, no se guarda nada
+  var bloqueo = LockService.getScriptLock();
+  bloqueo.waitLock(15000);
+  try {
+    var hoja = hojaDatos_();
+    var trozos = [];
+    for (var i = 0; i &lt; json.length; i += TAMANO_TROZO) {
+      // «~» delante: ningún trozo empieza por = + - @ y la hoja no lo toma por fórmula
+      trozos.push(['~' + json.slice(i, i + TAMANO_TROZO)]);
+    }
+    hoja.getRange(3, 1, trozos.length, 1).setNumberFormat('@').setValues(trozos);
+    var ultima = hoja.getLastRow();
+    var sobran = ultima - 2 - trozos.length;
+    if (sobran &gt; 0) hoja.getRange(3 + trozos.length, 1, sobran, 1).clearContent();
+    var ahora = new Date().toISOString();
+    hoja.getRange('A2').setValue('Último guardado: ' + ahora);
+    SpreadsheetApp.flush();
+    return ahora;
+  } finally {
+    bloqueo.releaseLock();
+  }
+}</pre>
+          <div class="acciones" data-fuente="p-codigo"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10b · Trabajar con Gemini -->
+<section class="diapo" data-bloque="Taller: mi agenda del profe" data-min="40">
+  <div class="interior">
+    <span class="antetitulo">Taller · Para seguir durante el mes</span>
+    <h2>Cómo trabajar con Gemini</h2>
+    <div class="columnas">
+      <div class="panel"><h3>Siempre en la misma conversación</h3>
+        <p>Así Gemini recuerda tu agenda. Normalmente pone el Index.html en el Canvas y el Código.gs en el chat o en otro Canvas.</p>
+        <p>¿No te ha dado el Código.gs? «Ahora dame el Código.gs completo para Apps Script, como te pedí».</p></div>
+      <div class="panel"><h3>En cada mejora, los dos archivos</h3>
+        <p>«Dame los dos archivos completos otra vez». Pega los dos en Apps Script y publica una versión nueva: Implementar › Gestionar implementaciones › lápiz › Nueva versión.</p></div>
+      <div class="panel destacado"><h3>La copia buena está en Apps Script</h3>
+        <p>No en el chat. Si otro día empiezas una conversación nueva, pega los dos archivos y dile: «Esta es mi agenda; quiero añadir…».</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · Descanso -->
+<section class="diapo" data-bloque="Descanso" data-min="10">
+  <div class="interior">
+    <span class="antetitulo">Descanso</span>
+    <h2>Diez minutos</h2>
+    <p class="enorme" id="descanso">10:00</p>
+    <p class="lema">Quien se haya atascado, que levante la mano: lo arreglamos ahora.</p>
+  </div>
+</section>
+
+<!-- 12 · Site personal -->
+<section class="diapo" data-bloque="Mi site personal" data-min="25">
+  <div class="interior">
+    <span class="antetitulo">Bloque 4 · 25 minutos</span>
+    <h2>Mi site personal, enlazado al del grupo</h2>
+    <div class="par">
+      <ol>
+        <li>Abre <span class="ruta">sites.google.com</span> con tu cuenta educaand y crea un site en blanco (o copia la plantilla que os paso).</li>
+        <li>Tres páginas: <b>Inicio</b>, <b>Mis apps</b> y <b>Mi proyecto</b>.</li>
+        <li>En «Mis apps», una captura de tu agenda y un <b>botón</b> con su URL <span class="ruta">/exec</span>. Es privada: a los demás les dirá que no tienen acceso.</li>
+        <li>Un botón «GT Docentes 4.0» que lleve al site del grupo.</li>
+        <li><b>Publicar</b>. Copia la URL publicada, no la de edición.</li>
+        <li>Pásame esa URL y la enlazo en la página «Participantes» del site del grupo.</li>
+      </ol>
+      <div class="panel destacado">
+        <h3>El site del grupo</h3>
+        <p><a href="https://sites.google.com/g.educaand.es/docentes40" target="_blank" rel="noopener">sites.google.com/g.educaand.es/docentes40</a></p>
+        <p>Allí irán vuestros sites, el banco de prompts seguros y lo que vayamos haciendo cada mes.</p>
+        <p class="pista">Esto cumple ya uno de los indicadores del proyecto: site personal enlazado al del grupo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · Apunta al cielo -->
+<section class="diapo" data-bloque="Reto «apunta al cielo»" data-min="20">
+  <div class="interior">
+    <span class="antetitulo">Bloque 5 · 20 minutos</span>
+    <h2>Apunta al cielo</h2>
+    <p class="lema">Piensa en algo grande, algo que hoy te parezca inalcanzable. Será tu proyecto de todo el curso, y cada primer lunes daremos un paso.</p>
+    <div class="columnas">
+      <div class="panel"><h3>1 · Sueña (5 min, en silencio)</h3>
+        <ul>
+          <li>Si tuviera un equipo de programadores todo el curso, les pediría…</li>
+          <li>¿A quién le cambiaría el día? A mí, a mi departamento, al alumnado, a las familias, al centro.</li>
+          <li>¿Cómo sabré en junio que lo he conseguido?</li>
+        </ul></div>
+      <div class="panel"><h3>2 · Cuéntalo (30 segundos)</h3><p>Sin juzgar: aquí vale lo exagerado. Si dos proyectos se parecen, podéis aliaros.</p>
+        <h3>3 · El primer peldaño</h3><p>El paso más pequeño que puedes dar antes de diciembre.</p></div>
+      <div class="panel destacado"><h3>Mi cielo, en dos peldaños</h3>
+        <p><b>Reservas e incidencias del centro.</b> Empezó como una línea del plan digital. Ahora la vais a usar todos.</p>
+        <p><b>Jano.</b> Qué alumno usó cada portátil, cuándo y cuánto tiempo, en todos los carritos. Sin presupuesto y sin ser administrador de los equipos.</p>
+        <p class="pista">A vuestro alcance este curso: un generador de situaciones de aprendizaje, un gestor de programaciones del departamento… Condición: nada de datos del alumnado en la IA.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 · Próxima sesión -->
+<section class="diapo" data-bloque="Cierre" data-min="5">
+  <div class="interior">
+    <span class="antetitulo">El lunes 7 de diciembre es festivo</span>
+    <h2>¿Cuándo es la próxima sesión?</h2>
+    <div class="columnas">
+      <div class="panel" id="opcion-30">
+        <h3>Lunes 30 de noviembre</h3>
+        <p>Cuenta como la de diciembre. Tres semanas para trabajar y lejos del final del trimestre.</p>
+        <div class="votos"><button class="btn sec" type="button" data-voto="30" data-paso="-1" aria-label="Quitar un voto al 30 de noviembre">−</button><span class="cuenta" id="votos-30">0</span><button class="btn" type="button" data-voto="30" data-paso="1" aria-label="Sumar un voto al 30 de noviembre">+</button></div>
+      </div>
+      <div class="panel" id="opcion-14">
+        <h3>Lunes 14 de diciembre</h3>
+        <p>Cinco semanas para trabajar, pero muy cerca de los exámenes y las evaluaciones de fin de trimestre.</p>
+        <div class="votos"><button class="btn sec" type="button" data-voto="14" data-paso="-1" aria-label="Quitar un voto al 14 de diciembre">−</button><span class="cuenta" id="votos-14">0</span><button class="btn" type="button" data-voto="14" data-paso="1" aria-label="Sumar un voto al 14 de diciembre">+</button></div>
+      </div>
+    </div>
+    <p class="lema" id="votoResultado">A mano alzada: suma cada mano con +.</p>
+  </div>
+</section>
+
+<!-- 15 · Tarea del mes -->
+<section class="diapo" data-bloque="Cierre" data-min="5">
+  <div class="interior">
+    <span class="antetitulo" id="tareaHasta">Hasta la próxima sesión</span>
+    <h2>Tu mes</h2>
+    <div class="columnas">
+      <div class="panel">
+        <ul>
+          <li>Usa la agenda dos semanas y añádele dos apartados.</li>
+          <li>Publica en tu site la agenda y la página de tu proyecto.</li>
+          <li>Da el primer peldaño del proyecto, aunque salga mal.</li>
+          <li>Aporta un prompt seguro al banco del grupo.</li>
+        </ul>
+      </div>
+      <div class="panel destacado">
+        <h3>En la próxima sesión, 3 minutos cada uno</h3>
+        <p>Qué hice, qué prompt me funcionó y dónde me atasqué.</p>
+        <p class="pista">Durante el mes, el grupo de WhatsApp es para pedir ayuda y enseñar capturas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 · Cierre y materiales -->
+<section class="diapo" data-bloque="Cierre" data-min="5">
+  <div class="interior">
+    <span class="antetitulo">Para terminar</span>
+    <h2>«Hoy me llevo…»</h2>
+    <p class="lema">Una frase cada uno.</p>
+    <div class="panel">
+      <h3>Los prompts y el código, en tu portátil</h3>
+      <div class="qr-caja">
+        <div id="qr" aria-label="Código QR"></div>
+        <div style="display:grid;gap:.5em;min-width:0;flex:1">
+          <a id="enlaceMateriales" href="https://sites.google.com/g.educaand.es/docentes40" target="_blank" rel="noopener">sites.google.com/g.educaand.es/docentes40</a>
+          <div class="campo"><label for="urlMateriales" class="pista">Enlace del QR</label><input id="urlMateriales" type="url" value="https://sites.google.com/g.educaand.es/docentes40"></div>
+        </div>
+      </div>
+    </div>
+    <p class="pista" id="proxima">Próxima sesión: la que hemos votado, por la tarde.</p>
+  </div>
+</section>
+
+</main>
+
+<nav class="nav" aria-label="Diapositivas">
+  <button class="btn sec" id="ant" type="button">‹ Anterior</button>
+  <div class="puntos" id="puntos"></div>
+  <span class="num" id="num">1 / 15</span>
+  <button class="btn" id="sig" type="button">Siguiente ›</button>
+</nav>
+
+<div class="aviso-copia" id="avisoCopia" role="status" hidden>Copiado. Antes de enviarlo, cambia lo que va [entre corchetes].</div>
+
+<div class="velo" id="velo" hidden>
+  <div class="ventana" role="dialog" aria-modal="true" aria-labelledby="ventanaTitulo">
+    <div class="ventana-cab">
+      <h3 id="ventanaTitulo">Prompt</h3>
+      <button class="btn" id="ventanaCopiar" type="button">Copiar</button>
+      <button class="btn sec" id="ventanaCerrar" type="button">Cerrar</button>
+    </div>
+    <pre class="bloque-codigo" id="ventanaTexto"></pre>
+  </div>
+</div>
+
+<script data-gt="1" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script data-gt="1">
+(function () {
+  var copiaLimpia = (function () {
+    /* Copia para usar sin conexión: solo lo de esta presentación, sin lo que añada la página que la aloja */
+    var raiz = document.documentElement.cloneNode(true);
+    Array.prototype.forEach.call(raiz.querySelectorAll('script:not([data-gt]), base, meta[http-equiv], iframe'), function (n) { n.parentNode.removeChild(n); });
+    return '<!doctype html>\n' + raiz.outerHTML;
+  })();
+  var diapos = Array.prototype.slice.call(document.querySelectorAll('.diapo'));
+  var actual = 0;
+  var puntos = document.getElementById('puntos');
+  var guardado = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } };
+
+  /* Navegación */
+  diapos.forEach(function (d, i) {
+    var b = document.createElement('button');
+    b.className = 'punto'; b.type = 'button';
+    b.setAttribute('aria-label', 'Diapositiva ' + (i + 1));
+    b.addEventListener('click', function () { ir(i); });
+    puntos.appendChild(b);
+  });
+  function ir(i) {
+    actual = Math.max(0, Math.min(diapos.length - 1, i));
+    diapos.forEach(function (d, j) { d.classList.toggle('activa', j === actual); });
+    Array.prototype.forEach.call(puntos.children, function (p, j) { p.setAttribute('aria-current', j === actual ? 'true' : 'false'); });
+    document.getElementById('num').textContent = (actual + 1) + ' / ' + diapos.length;
+    diapos[actual].scrollTop = 0;
+    document.getElementById('avisoCopia').hidden = true;
+    ajustar();
+    var bloque = diapos[actual].dataset.bloque;
+    document.getElementById('bloqueActual').textContent = bloque;
+    if (bloque !== crono.bloque) { pararCrono(); crono.bloque = bloque; crono.resta = (+diapos[actual].dataset.min) * 60; pintarCrono(); }
+    if (bloque === 'Descanso' && !crono.id) iniciarCrono();
+    guardado('gt-diapo', String(actual));
+  }
+  document.getElementById('ant').addEventListener('click', function () { ir(actual - 1); });
+  document.getElementById('sig').addEventListener('click', function () { ir(actual + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT') return;
+    if (!document.getElementById('velo').hidden) { if (e.key === 'Escape') cerrarVentana(); return; }
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); ir(actual + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); ir(actual - 1); }
+    else if (e.key === 'Home') ir(0);
+    else if (e.key === 'End') ir(diapos.length - 1);
+    else if (e.key === 't' || e.key === 'T') alternarCrono();
+    else if (e.key === 'f' || e.key === 'F') pantallaCompleta();
+  });
+
+  /* Que cada diapositiva quepa en la pantalla sin bajar: se prueba de mayor a menor tamaño */
+  function ajustar() {
+    var d = diapos[actual]; var interior = d.querySelector('.interior'); if (!interior) return;
+    var s = 1.3;
+    interior.style.fontSize = s + 'em';
+    while (s > 0.55 && d.scrollHeight > d.clientHeight + 1) { s -= 0.05; interior.style.fontSize = s.toFixed(2) + 'em'; }
+  }
+  var esperaAjuste = null;
+  window.addEventListener('resize', function () { clearTimeout(esperaAjuste); esperaAjuste = setTimeout(ajustar, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ajustar(); });
+
+  /* Reloj y cuenta atrás del bloque */
+  var crono = { bloque: null, resta: 600, id: null };
+  var botonCrono = document.getElementById('crono');
+  function mmss(s) { var a = Math.abs(s); return (s < 0 ? '−' : '') + Math.floor(a / 60) + ':' + String(a % 60).padStart(2, '0'); }
+  function pintarCrono() {
+    botonCrono.textContent = (crono.id ? '❚❚ ' : '▶ ') + mmss(crono.resta);
+    botonCrono.dataset.estado = !crono.id ? '' : crono.resta <= 0 ? 'fin' : crono.resta <= 180 ? 'poco' : 'corre';
+    if (crono.bloque === 'Descanso') document.getElementById('descanso').textContent = mmss(Math.max(0, crono.resta));
+  }
+  function iniciarCrono() { if (crono.id) return; crono.id = setInterval(function () { crono.resta--; pintarCrono(); }, 1000); pintarCrono(); }
+  function pararCrono() { if (crono.id) clearInterval(crono.id); crono.id = null; pintarCrono(); }
+  function alternarCrono() { crono.id ? pararCrono() : iniciarCrono(); }
+  botonCrono.addEventListener('click', alternarCrono);
+  function hora() { var d = new Date(); document.getElementById('reloj').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  hora(); setInterval(hora, 15000);
+
+  /* Plan de la tarde con horas reales */
+  var plan = [
+    ['Bienvenida y regla de oro', 10], ['La IA para el día a día', 20], ['Parece difícil, se hace en minutos', 20],
+    ['Taller: mi agenda del profe, en mi Drive', 40], ['Descanso', 10], ['Mi site personal', 25],
+    ['Reto «apunta al cielo»', 20], ['Cierre y tarea del mes', 5]
+  ];
+  var entradaHora = document.getElementById('horaInicio');
+  var previa = guardado('gt-inicio'); if (previa) entradaHora.value = previa;
+  function pintarPlan() {
+    var caja = document.getElementById('plan'); caja.textContent = '';
+    var p = (entradaHora.value || '16:10').split(':'); var min = (+p[0]) * 60 + (+p[1]);
+    plan.forEach(function (b) {
+      var fila = document.createElement('div'); fila.className = 'fila-plan';
+      var h = document.createElement('span'); h.className = 'hora';
+      h.textContent = String(Math.floor(min / 60) % 24).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0');
+      var d = document.createElement('span'); d.className = 'dur'; d.textContent = b[1] + ' min';
+      var t = document.createElement('b'); t.textContent = b[0];
+      fila.appendChild(h); fila.appendChild(d); fila.appendChild(t); caja.appendChild(fila);
+      min += b[1];
+    });
+  }
+  entradaHora.addEventListener('change', function () { guardado('gt-inicio', entradaHora.value); pintarPlan(); });
+  pintarPlan();
+
+  /* Copiar y ver en grande */
+  function copiar(texto, boton) {
+    if (texto.indexOf('[') !== -1) avisarCorchetes();
+    var hecho = function () {
+      var antes = boton.textContent; boton.textContent = 'Copiado'; boton.dataset.copiado = '1';
+      setTimeout(function () { boton.textContent = antes; delete boton.dataset.copiado; }, 1800);
+    };
+    var aMano = function () {
+      var area = document.createElement('textarea'); area.value = texto; area.setAttribute('readonly', '');
+      area.style.position = 'fixed'; area.style.opacity = '0'; document.body.appendChild(area); area.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(area);
+      if (ok) hecho(); else { abrirVentana(boton.closest('.tarjeta').querySelector('h3').textContent, texto); seleccionar(document.getElementById('ventanaTexto')); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texto).then(hecho, aMano); else aMano();
+  }
+  var temporizadorAviso = null;
+  function avisarCorchetes() {
+    var caja = document.getElementById('avisoCopia');
+    caja.hidden = false; clearTimeout(temporizadorAviso);
+    temporizadorAviso = setTimeout(function () { caja.hidden = true; }, 4500);
+  }
+  function seleccionar(el) { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  var velo = document.getElementById('velo');
+  function abrirVentana(titulo, texto) {
+    document.getElementById('ventanaTitulo').textContent = titulo;
+    document.getElementById('ventanaTexto').textContent = texto;
+    velo.hidden = false; document.getElementById('ventanaCerrar').focus();
+  }
+  function cerrarVentana() { velo.hidden = true; }
+  document.getElementById('ventanaCerrar').addEventListener('click', cerrarVentana);
+  velo.addEventListener('click', function (e) { if (e.target === velo) cerrarVentana(); });
+  document.getElementById('ventanaCopiar').addEventListener('click', function (e) { copiar(document.getElementById('ventanaTexto').textContent, e.currentTarget); });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.acciones[data-fuente]'), function (caja) {
+    var fuente = document.getElementById(caja.dataset.fuente);
+    var titulo = caja.closest('.tarjeta').querySelector('h3').textContent;
+    var bc = document.createElement('button'); bc.type = 'button'; bc.className = 'btn'; bc.textContent = 'Copiar';
+    bc.addEventListener('click', function () { copiar(fuente.textContent, bc); });
+    var bv = document.createElement('button'); bv.type = 'button'; bv.className = 'btn sec'; bv.textContent = 'Ver en grande';
+    bv.addEventListener('click', function () { abrirVentana(titulo, fuente.textContent); });
+    caja.insertBefore(bv, caja.firstChild); caja.insertBefore(bc, bv);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-espejo]'), function (el) {
+    el.textContent = document.getElementById(el.dataset.espejo).textContent;
+  });
+
+  /* Tema y pantalla completa */
+  document.getElementById('tema').addEventListener('click', function () {
+    var raiz = document.documentElement;
+    var oscuro = raiz.dataset.theme ? raiz.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    raiz.dataset.theme = oscuro ? 'light' : 'dark';
+  });
+  function pantallaCompleta() {
+    try {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+    } catch (e) {}
+  }
+  document.getElementById('pantalla').addEventListener('click', pantallaCompleta);
+  var descargas = null;
+  if (window.claude && window.claude.use) { window.claude.use('downloads').then(function (d) { descargas = d; }, function () {}); }
+  document.getElementById('descargar').addEventListener('click', function () {
+    if (descargas) { descargas.save({ filename: 'presentacion-sesion1.html', data: new Blob([copiaLimpia], { type: 'text/html' }) }).catch(function () {}); return; }
+    try {
+      var url = URL.createObjectURL(new Blob([copiaLimpia], { type: 'text/html' }));
+      var a = document.createElement('a'); a.href = url; a.download = 'presentacion-sesion1.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+    } catch (e) {}
+  });
+
+  /* QR de materiales */
+  var entradaUrl = document.getElementById('urlMateriales');
+  var urlPrevia = guardado('gt-url'); if (urlPrevia) entradaUrl.value = urlPrevia;
+  function pintarQr() {
+    var url = entradaUrl.value.trim(); var caja = document.getElementById('qr'); caja.textContent = '';
+    var enlace = document.getElementById('enlaceMateriales'); enlace.href = url; enlace.textContent = url.replace(/^https?:\/\//, '');
+    if (window.QRCode && url) { try { new QRCode(caja, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }
+    else caja.hidden = true;
+  }
+  entradaUrl.addEventListener('change', function () { guardado('gt-url', entradaUrl.value.trim()); pintarQr(); });
+  pintarQr();
+
+  /* Votación de la próxima sesión */
+  var votos = { '30': 0, '14': 0 };
+  try { var vp = JSON.parse(guardado('gt-votos') || 'null'); if (vp) votos = { '30': +vp['30'] || 0, '14': +vp['14'] || 0 }; } catch (e) {}
+  var nombres = { '30': 'lunes 30 de noviembre', '14': 'lunes 14 de diciembre' };
+  function pintarVotos() {
+    document.getElementById('votos-30').textContent = votos['30'];
+    document.getElementById('votos-14').textContent = votos['14'];
+    var gana = votos['30'] > votos['14'] ? '30' : votos['14'] > votos['30'] ? '14' : null;
+    document.getElementById('opcion-30').classList.toggle('destacado', gana === '30');
+    document.getElementById('opcion-14').classList.toggle('destacado', gana === '14');
+    var res = document.getElementById('votoResultado');
+    if (!votos['30'] && !votos['14']) res.textContent = 'A mano alzada: suma cada mano con +.';
+    else if (!gana) res.textContent = 'Empate. Otra ronda, o decide el coordinador.';
+    else res.textContent = 'Nos vemos el ' + nombres[gana] + '.';
+    document.getElementById('tareaHasta').textContent = gana ? 'Hasta el ' + nombres[gana] : 'Hasta la próxima sesión';
+    document.getElementById('proxima').textContent = gana ? 'Próxima sesión: ' + nombres[gana] + ', por la tarde.' : 'Próxima sesión: la que hemos votado, por la tarde.';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-voto]'), function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.voto; votos[k] = Math.max(0, votos[k] + (+b.dataset.paso));
+      guardado('gt-votos', JSON.stringify(votos)); pintarVotos();
+    });
+  });
+  pintarVotos();
+
+  var inicial = parseInt(guardado('gt-diapo') || '0', 10);
+  ir(isNaN(inicial) ? 0 : inicial);
+})();
+</script>
+
+</body>
+</html>
