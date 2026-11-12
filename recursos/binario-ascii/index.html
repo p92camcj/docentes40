@@ -968,6 +968,128 @@
       font-size: 1rem;
     }
 
+    /* Diapositiva 4: método de los cajones */
+    .cajones-intro {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .cajones-controles {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+    .caj-numero {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-align: center;
+    }
+    .caj-numero .btn-large {
+      font-size: 1.8rem;
+      min-width: 3rem;
+      justify-content: center;
+      padding: 0.2rem 0.6rem;
+    }
+    .caj-num-val {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: var(--azul-fuerte);
+      line-height: 1.1;
+      min-width: 4.5rem;
+    }
+    .cajones-fila {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 0.7rem;
+    }
+    .cajon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .cajon-caja {
+      width: 100%;
+      height: 5.2rem;
+      border: 3px solid var(--border-color);
+      border-top-width: 0;
+      border-radius: 0 0 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-align: center;
+      line-height: 1.2;
+      transition: background-color 0.2s;
+    }
+    .cajon-caja .cajon-cap {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--accent-primary-dark);
+    }
+    .cajon.pendiente .cajon-caja {
+      border-style: dashed;
+      border-top-width: 0;
+    }
+    .cajon.lleno .cajon-caja {
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+      color: var(--warning-text);
+    }
+    .cajon.lleno .cajon-caja .cajon-cap {
+      color: var(--warning-text);
+    }
+    .cajon.actual .cajon-caja {
+      box-shadow: 0 0 0 4px var(--azul-borde);
+    }
+    .cajon-bit {
+      width: 100%;
+      min-height: 3rem;
+      border-radius: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: var(--bit-0-bg);
+      color: var(--bit-0-text);
+    }
+    .cajon.lleno .cajon-bit {
+      background: var(--bit-1-bg);
+      color: var(--bit-1-text);
+    }
+    .cajon-quedan {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-height: 1.3em;
+    }
+    .caj-estado {
+      font-family: var(--font-sans);
+      font-size: 1.2rem;
+      text-align: left;
+      min-height: 3.6rem;
+      display: flex;
+      align-items: center;
+    }
+    .cajones-acciones {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 0.7rem;
+    }
+
     /* Simulador: bits arriba; resultados, teclado y divisiones en tres columnas */
     .sim-layout {
       grid-template-columns: 1.55fr 1fr;
@@ -1214,6 +1336,12 @@
       .slide-title {
         font-size: 1.5rem;
       }
+      .cajones-intro {
+        grid-template-columns: 1fr;
+      }
+      .cajones-fila {
+        grid-template-columns: repeat(4, 1fr);
+      }
       .slide-header {
         flex-wrap: wrap;
         gap: 0.4rem;
@@ -1351,41 +1479,30 @@
         <!-- Diapositiva 4 -->
         <article class="slide-card" data-slide="3">
           <div class="slide-header">
-            <h1 class="slide-title">4. De decimal a binario: dos métodos en clase</h1>
+            <h1 class="slide-title">4. De decimal a binario: el método de los cajones</h1>
             <span class="slide-badge">Conversión inversa</span>
           </div>
-          <p style="margin-bottom: 0.545rem;">Ejemplo: convertir el número decimal <strong>75</strong> a binario (8 bits).</p>
-          <div class="slide-grid-2">
-            <div class="info-box">
-              <h3>Método A: Divisiones sucesivas entre 2</h3>
-              <p style="font-size: 1.1rem; margin-bottom: 0.364rem;">Dividimos entre 2 hasta que el cociente sea 0 y recogemos los restos <strong>de abajo hacia arriba</strong>:</p>
-              <div class="mono-num" style="background: var(--bg-surface); padding:0.545rem; border-radius:0.455rem; font-size:1.1rem; line-height:1.5;">
-                75 ÷ 2 = 37 &nbsp;→ Resto: <strong>1</strong> ← bit de la derecha<br>
-                37 ÷ 2 = 18 &nbsp;→ Resto: <strong>1</strong><br>
-                18 ÷ 2 = 9 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
-                &nbsp;9 ÷ 2 = 4 &nbsp;&nbsp;→ Resto: <strong>1</strong><br>
-                &nbsp;4 ÷ 2 = 2 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
-                &nbsp;2 ÷ 2 = 1 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
-                &nbsp;1 ÷ 2 = 0 &nbsp;&nbsp;→ Resto: <strong>1</strong> ← bit de la izquierda<br>
-                Restos de abajo arriba: 1001011 (7 bits)<br>
-                Con un 0 delante, 1 byte: <strong>01001011</strong>
-              </div>
+          <div class="cajones-intro">
+            <div class="info-box" style="font-size:1.1rem;">
+              Tenemos <strong id="caj-intro-num">55</strong> bolitas y 8 cajones que caben <strong>128, 64, 32, 16, 8, 4, 2 y 1</strong>. Empezamos por el más grande:
+              <br>· Si hay bolitas <strong>suficientes para llenarlo entero</strong>, lo llenamos y ponemos un <strong>1</strong>. Las que sobran pasan al cajón siguiente.
+              <br>· Si <strong>no hay suficientes</strong>, no echamos ninguna, ponemos un <strong>0</strong> y pasamos al siguiente. Un cajón nunca se queda a medias.
             </div>
-
-            <div class="info-box" style="border-left-color: var(--success-border);">
-              <h3>Método B: Encender pesos (restas)</h3>
-              <p style="font-size: 1.1rem; margin-bottom: 0.364rem;">Buscamos la potencia más grande que quepa en <strong>75</strong> y vamos restando:</p>
-              <div class="mono-num" style="background: var(--bg-surface); padding:0.545rem; border-radius:0.455rem; font-size:1.1rem; line-height:1.55;">
-                ¿Cabe 128 en 75? No → <strong>0</strong><br>
-                ¿Cabe 64 en 75? Sí → <strong>1</strong> (quedan 75 - 64 = 11)<br>
-                ¿Cabe 32 en 11? No → <strong>0</strong><br>
-                ¿Cabe 16 en 11? No → <strong>0</strong><br>
-                ¿Cabe 8 en 11? Sí → <strong>1</strong> (quedan 11 - 8 = 3)<br>
-                ¿Cabe 4 en 3? No → <strong>0</strong><br>
-                ¿Cabe 2 en 3? Sí → <strong>1</strong> (queda 3 - 2 = 1)<br>
-                ¿Cabe 1 en 1? Sí → <strong>1</strong> (queda 0) → <strong>01001011</strong>
+            <div class="cajones-controles">
+              <div class="caj-numero">
+                <button class="btn-large" onclick="cajCambiar(-1)" aria-label="Una bolita menos">−</button>
+                <div><div class="result-label">Bolitas</div><div id="caj-num" class="mono-num caj-num-val">55</div></div>
+                <button class="btn-large" onclick="cajCambiar(1)" aria-label="Una bolita más">+</button>
               </div>
+              <button class="btn-large" onclick="cajOtro()">🎲 Otro número</button>
             </div>
+          </div>
+          <div id="cajones" class="cajones-fila"></div>
+          <div id="caj-estado" class="sum-formula caj-estado"></div>
+          <div class="cajones-acciones">
+            <button class="btn-large" onclick="cajReiniciar()">↺ Empezar</button>
+            <button class="btn-large primary" id="caj-btn-siguiente" onclick="cajSiguiente()">Siguiente cajón ▶</button>
+            <button class="btn-large" onclick="cajTodo()">Ver todos</button>
           </div>
         </article>
 
@@ -1571,10 +1688,10 @@
 
             <div style="display:flex; flex-direction:column; min-height:0;">
               <div style="font-weight:700; font-size:0.95rem; margin-bottom:0.2rem;">
-                Divisiones entre 2:
+                Cajones (restas):
               </div>
               <div id="sim-divisions-out" class="divisions-box" style="flex:1;">
-                Pulsa un bit o escribe un número para ver las divisiones sucesivas.
+                Pulsa un bit o escribe un número para ver cómo se llenan los cajones.
               </div>
             </div>
           </div>
@@ -1826,6 +1943,58 @@
   }
   try { aplicarTema(localStorage.getItem('binario-ascii-tema')); } catch (e) { /* sin almacenamiento */ }
 
+  /* Diapositiva 4: método de los cajones */
+  let cajNum = 55;
+  let cajPaso = 0; /* cajones ya decididos, de 0 a 8 */
+
+  function renderCajones() {
+    document.getElementById('caj-num').textContent = cajNum;
+    document.getElementById('caj-intro-num').textContent = cajNum;
+    const fila = document.getElementById('cajones');
+    fila.textContent = '';
+    let quedan = cajNum;
+    let texto = `Tenemos ${cajNum} bolitas. Empezamos por el cajón más grande, el de 128. Pulsa «Siguiente cajón».`;
+    WEIGHTS_8.forEach((w, i) => {
+      const antes = quedan;
+      const lleno = antes >= w;
+      if (i < cajPaso && lleno) quedan -= w;
+      const cajon = document.createElement('div');
+      cajon.className = 'cajon' + (i >= cajPaso ? ' pendiente' : (lleno ? ' lleno' : ' vacio')) + (i === cajPaso - 1 ? ' actual' : '');
+      const caja = document.createElement('div');
+      caja.className = 'cajon-caja';
+      const cap = document.createElement('div');
+      cap.className = 'cajon-cap';
+      cap.textContent = w;
+      const desc = document.createElement('div');
+      desc.textContent = i >= cajPaso ? 'cabe ' + w : (lleno ? '¡lleno!' : 'vacío');
+      caja.append(cap, desc);
+      const bit = document.createElement('div');
+      bit.className = 'cajon-bit';
+      bit.textContent = i >= cajPaso ? '?' : (lleno ? '1' : '0');
+      const q = document.createElement('div');
+      q.className = 'cajon-quedan';
+      q.textContent = i < cajPaso ? 'quedan ' + quedan : '';
+      cajon.append(caja, bit, q);
+      fila.appendChild(cajon);
+      if (i === cajPaso - 1) {
+        texto = lleno
+          ? `Cajón de ${w}: tengo ${antes} bolitas, hay suficientes para llenarlo entero → 1. Me sobran ${antes} − ${w} = ${quedan}, que pasan al siguiente cajón.`
+          : `Cajón de ${w}: tengo ${antes} bolitas, no hay suficientes para llenarlo entero → 0. Paso al siguiente con las mismas ${antes}.`;
+      }
+    });
+    if (cajPaso === 8) {
+      const llenos = WEIGHTS_8.filter((w, i) => (cajNum >> (7 - i)) & 1);
+      texto = `¡Hecho! ${cajNum} = ${cajNum.toString(2).padStart(8, '0')}  (${llenos.length ? llenos.join(' + ') : '0'} = ${cajNum})`;
+    }
+    document.getElementById('caj-estado').textContent = texto;
+    document.getElementById('caj-btn-siguiente').disabled = cajPaso === 8;
+  }
+  function cajSiguiente() { if (cajPaso < 8) { cajPaso++; renderCajones(); } }
+  function cajTodo() { cajPaso = 8; renderCajones(); }
+  function cajReiniciar() { cajPaso = 0; renderCajones(); }
+  function cajCambiar(d) { cajNum = Math.max(0, Math.min(255, cajNum + d)); cajPaso = 0; renderCajones(); }
+  function cajOtro() { cajNum = Math.floor(Math.random() * 255) + 1; cajPaso = 0; renderCajones(); }
+
   function changeSlide(delta) {
     const next = currentSlide + delta;
     if (next >= 0 && next < totalSlides) {
@@ -1980,21 +2149,29 @@
     renderSimByte();
   }
 
+  /* Desglose por el método de los cajones: se llena el cajón entero o no se toca */
   function renderDivisionsSteps(num) {
     const box = document.getElementById('sim-divisions-out');
-    if (num === 0) {
-      box.innerHTML = '0 ÷ 2 = 0 (Resto <strong>0</strong>)<br>Byte: <strong>00000000</strong>';
-      return;
-    }
-    let n = num;
-    const lines = [];
-    while (n > 0) {
-      const q = Math.floor(n / 2);
-      const r = n % 2;
-      lines.push(`${String(n).padStart(3, ' ')} ÷ 2 = ${String(q).padStart(3, ' ')} → Resto: <strong>${r}</strong>`);
-      n = q;
-    }
-    box.innerHTML = lines.join('<br>') + `<br><span style="color: var(--azul-fuerte);">↑ Leer restos de abajo arriba</span>`;
+    box.textContent = '';
+    let quedan = num;
+    WEIGHTS_8.forEach(w => {
+      const linea = document.createElement('div');
+      if (quedan >= w) {
+        quedan -= w;
+        linea.textContent = String(w).padStart(3, ' ') + ': lleno → 1 · quedan ' + quedan;
+        linea.style.fontWeight = '800';
+        linea.style.color = 'var(--azul-fuerte)';
+      } else {
+        linea.textContent = String(w).padStart(3, ' ') + ': no hay → 0';
+      }
+      linea.style.whiteSpace = 'pre';
+      box.appendChild(linea);
+    });
+    const res = document.createElement('div');
+    res.style.marginTop = '0.2rem';
+    res.style.fontWeight = '900';
+    res.textContent = num + ' = ' + num.toString(2).padStart(8, '0');
+    box.appendChild(res);
   }
 
   /* Traductor de palabras ASCII <-> Binario */
@@ -2436,7 +2613,14 @@
       const active = [];
       bits.forEach((b, i) => { if (b === 1) active.push(weights[i]); });
       fb.className = 'feedback-box info';
-      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>
+      let cadena = '';
+      if (currentQuestion.type === 'B') {
+        let quedan = currentQuestion.targetDec;
+        const pasos = [];
+        weights.forEach(w => { if (quedan >= w) { quedan -= w; pasos.push(`${w} (quedan ${quedan})`); } });
+        cadena = `Cajones que se llenan con ${currentQuestion.targetDec} bolitas: <span class="mono-num">${pasos.join(' → ')}</span><br>`;
+      }
+      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>${cadena}
         Binario: <span class="mono-num">${currentQuestion.binStr}</span><br>
         Pesos activos: <span class="mono-num">${active.join(' + ')} = <strong>${currentQuestion.targetDec}</strong></span>`;
     } else {
@@ -2471,6 +2655,7 @@
      ========================================================================== */
   window.addEventListener('DOMContentLoaded', () => {
     renderSlide3Demo();
+    renderCajones();
     renderSimByte();
     translateTextToBinary();
     selectAsciiInspector(65);
