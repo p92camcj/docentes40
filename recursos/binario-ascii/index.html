@@ -1324,6 +1324,100 @@
       min-height: 2.6rem;
     }
 
+    /* Retos con niveles */
+    .nivel-pill, .mejor-pill, .sello {
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      white-space: nowrap;
+    }
+    .nivel-pill {
+      background: var(--azul-suave);
+      border-color: var(--azul-borde);
+      color: var(--azul-texto);
+    }
+    .sello {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .sello .usuario {
+      color: var(--text-main);
+      font-weight: 900;
+    }
+    .reto-bits {
+      margin: 0 auto 0.4rem;
+    }
+    .reto-palabra {
+      border-collapse: separate;
+      border-spacing: 0.25rem;
+      margin: 0 auto 0.4rem;
+      font-family: var(--font-mono);
+      font-weight: 900;
+    }
+    .reto-palabra th {
+      color: var(--accent-primary-dark);
+      font-size: 0.95rem;
+      min-width: 2.4rem;
+    }
+    .reto-palabra td {
+      text-align: center;
+      font-size: 1.5rem;
+      padding: 0.15rem 0;
+      border-radius: 0.4rem;
+      background: var(--bit-0-bg);
+      color: var(--bit-0-text);
+    }
+    .reto-palabra td.uno {
+      background: var(--bit-1-bg);
+      color: var(--bit-1-text);
+    }
+    .reto-palabra td.respuesta {
+      background: var(--bg-surface);
+      border: 3px solid var(--azul-borde);
+      color: var(--azul-fuerte);
+      min-width: 2.6rem;
+    }
+    .reto-c-palabra {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 1.5rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .reto-c-palabra .reto-palabra {
+      margin: 0;
+    }
+    .reto-c-palabra .reto-palabra td {
+      font-size: 1.25rem;
+      min-width: 2.1rem;
+    }
+    .solucion-c {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+      column-gap: 1.2rem;
+    }
+    .pad-modos {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+    .pad-modos .filter-btn {
+      min-height: 2.3rem;
+      padding: 0.2rem 0.9rem;
+    }
+    .alpha-pad.digitos {
+      grid-template-columns: repeat(10, 3.6rem);
+    }
+    .subida {
+      font-weight: 900;
+    }
+
     /* Pantallas estrechas o en vertical (móvil, incrustado en una columna):
        aquí sí hay scroll y las cajas se apilan. */
     @media (max-width: 760px), (max-aspect-ratio: 4/5) {
@@ -1364,6 +1458,83 @@
       }
       .quiz-pad .numpad-grid {
         grid-template-columns: repeat(6, 1fr);
+      }
+      .reto-c-palabra {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+      .top-nav {
+        padding: 0.4rem;
+        gap: 0.3rem;
+      }
+      .brand-badge {
+        display: none;
+      }
+      .nav-tabs {
+        justify-content: center;
+        gap: 0.3rem;
+      }
+      .nav-btn {
+        min-height: 2.4rem;
+        min-width: 0;
+        padding: 0.2rem 0.55rem;
+        font-size: 0.9rem;
+      }
+      .quiz-topbar > div:first-child > span {
+        display: none;
+      }
+      .quiz-topbar > div {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.3rem !important;
+      }
+      .quiz-topbar .filter-btn {
+        font-size: 0.9rem;
+      }
+      .nivel-pill, .mejor-pill, .sello, .streak-pill {
+        font-size: 0.9rem;
+        padding: 0.2rem 0.6rem;
+      }
+      .reto-bits {
+        max-width: 100% !important;
+      }
+      .quiz-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+      }
+      .quiz-actions .btn-large {
+        font-size: 0.95rem;
+        justify-content: center;
+        padding: 0.3rem 0.4rem;
+      }
+      .solucion-c {
+        grid-template-columns: 1fr;
+      }
+      .alpha-pad, .alpha-pad.digitos {
+        grid-template-columns: repeat(7, 1fr);
+      }
+      .alpha-key {
+        min-width: 0;
+      }
+      .reto-palabra th {
+        min-width: 0;
+        font-size: 0.7rem;
+      }
+      .reto-palabra td {
+        font-size: 1.1rem;
+      }
+      .quiz-topbar {
+        justify-content: center;
+      }
+      .quiz-topbar .filter-btn {
+        padding: 0.3rem 0.5rem;
+      }
+      .quiz-workspace {
+        padding: 0.6rem;
+      }
+      .question-prompt {
+        font-size: 1.25rem;
       }
       .slide-controls {
         flex-wrap: wrap;
@@ -1855,14 +2026,15 @@
             <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B · Decimal → Binario</button>
             <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C · Letra ASCII</button>
           </div>
+          <div class="sello" id="sello" aria-label="Fecha y hora"></div>
 
           <div style="display:flex; flex-wrap:wrap; gap:0.545rem; align-items:center;">
-            <button class="filter-btn active" id="diff-4" onclick="setQuizDiff(4)">4 bits (0–15)</button>
-            <button class="filter-btn" id="diff-8" onclick="setQuizDiff(8)">1 byte (0–255)</button>
+            <div class="nivel-pill" id="nivel-pill">Nivel 1/6</div>
             <div class="streak-pill">
               <span>Racha:</span>
               <span id="streak-count" class="mono-num">0</span>
             </div>
+            <div class="mejor-pill">Mejor: <span id="mejor-count" class="mono-num">0</span></div>
           </div>
         </div>
 
@@ -1885,7 +2057,7 @@
               💡 Solución paso a paso
             </button>
             <button class="btn-large" id="btn-ascii-hint" style="display:none;" onclick="openAsciiHintModal()">
-              📖 Pista: tabla A–Z
+              📖 Pista: tabla ASCII
             </button>
             <button class="btn-large" onclick="generateNewQuestion()">
               ↻ Siguiente ejercicio
@@ -1916,6 +2088,7 @@
       <h2 style="font-size:1.6rem;">Referencia rápida: letras mayúsculas ASCII</h2>
       <button class="btn-large" style="min-height:2.182rem; padding:0.273rem 0.727rem;" onclick="closeAsciiHintModal()">Cerrar ✕</button>
     </div>
+    <p style="margin-bottom:0.3rem;">Minúsculas: suma <strong>32</strong> a su mayúscula (a = 97, b = 98…). Cifras: el 0 es el <strong>48</strong>, el 1 el 49… y el 9 el 57.</p>
     <p style="margin-bottom:0.636rem;">Recuerda que la <strong>A</strong> empieza en el <strong>65</strong> (<span class="mono-num">01000001</span>) y avanzan de 1 en 1:</p>
     <div id="modal-ascii-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(5.909rem, 1fr)); gap:0.455rem;"></div>
   </div>
@@ -1944,8 +2117,10 @@
 
   // Estado Módulo 4 (Ejercicios)
   let quizType = 'A'; // 'A', 'B', 'C'
-  let quizBitsCount = 4; // 4 u 8
-  let streak = 0;
+  let quizBitsCount = 4; // bits del ejercicio actual (A y B), según el nivel
+  const rachas = { A: 0, B: 0, C: 0 };
+  const mejores = { A: 0, B: 0, C: 0 };
+  let padModo = 'ABC'; // teclado del reto C: 'ABC', 'abc' o '123'
   let currentQuestion = null;
   let quizUserBits = [];
   let quizUserInput = '';
@@ -1968,9 +2143,16 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); }
     const retosActive = document.getElementById('mod-ejercicios').classList.contains('active');
-    if (retosActive && currentQuestion && currentQuestion.type === 'A') {
-      if (/^[0-9]$/.test(e.key)) quizNumPad(e.key);
-      if (e.key === 'Backspace') quizNumPad('C');
+    const escribiendo = e.target && e.target.tagName === 'INPUT';
+    if (retosActive && currentQuestion && !escribiendo) {
+      if (currentQuestion.type === 'A') {
+        if (/^[0-9]$/.test(e.key)) quizNumPad(e.key);
+        if (e.key === 'Backspace') quizNumPad('C');
+      }
+      if (currentQuestion.type === 'C') {
+        if (/^[A-Za-z0-9]$/.test(e.key)) selectQuizLetter(e.key);
+        if (e.key === 'Backspace') selectQuizLetter('⌫');
+      }
       if (e.key === 'Enter') checkQuizAnswer();
     }
     const teoriaActive = document.getElementById('mod-teoria').classList.contains('active');
@@ -2401,96 +2583,160 @@
   /* ==========================================================================
      MÓDULO 4: EJERCICIOS INTERACTIVOS PARA EL AULA
      ========================================================================== */
+  /* --------------------------------------------------------------------------
+     Niveles: se sube uno cada 3 aciertos seguidos. Fallar o ver la solución
+     deja la racha a 0 y se vuelve al nivel 1. Cada tipo de reto lleva su racha.
+     -------------------------------------------------------------------------- */
+  const NIVEL_MAX = 6;
+  const ACIERTOS_POR_NIVEL = 3;
+  const BITS_NIVEL = [0, 4, 5, 6, 7, 8, 8];
+  const NIVELES_C = ['',
+    'Mayúsculas',
+    'Minúsculas',
+    'Letras y cifras',
+    'Palabras de 3',
+    'Palabras de 4',
+    'Palabras de 5'];
+  const MODOS_C = [[], ['ABC'], ['abc'], ['ABC', 'abc', '123'], ['ABC'], ['ABC', 'abc'], ['ABC', 'abc']];
+  const PALABRAS = {
+    3: ['SOL', 'MAR', 'PAN', 'LUZ', 'RED', 'BIT', 'OSO', 'GOL', 'REY', 'TIC', 'WEB', 'APP', 'USB', 'ORO', 'UVA', 'SAL', 'VOZ', 'ZOO', 'PIB', 'IVA'],
+    4: ['Hola', 'Casa', 'Byte', 'Dato', 'Mesa', 'Pila', 'Nube', 'Chip', 'Wifi', 'Luna', 'Ruta', 'Voto', 'Euro', 'Mapa', 'Isla', 'Foro', 'Paro', 'Mano', 'Rojo'],
+    5: ['Datos', 'Redes', 'Libro', 'Clase', 'Mundo', 'Texto', 'Censo', 'Votos', 'Mapas', 'Euros', 'Banco', 'Pixel', 'Linux', 'Sumar', 'Bolsa', 'Renta', 'Deuda', 'Firma']
+  };
+  const LETRAS_MAY = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const LETRAS_MIN = 'abcdefghijklmnopqrstuvwxyz';
+  const CIFRAS = '0123456789';
+
+  function esc(t) {
+    const d = document.createElement('div');
+    d.textContent = String(t);
+    return d.innerHTML;
+  }
+  function azar(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+  function elegir(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
+  function pesos(n) { return Array.from({ length: n }, (_, i) => Math.pow(2, n - 1 - i)); }
+  function cuantosUnos(v) { return v.toString(2).split('').filter(c => c === '1').length; }
+  function nivelActual() { return Math.min(NIVEL_MAX, 1 + Math.floor(rachas[quizType] / ACIERTOS_POR_NIVEL)); }
+
+  function cargarMejores() {
+    try {
+      const g = JSON.parse(localStorage.getItem('binario-ascii-mejores') || '{}');
+      ['A', 'B', 'C'].forEach(t => { if (Number.isInteger(g[t])) mejores[t] = g[t]; });
+    } catch (e) { /* sin almacenamiento */ }
+  }
+  function guardarMejores() {
+    try { localStorage.setItem('binario-ascii-mejores', JSON.stringify(mejores)); } catch (e) { /* sin almacenamiento */ }
+  }
+
+  function pintarMarcador() {
+    /* El nivel que se ve es el del ejercicio en pantalla */
+    const nivel = currentQuestion && currentQuestion.type === quizType ? currentQuestion.nivel : nivelActual();
+    document.getElementById('streak-count').textContent = rachas[quizType];
+    document.getElementById('mejor-count').textContent = mejores[quizType];
+    const detalle = quizType === 'C' ? NIVELES_C[nivel] : BITS_NIVEL[nivel] + ' bits' + (nivel === NIVEL_MAX ? ' (experto)' : '');
+    document.getElementById('nivel-pill').textContent = `Nivel ${nivel}/${NIVEL_MAX} · ${detalle}`;
+  }
+
+  /* Devuelve el texto de subida de nivel (o '') */
+  function anotarAcierto() {
+    const antes = nivelActual();
+    currentQuestion.resuelta = true;
+    rachas[quizType]++;
+    if (rachas[quizType] > mejores[quizType]) {
+      mejores[quizType] = rachas[quizType];
+      guardarMejores();
+    }
+    pintarMarcador();
+    const despues = nivelActual();
+    return despues > antes ? ` <span class="subida">¡Subes al nivel ${despues}!</span>` : '';
+  }
+  function anotarFallo() {
+    rachas[quizType] = 0;
+    pintarMarcador();
+  }
+
   function setQuizType(type) {
     quizType = type;
     ['A', 'B', 'C'].forEach(t => {
       document.getElementById(`qtype-${t}`).classList.toggle('active', t === type);
     });
-    // El reto ASCII siempre utiliza 1 byte (8 bits)
-    if (type === 'C' && quizBitsCount === 4) {
-      setQuizDiff(8);
-      return;
-    }
     generateNewQuestion();
   }
 
-  function setQuizDiff(bits) {
-    if (quizType === 'C' && bits === 4) {
-      // ASCII estándar requiere 8 bits
-      bits = 8;
-    }
-    quizBitsCount = bits;
-    document.getElementById('diff-4').classList.toggle('active', bits === 4);
-    document.getElementById('diff-8').classList.toggle('active', bits === 8);
-    generateNewQuestion();
+  function numeroDelNivel(nivel) {
+    const bits = BITS_NIVEL[nivel];
+    if (nivel === 1) return azar(1, 15);
+    if (nivel < NIVEL_MAX) return azar(Math.pow(2, bits - 1), Math.pow(2, bits) - 1);
+    let v;
+    do { v = azar(128, 255); } while (cuantosUnos(v) < 6);
+    return v;
+  }
+
+  function textoDelNivelC(nivel) {
+    if (nivel === 1) return elegir(LETRAS_MAY);
+    if (nivel === 2) return elegir(LETRAS_MIN);
+    if (nivel === 3) return elegir(LETRAS_MAY + LETRAS_MIN + CIFRAS);
+    return elegir(PALABRAS[nivel - 1]);
   }
 
   function generateNewQuestion() {
     const fb = document.getElementById('quiz-feedback');
     fb.className = 'feedback-box';
-    fb.innerHTML = '';
+    fb.textContent = '';
     quizUserInput = '';
+    const nivel = nivelActual();
+    const anterior = currentQuestion;
+    document.getElementById('btn-ascii-hint').style.display = (quizType === 'C') ? 'inline-flex' : 'none';
 
-    const hintBtn = document.getElementById('btn-ascii-hint');
-    hintBtn.style.display = (quizType === 'C') ? 'inline-flex' : 'none';
-
-    const maxVal = quizBitsCount === 4 ? 15 : 255;
-
-    if (quizType === 'A') {
-      // Tipo A: Binario -> Decimal
-      const targetDec = Math.floor(Math.random() * maxVal) + 1;
+    if (quizType === 'A' || quizType === 'B') {
+      quizBitsCount = BITS_NIVEL[nivel];
+      let targetDec;
+      do { targetDec = numeroDelNivel(nivel); } while (anterior && anterior.targetDec === targetDec && anterior.type === quizType);
       const binStr = targetDec.toString(2).padStart(quizBitsCount, '0');
-      currentQuestion = { type: 'A', targetDec, binStr, bitsCount: quizBitsCount };
-
-      document.getElementById('quiz-prompt').innerHTML =
-        `Calcula el valor <strong>decimal</strong> de este número binario (${quizBitsCount} bits):`;
-
-      renderQuizTypeA();
-
-    } else if (quizType === 'B') {
-      // Tipo B: Decimal -> Binario
-      const targetDec = Math.floor(Math.random() * maxVal) + 1;
-      const binStr = targetDec.toString(2).padStart(quizBitsCount, '0');
-      quizUserBits = new Array(quizBitsCount).fill(0);
-      currentQuestion = { type: 'B', targetDec, binStr, bitsCount: quizBitsCount };
-
-      document.getElementById('quiz-prompt').innerHTML =
-        `Activa los interruptores necesarios para formar el número decimal <span class="mono-num" style="color: var(--azul-fuerte); font-size:2.3rem;">${targetDec}</span>:`;
-
-      renderQuizTypeB();
-
-    } else if (quizType === 'C') {
-      // Tipo C: Reto ASCII (Letra mayúscula A-Z)
-      const code = Math.floor(Math.random() * 26) + 65; // 65..90 ('A'..'Z')
-      const letter = String.fromCharCode(code);
-      const binStr = code.toString(2).padStart(8, '0');
-      currentQuestion = { type: 'C', code, letter, binStr };
-
-      document.getElementById('quiz-prompt').innerHTML =
-        `Descifra qué <strong>letra mayúscula ASCII</strong> representa este byte:`;
-
+      currentQuestion = { type: quizType, nivel, targetDec, binStr, bitsCount: quizBitsCount };
+      if (quizType === 'A') {
+        document.getElementById('quiz-prompt').innerHTML =
+          `Calcula el valor <strong>decimal</strong> de este número binario (${quizBitsCount} bits):`;
+        renderQuizTypeA();
+      } else {
+        quizUserBits = new Array(quizBitsCount).fill(0);
+        document.getElementById('quiz-prompt').innerHTML =
+          `Llena los cajones para formar el número <span class="mono-num" style="color: var(--azul-fuerte); font-size:2.1rem;">${targetDec}</span>:`;
+        renderQuizTypeB();
+      }
+    } else {
+      let texto;
+      do { texto = textoDelNivelC(nivel); } while (anterior && anterior.type === 'C' && anterior.texto === texto);
+      const bytes = texto.split('').map(ch => ch.charCodeAt(0).toString(2).padStart(8, '0'));
+      currentQuestion = { type: 'C', nivel, texto, bytes, code: texto.charCodeAt(0), letter: texto, binStr: bytes[0] };
+      padModo = MODOS_C[nivel][0];
+      document.getElementById('quiz-prompt').innerHTML = texto.length === 1
+        ? `¿Qué <strong>carácter ASCII</strong> es este byte?`
+        : `Descifra la <strong>palabra</strong> (${texto.length} bytes, uno por letra):`;
       renderQuizTypeC();
     }
+    pintarMarcador();
+  }
+
+  function rejillaBits(bits, n, pulsable) {
+    const w = pesos(n);
+    let html = `<div class="byte-grid reto-bits" style="grid-template-columns: repeat(${n}, minmax(0, 1fr)); max-width: ${Math.round(n / 8 * 100)}%;">`;
+    bits.forEach((b, i) => {
+      html += `
+        <div class="bit-column">
+          <span class="bit-weight">${w[i]}</span>
+          ${pulsable
+            ? `<button class="bit-toggle" data-val="${b}" onclick="toggleQuizBit(${i})">${b}</button>`
+            : `<div class="bit-toggle" data-val="${b}" style="cursor:default;">${b}</div>`}
+        </div>`;
+    });
+    return html + '</div>';
   }
 
   function renderQuizTypeA() {
     const area = document.getElementById('quiz-interactive-area');
-    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
-    const bits = currentQuestion.binStr.split('');
-
-    let bitsHtml = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}" style="margin-bottom:0.4rem;">`;
-    bits.forEach((b, i) => {
-      bitsHtml += `
-        <div class="bit-column">
-          <span class="bit-weight">${weights[i]}</span>
-          <div class="bit-toggle" data-val="${b}" style="cursor:default;">${b}</div>
-        </div>
-      `;
-    });
-    bitsHtml += `</div>`;
-
     area.innerHTML = `
-      ${bitsHtml}
+      ${rejillaBits(currentQuestion.binStr.split(''), quizBitsCount, false)}
       <div class="quiz-pad">
         <div id="quiz-num-display" class="text-input-lg mono-num" style="font-size:2.4rem; font-weight:900; text-align:center; display:flex; align-items:center; justify-content:center;">?</div>
         <div class="numpad-grid">
@@ -2513,7 +2759,7 @@
 
   function quizNumPad(key) {
     if (key === 'C') {
-      quizUserInput = '';
+      quizUserInput = quizUserInput.slice(0, -1);
     } else if (quizUserInput.length < 3) {
       quizUserInput += key;
     }
@@ -2521,20 +2767,7 @@
   }
 
   function renderQuizTypeB() {
-    const area = document.getElementById('quiz-interactive-area');
-    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
-
-    let html = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}">`;
-    quizUserBits.forEach((b, i) => {
-      html += `
-        <div class="bit-column">
-          <span class="bit-weight">${weights[i]}</span>
-          <button class="bit-toggle" data-val="${b}" onclick="toggleQuizBit(${i})">${b}</button>
-        </div>
-      `;
-    });
-    html += `</div>`;
-    area.innerHTML = html;
+    document.getElementById('quiz-interactive-area').innerHTML = rejillaBits(quizUserBits, quizBitsCount, true);
   }
 
   function toggleQuizBit(idx) {
@@ -2544,147 +2777,200 @@
 
   function renderQuizTypeC() {
     const area = document.getElementById('quiz-interactive-area');
-    const bits = currentQuestion.binStr.split('');
+    const q = currentQuestion;
+    let html;
+    if (q.texto.length === 1) {
+      html = rejillaBits(q.bytes[0].split(''), 8, false) + `
+        <div style="text-align:center; margin-bottom:0.4rem;">
+          <span style="font-weight:700;">Carácter elegido: </span>
+          <span id="quiz-letter-display" class="mono-num" style="font-size:2.2rem; font-weight:900; color: var(--azul-fuerte);">?</span>
+        </div>`;
+    } else {
+      html = '<table class="reto-palabra"><thead><tr>' + WEIGHTS_8.map(w => `<th>${w}</th>`).join('') + '<th>Letra</th></tr></thead><tbody>';
+      q.bytes.forEach((byte, i) => {
+        html += '<tr>' + byte.split('').map(b => `<td class="${b === '1' ? 'uno' : ''}">${b}</td>`).join('') +
+          `<td class="respuesta" id="quiz-letra-${i}">?</td></tr>`;
+      });
+      html += '</tbody></table>';
+      area.innerHTML = '<div class="reto-c-palabra">' + html + '<div id="quiz-pad-c"></div></div>';
+      renderPadC();
+      return;
+    }
+    area.innerHTML = html + '<div id="quiz-pad-c"></div>';
+    renderPadC();
+  }
 
-    let bitsHtml = `<div class="byte-grid" style="margin-bottom:0.4rem;">`;
-    bits.forEach((b, i) => {
-      bitsHtml += `
-        <div class="bit-column">
-          <span class="bit-weight">${WEIGHTS_8[i]}</span>
-          <div class="bit-toggle" data-val="${b}" style="cursor:default;">${b}</div>
-        </div>
-      `;
+  function renderPadC() {
+    const caja = document.getElementById('quiz-pad-c');
+    const modos = MODOS_C[currentQuestion.nivel];
+    const juego = padModo === 'abc' ? LETRAS_MIN : (padModo === '123' ? CIFRAS : LETRAS_MAY);
+    let html = `<div class="alpha-pad${padModo === '123' ? ' digitos' : ''}">`;
+    juego.split('').forEach(ch => {
+      html += `<button class="alpha-key" onclick="selectQuizLetter('${ch}')">${ch}</button>`;
     });
-    bitsHtml += `</div>`;
+    html += '</div><div class="pad-modos">';
+    if (modos.length > 1) {
+      modos.forEach(m => {
+        html += `<button class="filter-btn${m === padModo ? ' active' : ''}" onclick="cambiarPadModo('${m}')">${m}</button>`;
+      });
+    }
+    if (currentQuestion.texto.length > 1) {
+      html += `<button class="filter-btn" onclick="selectQuizLetter('⌫')" aria-label="Borrar la última letra">⌫ Borrar</button>`;
+    }
+    caja.innerHTML = html + '</div>';
+  }
 
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-    let keysHtml = `<div class="alpha-pad">`;
-    alphabet.forEach(letter => {
-      keysHtml += `<button class="alpha-key" onclick="selectQuizLetter('${letter}')">${letter}</button>`;
-    });
-    keysHtml += `</div>`;
-
-    area.innerHTML = `
-      ${bitsHtml}
-      <div style="text-align:center; margin-bottom:0.545rem;">
-        <span style="font-weight:700;">Letra elegida: </span>
-        <span id="quiz-letter-display" class="mono-num" style="font-size:2.4rem; font-weight:900; color: var(--azul-fuerte);">?</span>
-      </div>
-      ${keysHtml}
-    `;
+  function cambiarPadModo(m) {
+    padModo = m;
+    renderPadC();
   }
 
   function selectQuizLetter(letter) {
-    quizUserInput = letter;
-    document.getElementById('quiz-letter-display').textContent = letter;
+    const q = currentQuestion;
+    if (!q || q.type !== 'C') return;
+    if (letter === '⌫') {
+      quizUserInput = quizUserInput.slice(0, -1);
+    } else if (q.texto.length === 1) {
+      quizUserInput = letter;
+    } else if (quizUserInput.length < q.texto.length) {
+      quizUserInput += letter;
+    }
+    if (q.texto.length === 1) {
+      document.getElementById('quiz-letter-display').textContent = quizUserInput || '?';
+    } else {
+      for (let i = 0; i < q.texto.length; i++) {
+        document.getElementById(`quiz-letra-${i}`).textContent = quizUserInput[i] || '?';
+      }
+    }
   }
 
   function checkQuizAnswer() {
     const fb = document.getElementById('quiz-feedback');
-    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+    const q = currentQuestion;
 
-    if (currentQuestion.resuelta) {
+    if (q.resuelta) {
       fb.className = 'feedback-box info';
       fb.textContent = 'Este ejercicio ya está resuelto. Pulsa «Siguiente ejercicio».';
       return;
     }
 
-    if (currentQuestion.type === 'A') {
+    if (q.type === 'A') {
       if (quizUserInput === '') {
         fb.className = 'feedback-box error';
-        fb.textContent = 'Introduce un número con el teclado táctil antes de comprobar.';
+        fb.textContent = 'Escribe un número con el teclado antes de comprobar.';
         return;
       }
       const userVal = parseInt(quizUserInput, 10);
-      if (userVal === currentQuestion.targetDec) {
-        currentQuestion.resuelta = true;
-        streak++;
-        document.getElementById('streak-count').textContent = streak;
+      if (userVal === q.targetDec) {
+        const subida = anotarAcierto();
         fb.className = 'feedback-box success';
-        fb.innerHTML = `¡Excelente! <strong>${currentQuestion.binStr}</strong> en binario equivale a <strong>${currentQuestion.targetDec}</strong>.`;
+        fb.innerHTML = `¡Correcto! <strong>${q.binStr}</strong> vale <strong>${q.targetDec}</strong>.${subida}`;
       } else {
-        streak = 0;
-        document.getElementById('streak-count').textContent = streak;
-        const diff = userVal - currentQuestion.targetDec;
+        anotarFallo();
+        const diff = userVal - q.targetDec;
         const pista = diff > 0
-          ? `Te has pasado por ${diff} unidades. Revisa si has sumado algún bit que estaba en 0.`
-          : `Te faltan ${Math.abs(diff)} unidades. Revisa si te has dejado algún bit en 1 sin sumar.`;
+          ? `Te has pasado por ${diff}. ¿Has sumado algún peso que tenía un 0?`
+          : `Te faltan ${Math.abs(diff)}. ¿Te has dejado algún peso con un 1?`;
         fb.className = 'feedback-box error';
-        fb.innerHTML = `Respuesta incorrecta (has puesto <strong>${userVal}</strong>). ${pista}`;
+        fb.innerHTML = `No es <strong>${userVal}</strong>. ${pista} La racha vuelve a 0.`;
       }
 
-    } else if (currentQuestion.type === 'B') {
-      const userSum = quizUserBits.reduce((acc, b, i) => acc + (b * weights[i]), 0);
-      if (userSum === currentQuestion.targetDec) {
-        currentQuestion.resuelta = true;
-        streak++;
-        document.getElementById('streak-count').textContent = streak;
+    } else if (q.type === 'B') {
+      const w = pesos(quizBitsCount);
+      const userSum = quizUserBits.reduce((acc, b, i) => acc + (b * w[i]), 0);
+      if (userSum === q.targetDec) {
+        const subida = anotarAcierto();
         fb.className = 'feedback-box success';
-        fb.innerHTML = `¡Correcto! Has formado exactamente el número <strong>${currentQuestion.targetDec}</strong> (${quizUserBits.join('')}).`;
+        fb.innerHTML = `¡Correcto! <strong>${q.targetDec}</strong> = <strong>${quizUserBits.join('')}</strong>.${subida}`;
       } else {
-        streak = 0;
-        document.getElementById('streak-count').textContent = streak;
-        const diff = userSum - currentQuestion.targetDec;
+        anotarFallo();
+        const diff = userSum - q.targetDec;
         const diag = diff > 0
-          ? `Tus bits suman <strong>${userSum}</strong> (te sobran <strong>${diff}</strong>). Apaga algún bit.`
-          : `Tus bits suman <strong>${userSum}</strong> (te faltan <strong>${Math.abs(diff)}</strong>). Enciende algún bit más.`;
+          ? `Tus cajones suman <strong>${userSum}</strong>: te sobran <strong>${diff}</strong>.`
+          : `Tus cajones suman <strong>${userSum}</strong>: te faltan <strong>${Math.abs(diff)}</strong>.`;
         fb.className = 'feedback-box error';
-        fb.innerHTML = `Aún no es correcto. ${diag}`;
+        fb.innerHTML = `Aún no. ${diag} La racha vuelve a 0.`;
       }
 
-    } else if (currentQuestion.type === 'C') {
-      if (!quizUserInput) {
+    } else {
+      if (quizUserInput.length < q.texto.length) {
         fb.className = 'feedback-box error';
-        fb.textContent = 'Pulsa una letra en el teclado en pantalla antes de comprobar.';
+        fb.textContent = q.texto.length === 1
+          ? 'Elige un carácter en el teclado antes de comprobar.'
+          : `Faltan letras: la palabra tiene ${q.texto.length}.`;
         return;
       }
-      if (quizUserInput === currentQuestion.letter) {
-        currentQuestion.resuelta = true;
-        streak++;
-        document.getElementById('streak-count').textContent = streak;
+      if (quizUserInput === q.texto) {
+        const subida = anotarAcierto();
         fb.className = 'feedback-box success';
-        fb.innerHTML = `¡Muy bien! El byte <strong>${currentQuestion.binStr}</strong> vale <strong>${currentQuestion.code}</strong> en decimal, que corresponde a la letra <strong>${currentQuestion.letter}</strong>.`;
+        fb.innerHTML = q.texto.length === 1
+          ? `¡Muy bien! <strong>${q.bytes[0]}</strong> = ${q.code} = <strong>${esc(q.texto)}</strong>.${subida}`
+          : `¡Muy bien! La palabra es <strong>${esc(q.texto)}</strong>.${subida}`;
       } else {
-        streak = 0;
-        document.getElementById('streak-count').textContent = streak;
-        const userCode = quizUserInput.charCodeAt(0);
+        anotarFallo();
+        const errores = [];
+        for (let i = 0; i < q.texto.length; i++) {
+          if (quizUserInput[i] !== q.texto[i]) {
+            const tuyo = quizUserInput[i];
+            errores.push(`${q.texto.length > 1 ? `la ${i + 1}.ª: ` : ''}has puesto <strong>${esc(tuyo)}</strong> (${tuyo.charCodeAt(0)}), pero el byte vale <strong>${q.texto.charCodeAt(i)}</strong>`);
+          }
+        }
         fb.className = 'feedback-box error';
-        fb.innerHTML = `Has elegido la letra <strong>${quizUserInput}</strong> (código ASCII ${userCode}), pero el byte suma <strong>${currentQuestion.code}</strong>. ¡Inténtalo de nuevo!`;
+        fb.innerHTML = `Casi: ${errores.join('; ')}. Ojo con mayúsculas y minúsculas. La racha vuelve a 0.`;
       }
     }
   }
 
   function showQuizSolution() {
     const fb = document.getElementById('quiz-feedback');
-    /* Ver la solución cierra el ejercicio: ya no suma a la racha */
-    currentQuestion.resuelta = true;
-    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+    const q = currentQuestion;
+    /* Ver la solución cierra el ejercicio y la racha vuelve a 0 */
+    if (!q.resuelta) anotarFallo();
+    q.resuelta = true;
+    fb.className = 'feedback-box info';
 
-    if (currentQuestion.type === 'A' || currentQuestion.type === 'B') {
-      const bits = currentQuestion.binStr.split('').map(Number);
+    if (q.type === 'A' || q.type === 'B') {
+      const w = pesos(quizBitsCount);
       const active = [];
-      bits.forEach((b, i) => { if (b === 1) active.push(weights[i]); });
-      fb.className = 'feedback-box info';
+      q.binStr.split('').forEach((b, i) => { if (b === '1') active.push(w[i]); });
       let cadena = '';
-      if (currentQuestion.type === 'B') {
-        let quedan = currentQuestion.targetDec;
+      if (q.type === 'B') {
+        let quedan = q.targetDec;
         const pasos = [];
-        weights.forEach(w => { if (quedan >= w) { quedan -= w; pasos.push(`${w} (quedan ${quedan})`); } });
-        cadena = `Cajones que se llenan con ${currentQuestion.targetDec} bolitas: <span class="mono-num">${pasos.join(' → ')}</span><br>`;
+        w.forEach(p => { if (quedan >= p) { quedan -= p; pasos.push(`${p} (quedan ${quedan})`); } });
+        cadena = `Cajones que se llenan con ${q.targetDec} bolitas: <span class="mono-num">${pasos.join(' → ')}</span><br>`;
       }
-      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>${cadena}
-        Binario: <span class="mono-num">${currentQuestion.binStr}</span><br>
-        Pesos activos: <span class="mono-num">${active.join(' + ')} = <strong>${currentQuestion.targetDec}</strong></span>`;
+      fb.innerHTML = `<strong>Solución:</strong><br>${cadena}
+        Binario: <span class="mono-num">${q.binStr}</span> · Pesos con 1: <span class="mono-num">${active.join(' + ')} = <strong>${q.targetDec}</strong></span>`;
     } else {
-      const bits = currentQuestion.binStr.split('').map(Number);
-      const active = [];
-      bits.forEach((b, i) => { if (b === 1) active.push(WEIGHTS_8[i]); });
-      fb.className = 'feedback-box info';
-      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>
-        1. Sumamos los pesos en 1: <span class="mono-num">${active.join(' + ')} = <strong>${currentQuestion.code}</strong></span>.<br>
-        2. Como la 'A' es el 65, la posición ${currentQuestion.code} corresponde a la letra <strong>${currentQuestion.letter}</strong>.`;
+      const lineas = q.bytes.map((byte, i) => {
+        const suma = [];
+        byte.split('').forEach((b, j) => { if (b === '1') suma.push(WEIGHTS_8[j]); });
+        return `<div><span class="mono-num">${byte} = ${suma.join('+')} = ${q.texto.charCodeAt(i)}</span> → <strong>${esc(q.texto[i])}</strong></div>`;
+      });
+      fb.innerHTML = `<strong>Solución:</strong> (A = 65, a = 97, 0 = 48)<div class="solucion-c">${lineas.join('')}</div>`;
     }
   }
+
+  /* Fecha y hora siempre a la vista: una captura de pantalla dice cuándo se hizo */
+  let usuarioReto = '';
+  function pintarSello() {
+    const el = document.getElementById('sello');
+    if (!el) return;
+    const ahora = new Date();
+    const fecha = ahora.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) + ' ' +
+      ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    el.textContent = '';
+    if (usuarioReto) {
+      const u = document.createElement('span');
+      u.className = 'usuario';
+      u.textContent = '👤 ' + usuarioReto + ' · ';
+      el.appendChild(u);
+    }
+    el.appendChild(document.createTextNode(fecha));
+  }
+  cargarMejores();
+  setInterval(pintarSello, 20000);
 
   function openAsciiHintModal() {
     const grid = document.getElementById('modal-ascii-grid');
@@ -2719,7 +3005,12 @@
     renderSimByte();
     translateTextToBinary();
     selectAsciiInspector(65);
+    pintarSello();
     generateNewQuestion();
+    /* En el móvil (llegan por el QR) se empieza directamente en los retos */
+    if (window.matchMedia('(max-width: 760px), (max-aspect-ratio: 4/5)').matches) {
+      document.querySelector('[data-module="mod-ejercicios"]').click();
+    }
   });
 </script>
 </body>
