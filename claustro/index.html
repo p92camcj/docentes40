@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*{box-sizing:border-box}body{margin:0}</style>
+<title>Claustro TDE y STEAM 4.0</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Presentación a pantalla completa para compartir en Meet: una diapositiva visible cada vez, letra grande y alto contraste. Aspecto claro único, elegido para la proyección. */
+:root {
+  --fondo: #f4f7f6;
+  --tinta: #13241f;
+  --suave: #4f625c;
+  --acento: #0b6e4f;
+  --acento-claro: #dcefe6;
+  --aviso: #8a5a00;
+  --aviso-fondo: #fff1cc;
+  --linea: #c9d6d1;
+  --f-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body {
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--f-texto);
+  overflow: hidden;
+}
+.escena {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+.diapo {
+  display: none;
+  min-height: 0;
+  overflow: auto;
+  padding-block: clamp(20px, 5vh, 64px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px), 6vw);
+  padding-right: max(16px, env(safe-area-inset-right, 0px), 6vw);
+}
+.diapo.activa { display: flex; flex-direction: column; justify-content: center; gap: clamp(14px, 3vh, 36px); }
+.etiqueta {
+  font-size: clamp(14px, 1.5vw, 22px);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--acento);
+  font-weight: 700;
+}
+h1, h2 {
+  font-family: var(--f-titulo);
+  margin: 0;
+  text-wrap: balance;
+  line-height: 1.05;
+}
+h1 { font-size: clamp(36px, 6.5vw, 104px); font-weight: 800; }
+h2 { font-size: clamp(30px, 4.6vw, 72px); font-weight: 800; }
+h2 .num { color: var(--acento); margin-right: .25em; }
+.lema { font-size: clamp(18px, 2.4vw, 36px); color: var(--suave); max-width: 40ch; margin: 0; }
+ul.puntos {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: clamp(10px, 2vh, 24px);
+  max-width: 62ch;
+}
+ul.puntos li {
+  font-size: clamp(18px, 2.3vw, 36px);
+  line-height: 1.3;
+  padding-left: 1.1em;
+  position: relative;
+}
+ul.puntos li::before {
+  content: ""; position: absolute; left: 0; top: .45em;
+  width: .5em; height: .5em; border-radius: 50%; background: var(--acento);
+}
+ul.puntos li strong { color: var(--acento); }
+.normas {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: clamp(10px, 1.6vw, 22px);
+}
+.norma {
+  background: #ffffff; border: 2px solid var(--linea); border-radius: 10px;
+  padding: clamp(12px, 1.6vw, 24px);
+  font-size: clamp(16px, 1.9vw, 30px); line-height: 1.25;
+}
+.norma b { display: block; font-family: var(--f-titulo); font-size: 1.15em; color: var(--acento); margin-bottom: .2em; }
+.sello {
+  align-self: flex-start;
+  background: var(--aviso-fondo); color: var(--aviso);
+  border: 2px solid var(--aviso);
+  border-radius: 999px;
+  padding: .3em .9em;
+  font-weight: 700;
+  font-size: clamp(14px, 1.6vw, 24px);
+}
+.fecha {
+  display: inline-flex; align-items: baseline; gap: .4em;
+  background: var(--acento-claro); color: var(--acento);
+  border-radius: 10px; padding: .3em .7em;
+  font-family: var(--f-titulo); font-weight: 800;
+  font-size: clamp(22px, 3.4vw, 54px);
+  align-self: flex-start;
+}
+.firma { font-size: clamp(16px, 1.9vw, 28px); color: var(--suave); margin: 0; }
+.barra {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  border-top: 1px solid var(--linea);
+  padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  font-size: 15px; color: var(--suave);
+}
+.progreso { flex: 1; height: 4px; background: var(--linea); border-radius: 2px; overflow: hidden; min-width: 40px; }
+.progreso i { display: block; height: 100%; background: var(--acento); width: 0; transition: width .25s; }
+.mandos { display: flex; gap: 8px; }
+.mandos button {
+  font: inherit; font-weight: 700;
+  background: #ffffff; color: var(--tinta);
+  border: 1px solid var(--linea); border-radius: 8px;
+  padding: 6px 12px; cursor: pointer;
+}
+.mandos button:hover { border-color: var(--acento); color: var(--acento); }
+.mandos button:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+.contador { font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .progreso i { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="escena">
+  <main id="diapos">
+
+    <section class="diapo activa" aria-label="Portada">
+      <div class="etiqueta">Claustro · 12 de noviembre de 2026</div>
+      <h1>Plan de Actuación Digital 2026-27</h1>
+      <p class="lema">Lo que hay que saber de la coordinación TDE y del programa STEAM 4.0. Se incorpora al Proyecto Educativo como anexo VII.</p>
+      <p class="firma">Coordinación de Transformación Digital Educativa y STEAM 4.0 · IES Vega de Mar</p>
+    </section>
+
+    <section class="diapo" aria-label="Protección de datos: normativa">
+      <div class="etiqueta">PAD · Información y comunicación · línea 2</div>
+      <h2><span class="num">1</span>Protección de datos</h2>
+      <p class="lema">El claustro debe conocer y cumplir la normativa vigente:</p>
+      <div class="normas">
+        <div class="norma"><b>RGPD</b>Reglamento (UE) 2016/679</div>
+        <div class="norma"><b>LO 3/2018</b>Protección de datos y garantía de los derechos digitales</div>
+        <div class="norma"><b>Código de Conducta</b>de la Junta de Andalucía</div>
+        <div class="norma"><b>Política de Seguridad TIC</b>de la Consejería</div>
+      </div>
+      <div class="sello">Consta en el acta de este claustro</div>
+    </section>
+
+    <section class="diapo" aria-label="Protección de datos: en el día a día">
+      <div class="etiqueta">Protección de datos · en el día a día</div>
+      <h2><span class="num">1</span>Qué significa en la práctica</h2>
+      <ul class="puntos">
+        <li>Datos del alumnado <strong>solo en plataformas corporativas</strong>: Séneca, iPasen, Moodle Centros y las cuentas de Google del centro.</li>
+        <li>Nada de WhatsApp personal, cuentas particulares ni aplicaciones externas o de IA con nombres, notas o informes.</li>
+        <li>Ninguna foto ni vídeo del alumnado <strong>sin comprobar la autorización</strong> de la familia.</li>
+        <li>Listas e informes, nunca a la vista. <strong>Cierra la sesión</strong> en los equipos compartidos y en la pizarra digital.</li>
+        <li>Cualquier incidente (un correo a quien no era, un pendrive perdido) se comunica <strong>a dirección cuanto antes</strong>.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Guía de Protección de Datos">
+      <div class="etiqueta">PAD · Enseñanza-aprendizaje · línea 2</div>
+      <h2><span class="num">2</span>Guía de Protección de Datos para Centros Docentes Andaluces</h2>
+      <ul class="puntos">
+        <li>Se publica en la <strong>web del centro</strong>, en las <strong>redes sociales</strong> y en el <strong>tablón de anuncios de Séneca</strong>.</li>
+        <li>Echadle un vistazo: resuelve la mayoría de las dudas.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Observaciones compartidas">
+      <div class="etiqueta">PAD · Información y comunicación · línea 3</div>
+      <h2><span class="num">3</span>Observaciones compartidas de Séneca</h2>
+      <ul class="puntos">
+        <li>Lo que comuniquéis a un tutor sobre un alumno, académico o de actitud, <strong>se registra en iSéneca</strong>, no en notas sueltas ni mensajes.</li>
+        <li>Queda constancia y, si se considera oportuno, <strong>la familia lo ve en iPasen</strong>.</li>
+        <li>A final de curso, encuesta para valorarlo.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Grupo de trabajo STEAM e IA">
+      <div class="etiqueta">PAD · Enseñanza-aprendizaje · línea 1</div>
+      <h2><span class="num">4</span>Grupo de trabajo: STEAM e inteligencia artificial</h2>
+      <ul class="puntos">
+        <li>Metodologías STEAM y <strong>buen uso de la IA</strong>, con el asesoramiento del CEP.</li>
+        <li>Todavía podéis uniros: decídmelo al terminar.</li>
+      </ul>
+      <div class="fecha">Próxima sesión: lunes 30 de noviembre</div>
+    </section>
+
+    <section class="diapo" aria-label="Portátiles, reservas e incidencias">
+      <div class="etiqueta">PAD · Organización del centro · líneas 1 a 4</div>
+      <h2><span class="num">5</span>Portátiles, reservas e incidencias</h2>
+      <ul class="puntos">
+        <li>Al menos <strong>un carro de portátiles por planta</strong>, con un equipo por alumno.</li>
+        <li>Una <strong>web para reservar</strong> carros, recursos y espacios y para comunicar incidencias. Sustituirá al libro de reservas y a la hoja de conserjería.</li>
+        <li><strong>Hasta que os avise, se reserva como ahora.</strong> Habrá una formación breve.</li>
+        <li>También previstas: préstamo de material al profesorado y consulta de horarios y aulas libres.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Jano">
+      <div class="etiqueta">PAD · Organización del centro · línea 5</div>
+      <h2><span class="num">6</span>Jano: registro de uso de los portátiles</h2>
+      <ul class="puntos">
+        <li>Registra <strong>qué alumno usa cada portátil, cuándo y cuánto tiempo</strong>.</li>
+        <li>El alumno entra con su <strong>cuenta de educaand</strong>; al terminar, el equipo se limpia solo.</li>
+        <li>Si no consigue entrar, <strong>el profesor lo identifica</strong> en la propia pantalla: nombre, curso, grupo y materia.</li>
+        <li>Se implanta <strong>por carros</strong>. Se informará a familias y alumnado. Los datos no salen del espacio de Google del centro.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Difusión">
+      <div class="etiqueta">PAD · Información y comunicación · línea 1</div>
+      <h2><span class="num">7</span>Difusión</h2>
+      <ul class="puntos">
+        <li>La web y el Instagram del centro deben reflejar lo que hacemos: <strong>mandadme vuestras actividades</strong>, sobre todo las de STEAM.</li>
+        <li>Grupo de coordinación con todos los coordinadores de planes y programas.</li>
+      </ul>
+    </section>
+
+    <section class="diapo" aria-label="Cierre">
+      <div class="etiqueta">Coordinación TDE y STEAM 4.0</div>
+      <h1>Gracias</h1>
+      <p class="lema">Para cualquier incidencia informática o duda sobre el Plan de Actuación Digital, estoy a vuestra disposición.</p>
+    </section>
+
+  </main>
+
+  <nav class="barra" aria-label="Navegación">
+    <span class="contador" id="contador">1 / 10</span>
+    <div class="progreso" aria-hidden="true"><i id="avance"></i></div>
+    <div class="mandos">
+      <button type="button" id="anterior" aria-label="Diapositiva anterior">←</button>
+      <button type="button" id="siguiente" aria-label="Diapositiva siguiente">→</button>
+      <button type="button" id="completa">Pantalla completa</button>
+    </div>
+  </nav>
+</div>
+
+<script>
+(function () {
+  var diapos = Array.prototype.slice.call(document.querySelectorAll('.diapo'));
+  var actual = 0;
+  var contador = document.getElementById('contador');
+  var avance = document.getElementById('avance');
+
+  function mostrar(n) {
+    actual = Math.max(0, Math.min(diapos.length - 1, n));
+    diapos.forEach(function (d, i) { d.classList.toggle('activa', i === actual); });
+    contador.textContent = (actual + 1) + ' / ' + diapos.length;
+    avance.style.width = ((actual + 1) / diapos.length * 100) + '%';
+    if (location.hash !== '#d' + (actual + 1)) {
+      try { history.replaceState(null, '', '#d' + (actual + 1)); } catch (e) {}
+    }
+  }
+
+  document.getElementById('anterior').addEventListener('click', function () { mostrar(actual - 1); });
+  document.getElementById('siguiente').addEventListener('click', function () { mostrar(actual + 1); });
+  document.getElementById('completa').addEventListener('click', function () {
+    var el = document.documentElement;
+    try {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (el.requestFullscreen) { el.requestFullscreen().catch(function () {}); }
+    } catch (e) {}
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); mostrar(actual + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); mostrar(actual - 1); }
+    else if (e.key === 'Home') { mostrar(0); }
+    else if (e.key === 'End') { mostrar(diapos.length - 1); }
+    else if (e.key === 'f' || e.key === 'F') { document.getElementById('completa').click(); }
+  });
+
+  document.getElementById('diapos').addEventListener('click', function (e) {
+    if (e.target.closest('button, a')) return;
+    mostrar(actual + 1);
+  });
+
+  var m = /^#d(\d+)$/.exec(location.hash);
+  mostrar(m ? parseInt(m[1], 10) - 1 : 0);
+})();
+</script>
+</body>
+</html>
