@@ -6,7 +6,7 @@
   <title>Sistema binario y código ASCII — TIC 1.º Bachillerato</title>
   <style>
     /* ==========================================================================
-       VARIABLES DE DISEÑO Y TOKENS PARA PDI DE 75 PULGADAS (ALTO CONTRASTE)
+       VARIABLES DE DISEÑO Y TOKENS PARA PIZARRA DIGITAL DE 65 PULGADAS (ALTO CONTRASTE)
        ========================================================================== */
     :root {
       --bg-app: #F8FAFC;
@@ -44,11 +44,50 @@
       --font-mono: 'Consolas', 'Courier New', ui-monospace, monospace;
 
       /* Geometría táctil */
-      --touch-min: 64px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
-      --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.09);
+      --touch-min: 2.909rem;
+      --radius-md: 0.636rem;
+      --radius-lg: 0.909rem;
+      --shadow-sm: 0 2px 0.273rem rgba(15, 23, 42, 0.06);
+      /* Azules de apoyo (cambian con el tema) */
+      --azul-suave: #EFF6FF;
+      --azul-borde: #BFDBFE;
+      --azul-texto: #1E3A8A;
+      --azul-fuerte: #1D4ED8;
+
+      --shadow-md: 0 0.273rem 0.818rem rgba(15, 23, 42, 0.09);
+    }
+
+    /* Tema oscuro (botón «Tema» de la barra superior) */
+    :root[data-theme="dark"] {
+      --bg-app: #0B1120;
+      --bg-surface: #111827;
+      --bg-subtle: #1E293B;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border-color: #334155;
+      --bit-1-bg: #2563EB;
+      --bit-1-hover: #1D4ED8;
+      --bit-1-glow: rgba(37, 99, 235, 0.35);
+      --bit-0-bg: #1E293B;
+      --bit-0-hover: #334155;
+      --bit-0-text: #94A3B8;
+      --accent-primary: #38BDF8;
+      --accent-primary-dark: #7DD3FC;
+      --success-bg: #052E16;
+      --success-border: #22C55E;
+      --success-text: #BBF7D0;
+      --error-bg: #450A0A;
+      --error-border: #EF4444;
+      --error-text: #FECACA;
+      --warning-bg: #422006;
+      --warning-border: #F59E0B;
+      --warning-text: #FDE68A;
+      --azul-suave: #172554;
+      --azul-borde: #1E40AF;
+      --azul-texto: #BFDBFE;
+      --azul-fuerte: #60A5FA;
+      --shadow-sm: 0 2px 0.273rem rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 0.273rem 0.818rem rgba(0, 0, 0, 0.5);
     }
 
     /* ==========================================================================
@@ -66,15 +105,21 @@
       user-select: text;
     }
 
+    /* Todo se mide en rem: el tamaño base depende del ancho y del alto de la
+       pantalla, así que en la pizarra (16:9) todo crece o encoge a la vez y
+       cabe sin scroll. Equivale a 22 px en una pantalla de 1920 × 1080. */
+    html {
+      font-size: clamp(11px, min(1.15vw, 2.05vh), 64px);
+    }
+
     html, body {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       background-color: var(--bg-app);
       color: var(--text-main);
       font-family: var(--font-sans);
-      font-size: 22px; /* Base legible a 2-10 metros */
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     .app-shell {
@@ -91,8 +136,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 12px 24px;
+      gap: 0.545rem;
+      padding: 0.545rem 1.091rem;
       background-color: var(--bg-surface);
       border-bottom: 3px solid var(--border-color);
       box-shadow: var(--shadow-sm);
@@ -103,7 +148,7 @@
     .brand-badge {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0.545rem;
       font-weight: 800;
       font-size: 1.25rem;
       color: var(--text-main);
@@ -114,19 +159,19 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 48px;
-      height: 48px;
+      width: 2.182rem;
+      height: 2.182rem;
       background: var(--bit-1-bg);
       color: #fff;
       font-family: var(--font-mono);
       font-weight: 900;
       font-size: 1.2rem;
-      border-radius: 12px;
+      border-radius: 0.545rem;
     }
 
     .nav-tabs {
       display: flex;
-      gap: 10px;
+      gap: 0.455rem;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
@@ -134,7 +179,7 @@
     .nav-btn {
       min-height: var(--touch-min);
       min-width: var(--touch-min);
-      padding: 10px 22px;
+      padding: 0.455rem 1rem;
       border: 2px solid var(--border-color);
       border-radius: var(--radius-md);
       background-color: var(--bg-subtle);
@@ -146,18 +191,18 @@
       transition: all 0.15s ease;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.455rem;
     }
 
     .nav-btn:hover {
-      background-color: #E2E8F0;
+      background-color: var(--bit-0-bg);
     }
 
     .nav-btn.active {
       background-color: var(--bit-1-bg);
       border-color: var(--bit-1-bg);
       color: #FFFFFF;
-      box-shadow: 0 4px 12px var(--bit-1-glow);
+      box-shadow: 0 0.182rem 0.545rem var(--bit-1-glow);
     }
 
     /* ==========================================================================
@@ -166,14 +211,14 @@
     .main-viewport {
       flex: 1;
       overflow-y: auto;
-      padding: 20px 28px;
+      padding: 0.909rem 1.273rem;
       position: relative;
     }
 
     .module-section {
       display: none;
       height: 100%;
-      max-width: 1680px;
+      max-width: 76.364rem;
       margin: 0 auto;
     }
 
@@ -195,12 +240,12 @@
     .byte-grid {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      gap: 12px;
+      gap: 0.545rem;
       width: 100%;
     }
 
     .byte-grid.bits-4 {
-      grid-template-columns: repeat(4, minmax(110px, 160px));
+      grid-template-columns: repeat(4, minmax(5rem, 7.273rem));
       justify-content: center;
     }
 
@@ -211,7 +256,7 @@
       background: var(--bg-surface);
       border: 2px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 10px 6px;
+      padding: 0.455rem 0.273rem;
       box-shadow: var(--shadow-sm);
     }
 
@@ -227,13 +272,13 @@
       font-size: 1.35rem;
       font-weight: 800;
       color: var(--accent-primary-dark);
-      margin-bottom: 8px;
+      margin-bottom: 0.364rem;
     }
 
     .bit-toggle {
       width: 100%;
-      min-height: 82px;
-      border-radius: 12px;
+      min-height: 3.727rem;
+      border-radius: 0.545rem;
       border: 3px solid transparent;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
@@ -253,18 +298,18 @@
     .bit-toggle[data-val="0"] {
       background-color: var(--bit-0-bg);
       color: var(--bit-0-text);
-      border-color: #CBD5E1;
+      border-color: var(--border-color);
     }
 
     .bit-toggle[data-val="1"] {
       background-color: var(--bit-1-bg);
       color: var(--bit-1-text);
-      border-color: #1E3A8A;
-      box-shadow: 0 6px 14px var(--bit-1-glow);
+      border-color: var(--azul-texto);
+      box-shadow: 0 0.273rem 0.636rem var(--bit-1-glow);
     }
 
     .bit-state-label {
-      margin-top: 6px;
+      margin-top: 0.273rem;
       font-size: 0.9rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -279,7 +324,7 @@
       flex-direction: column;
       height: 100%;
       justify-content: space-between;
-      gap: 16px;
+      gap: 0.727rem;
     }
 
     .slide-card {
@@ -287,7 +332,7 @@
       background: var(--bg-surface);
       border: 2px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 28px 36px;
+      padding: 1.273rem 1.636rem;
       box-shadow: var(--shadow-md);
       display: none;
       flex-direction: column;
@@ -304,8 +349,8 @@
       align-items: center;
       justify-content: space-between;
       border-bottom: 3px solid var(--bg-subtle);
-      padding-bottom: 14px;
-      margin-bottom: 20px;
+      padding-bottom: 0.636rem;
+      margin-bottom: 0.909rem;
     }
 
     .slide-title {
@@ -315,10 +360,10 @@
     }
 
     .slide-badge {
-      background: #E0F2FE;
-      color: #0369A1;
-      padding: 8px 18px;
-      border-radius: 999px;
+      background: var(--azul-suave);
+      color: var(--accent-primary-dark);
+      padding: 0.364rem 0.818rem;
+      border-radius: 45.409rem;
       font-weight: 800;
       font-size: 1.1rem;
     }
@@ -326,35 +371,35 @@
     .slide-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
+      gap: 1.273rem;
       align-items: center;
     }
 
     .info-box {
       background: var(--bg-subtle);
-      border-left: 6px solid var(--accent-primary);
-      padding: 20px 24px;
-      border-radius: 12px;
+      border-left: 0.273rem solid var(--accent-primary);
+      padding: 0.909rem 1.091rem;
+      border-radius: 0.545rem;
       font-size: 1.25rem;
     }
 
     .info-box h3 {
       font-size: 1.45rem;
-      margin-bottom: 10px;
+      margin-bottom: 0.455rem;
       color: var(--accent-primary-dark);
     }
 
     .bulb-demo {
       display: flex;
-      gap: 24px;
+      gap: 1.091rem;
       justify-content: center;
-      margin-top: 16px;
+      margin-top: 0.727rem;
     }
 
     .bulb-card {
       flex: 1;
-      padding: 22px;
-      border-radius: 16px;
+      padding: 1rem;
+      border-radius: 0.727rem;
       text-align: center;
       border: 3px solid var(--border-color);
       cursor: pointer;
@@ -362,21 +407,21 @@
     }
 
     .bulb-card.off {
-      background: #F1F5F9;
-      color: #475569;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
     }
 
     .bulb-card.on {
-      background: #FEF9C3;
-      border-color: #EAB308;
-      color: #713F12;
-      box-shadow: 0 0 25px rgba(234, 179, 8, 0.35);
+      background: var(--warning-bg);
+      border-color: var(--warning-border);
+      color: var(--warning-text);
+      box-shadow: 0 0 1.136rem rgba(234, 179, 8, 0.35);
     }
 
     .bulb-symbol {
       font-size: 3.5rem;
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 0.364rem;
     }
 
     .slide-controls {
@@ -384,7 +429,7 @@
       align-items: center;
       justify-content: space-between;
       background: var(--bg-surface);
-      padding: 12px 24px;
+      padding: 0.545rem 1.091rem;
       border-radius: var(--radius-lg);
       border: 2px solid var(--border-color);
       flex-shrink: 0;
@@ -392,7 +437,7 @@
 
     .btn-large {
       min-height: var(--touch-min);
-      padding: 12px 28px;
+      padding: 0.545rem 1.273rem;
       font-size: 1.25rem;
       font-weight: 700;
       border-radius: var(--radius-md);
@@ -402,12 +447,12 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.455rem;
       transition: all 0.15s;
     }
 
     .btn-large:hover:not(:disabled) {
-      background: #E2E8F0;
+      background: var(--bit-0-bg);
     }
 
     .btn-large.primary {
@@ -427,13 +472,13 @@
 
     .progress-dots {
       display: flex;
-      gap: 12px;
+      gap: 0.545rem;
       align-items: center;
     }
 
     .dot-btn {
-      width: 44px;
-      height: 44px;
+      width: 2rem;
+      height: 2rem;
       border-radius: 50%;
       border: 2px solid var(--border-color);
       background: var(--bg-subtle);
@@ -454,7 +499,7 @@
     .sim-layout {
       display: grid;
       grid-template-columns: 1.35fr 1fr;
-      gap: 22px;
+      gap: 1rem;
       height: 100%;
     }
 
@@ -462,11 +507,11 @@
       background: var(--bg-surface);
       border: 2px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 20px 24px;
+      padding: 0.909rem 1.091rem;
       box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 0.727rem;
       overflow-y: auto;
     }
 
@@ -475,7 +520,7 @@
       font-weight: 800;
       color: var(--text-main);
       border-bottom: 2px solid var(--bg-subtle);
-      padding-bottom: 10px;
+      padding-bottom: 0.455rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -484,17 +529,17 @@
     .result-banner {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 0.727rem;
       background: var(--bg-subtle);
-      padding: 16px;
+      padding: 0.727rem;
       border-radius: var(--radius-md);
       border: 2px solid var(--border-color);
     }
 
     .result-box {
       background: var(--bg-surface);
-      padding: 12px 16px;
-      border-radius: 12px;
+      padding: 0.545rem 0.727rem;
+      border-radius: 0.545rem;
       text-align: center;
       border: 2px solid var(--border-color);
     }
@@ -511,16 +556,16 @@
       font-variant-numeric: tabular-nums;
       font-size: 3rem;
       font-weight: 900;
-      color: var(--bit-1-bg);
+      color: var(--azul-fuerte);
       line-height: 1.15;
     }
 
     .sum-formula {
-      background: #EFF6FF;
-      border: 2px solid #BFDBFE;
-      color: #1E3A8A;
-      padding: 12px 16px;
-      border-radius: 12px;
+      background: var(--azul-suave);
+      border: 2px solid var(--azul-borde);
+      color: var(--azul-texto);
+      padding: 0.545rem 0.727rem;
+      border-radius: 0.545rem;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-size: 1.35rem;
@@ -532,73 +577,73 @@
     .numpad-container {
       display: grid;
       grid-template-columns: 1fr 1.2fr;
-      gap: 16px;
+      gap: 0.727rem;
       align-items: start;
       background: var(--bg-subtle);
-      padding: 14px;
+      padding: 0.636rem;
       border-radius: var(--radius-md);
     }
 
     .numpad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 0.364rem;
     }
 
     .num-key {
-      min-height: 60px;
+      min-height: 2.727rem;
       font-family: var(--font-mono);
       font-size: 1.6rem;
       font-weight: 800;
       border: 2px solid var(--border-color);
       background: var(--bg-surface);
-      border-radius: 10px;
+      border-radius: 0.455rem;
       cursor: pointer;
       transition: background 0.1s;
     }
 
     .num-key:active {
-      background: #CBD5E1;
+      background: var(--border-color);
     }
 
     .num-key.action-clear {
-      background: #FEE2E2;
-      color: #991B1B;
-      border-color: #FCA5A5;
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: var(--error-border);
     }
 
     .num-key.action-apply {
-      background: #DCFCE7;
-      color: #166534;
-      border-color: #86EFAC;
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: var(--success-border);
     }
 
     .divisions-box {
       background: var(--bg-surface);
       border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 16px;
+      border-radius: 0.545rem;
+      padding: 0.545rem 0.727rem;
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       font-size: 1.15rem;
-      max-height: 250px;
+      max-height: 11.364rem;
       overflow-y: auto;
     }
 
     /* Traductor ASCII <-> Binario */
     .mode-switch {
       display: flex;
-      gap: 8px;
+      gap: 0.364rem;
       background: var(--bg-subtle);
-      padding: 6px;
-      border-radius: 12px;
+      padding: 0.273rem;
+      border-radius: 0.545rem;
     }
 
     .mode-btn {
       flex: 1;
-      min-height: 54px;
+      min-height: 2.455rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.364rem;
       font-weight: 700;
       font-size: 1.05rem;
       cursor: pointer;
@@ -608,18 +653,18 @@
 
     .mode-btn.active {
       background: var(--bg-surface);
-      color: var(--bit-1-bg);
+      color: var(--azul-fuerte);
       box-shadow: var(--shadow-sm);
     }
 
     .text-input-lg {
       width: 100%;
-      min-height: 64px;
-      padding: 12px 18px;
+      min-height: 2.909rem;
+      padding: 0.545rem 0.818rem;
       font-size: 1.5rem;
       font-family: var(--font-mono);
       border: 3px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 0.545rem;
       background: var(--bg-surface);
       color: var(--text-main);
     }
@@ -636,7 +681,7 @@
     }
 
     .ascii-word-table th, .ascii-word-table td {
-      padding: 10px 12px;
+      padding: 0.455rem 0.545rem;
       border-bottom: 2px solid var(--border-color);
       text-align: center;
     }
@@ -652,18 +697,18 @@
     .ascii-ref-layout {
       display: grid;
       grid-template-rows: auto auto 1fr;
-      gap: 16px;
+      gap: 0.727rem;
       height: 100%;
     }
 
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 0.455rem;
       align-items: center;
       justify-content: space-between;
       background: var(--bg-surface);
-      padding: 14px 20px;
+      padding: 0.636rem 0.909rem;
       border-radius: var(--radius-lg);
       border: 2px solid var(--border-color);
     }
@@ -671,13 +716,13 @@
     .filter-group {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 0.455rem;
     }
 
     .filter-btn {
-      min-height: 60px;
-      padding: 10px 20px;
-      border-radius: 12px;
+      min-height: 2.727rem;
+      padding: 0.455rem 0.909rem;
+      border-radius: 0.545rem;
       border: 2px solid var(--border-color);
       background: var(--bg-subtle);
       font-size: 1.15rem;
@@ -692,14 +737,14 @@
     }
 
     .ascii-inspector {
-      background: #EFF6FF;
-      border: 3px solid #93C5FD;
+      background: var(--azul-suave);
+      border: 3px solid var(--azul-borde);
       border-radius: var(--radius-lg);
-      padding: 14px 24px;
+      padding: 0.636rem 1.091rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      gap: 0.909rem;
       flex-wrap: wrap;
     }
 
@@ -712,19 +757,19 @@
 
     .ascii-grid-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 12px;
-      padding: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(9.545rem, 1fr));
+      gap: 0.545rem;
+      padding: 0.727rem;
     }
 
     .ascii-item-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
-      min-height: 74px;
+      padding: 0.636rem 0.727rem;
+      min-height: 3.364rem;
       border: 2px solid var(--border-color);
-      border-radius: 12px;
+      border-radius: 0.545rem;
       background: var(--bg-subtle);
       cursor: pointer;
       transition: all 0.15s;
@@ -732,25 +777,25 @@
 
     .ascii-item-card:hover {
       border-color: var(--bit-1-bg);
-      background: #EFF6FF;
+      background: var(--azul-suave);
     }
 
     .ascii-item-card.selected {
       background: var(--bit-1-bg);
       color: #FFFFFF;
-      border-color: #1E3A8A;
+      border-color: var(--azul-texto);
     }
 
     .ascii-char-badge {
       font-family: var(--font-mono);
       font-size: 1.8rem;
       font-weight: 900;
-      min-width: 54px;
+      min-width: 2.455rem;
       text-align: center;
-      background: rgba(255, 255, 255, 0.85);
+      background: var(--bg-surface);
       color: var(--text-main);
-      border-radius: 8px;
-      padding: 2px 8px;
+      border-radius: 0.364rem;
+      padding: 2px 0.364rem;
     }
 
     /* ==========================================================================
@@ -759,7 +804,7 @@
     .quiz-container {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 0.818rem;
       height: 100%;
     }
 
@@ -768,24 +813,24 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 0.636rem;
       background: var(--bg-surface);
-      padding: 14px 24px;
+      padding: 0.636rem 1.091rem;
       border-radius: var(--radius-lg);
       border: 2px solid var(--border-color);
     }
 
     .streak-pill {
-      background: #FEF3C7;
-      border: 2px solid #F59E0B;
-      color: #92400E;
-      padding: 10px 22px;
-      border-radius: 999px;
+      background: var(--warning-bg);
+      border: 2px solid var(--warning-border);
+      color: var(--warning-text);
+      padding: 0.455rem 1rem;
+      border-radius: 45.409rem;
       font-weight: 800;
       font-size: 1.25rem;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.364rem;
     }
 
     .quiz-workspace {
@@ -793,11 +838,11 @@
       background: var(--bg-surface);
       border: 2px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 24px 32px;
+      padding: 1.091rem 1.455rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 20px;
+      gap: 0.909rem;
       overflow-y: auto;
     }
 
@@ -809,8 +854,8 @@
     }
 
     .feedback-box {
-      padding: 18px 24px;
-      border-radius: 14px;
+      padding: 0.818rem 1.091rem;
+      border-radius: 0.636rem;
       font-size: 1.25rem;
       font-weight: 600;
       display: none;
@@ -832,17 +877,17 @@
 
     .feedback-box.info {
       display: block;
-      background: #EFF6FF;
-      border: 3px solid #3B82F6;
-      color: #1E3A8A;
+      background: var(--azul-suave);
+      border: 3px solid var(--azul-fuerte);
+      color: var(--azul-texto);
     }
 
     .quiz-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 0.727rem;
       justify-content: center;
-      padding-top: 10px;
+      padding-top: 0.455rem;
       border-top: 2px solid var(--bg-subtle);
     }
 
@@ -850,21 +895,21 @@
     .alpha-pad {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 0.364rem;
       justify-content: center;
-      max-width: 960px;
+      max-width: 43.636rem;
       margin: 0 auto;
     }
 
     .alpha-key {
-      min-width: 60px;
-      min-height: 60px;
+      min-width: 2.727rem;
+      min-height: 2.727rem;
       font-family: var(--font-mono);
       font-size: 1.45rem;
       font-weight: 800;
       border: 2px solid var(--border-color);
       background: var(--bg-subtle);
-      border-radius: 10px;
+      border-radius: 0.455rem;
       cursor: pointer;
     }
 
@@ -884,7 +929,7 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
-      padding: 24px;
+      padding: 1.091rem;
     }
 
     .modal-backdrop.open {
@@ -894,27 +939,284 @@
     .modal-dialog {
       background: var(--bg-surface);
       border-radius: var(--radius-lg);
-      max-width: 820px;
+      max-width: 37.273rem;
       width: 100%;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 28px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      padding: 1.273rem;
+      box-shadow: 0 0.909rem 1.818rem rgba(0, 0, 0, 0.3);
       border: 3px solid var(--border-color);
     }
 
     /* ==========================================================================
        ADAPTABILIDAD RESPONSIVE PARA PANTALLAS MEDIANAS
        ========================================================================== */
-    @media (max-width: 1150px) {
-      .sim-layout {
+    /* ==========================================================================
+       AJUSTES PARA QUE CADA VISTA QUEPA ENTERA EN PANTALLA (PIZARRA 16:9)
+       ========================================================================== */
+    .module-section {
+      max-width: 82rem;
+    }
+
+    button {
+      color: var(--text-main);
+    }
+
+    .theme-btn {
+      min-height: 2.5rem;
+      padding: 0.3rem 0.8rem;
+      font-size: 1rem;
+    }
+
+    /* Simulador: bits arriba; resultados, teclado y divisiones en tres columnas */
+    .sim-layout {
+      grid-template-columns: 1.55fr 1fr;
+      min-height: 0;
+    }
+    .sim-layout .bit-toggle {
+      min-height: 3rem;
+      font-size: 2.2rem;
+    }
+    .sim-bottom {
+      display: grid;
+      grid-template-columns: 0.9fr 1fr 1.25fr;
+      gap: 0.6rem;
+      flex: 1;
+      min-height: 0;
+    }
+    .sim-bottom .result-banner {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+    .sim-bottom .result-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0.3rem 0.5rem;
+    }
+    .sim-bottom .result-big-val {
+      font-size: 2.4rem;
+    }
+    .sim-bottom .numpad-col {
+      background: var(--bg-subtle);
+      padding: 0.5rem;
+      border-radius: var(--radius-md);
+    }
+    .sim-bottom .num-key {
+      min-height: 2.3rem;
+      font-size: 1.35rem;
+    }
+    .sim-bottom .divisions-box {
+      max-height: none;
+      font-size: 1rem;
+      line-height: 1.35;
+      padding: 0.4rem 0.6rem;
+    }
+    .sim-layout .panel-card {
+      gap: 0.6rem;
+      padding: 0.75rem 1rem;
+    }
+    .sim-layout .panel-title {
+      font-size: 1.3rem;
+      padding-bottom: 0.3rem;
+    }
+    .sim-layout .bit-column {
+      padding: 0.3rem 0.2rem;
+    }
+    .sim-layout .bit-weight {
+      margin-bottom: 0.2rem;
+    }
+    .sim-layout .sum-formula {
+      padding: 0.35rem 0.6rem;
+      font-size: 1.2rem;
+    }
+    .sim-layout .ascii-word-table {
+      font-size: 1.15rem;
+    }
+    .sim-layout .ascii-word-table th,
+    .sim-layout .ascii-word-table td {
+      padding: 0.12rem 0.5rem;
+    }
+    .sim-layout .ascii-word-table td:first-child {
+      font-size: 1.35rem;
+    }
+    .nota-ascii {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Tabla ASCII: los 95 caracteres a la vez, en 16 columnas */
+    .ascii-ref-layout {
+      gap: 0.6rem;
+      min-height: 0;
+    }
+    .filter-bar {
+      padding: 0.4rem 0.8rem;
+    }
+    .filter-bar .filter-btn {
+      min-height: 2.4rem;
+      padding: 0.3rem 0.8rem;
+    }
+    .ascii-inspector {
+      padding: 0.4rem 1rem;
+    }
+    .ascii-table-scroll {
+      min-height: 0;
+    }
+    .ascii-grid-cards {
+      grid-template-columns: repeat(16, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 0.35rem;
+      padding: 0.5rem;
+      height: 100%;
+    }
+    .ascii-grid-cards.pocos {
+      grid-template-columns: repeat(13, 1fr);
+      grid-auto-rows: minmax(0, 6rem);
+      align-content: start;
+    }
+    .ascii-item-card {
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.1rem;
+      padding: 0.2rem;
+      min-height: 0;
+      text-align: center;
+    }
+    .ascii-item-card .ascii-char-badge {
+      font-size: 1.45rem;
+      min-width: 2.2rem;
+      padding: 0 0.3rem;
+      line-height: 1.2;
+    }
+    .ascii-item-card .card-dec {
+      font-weight: 900;
+      font-size: 1rem;
+      line-height: 1.1;
+    }
+    .ascii-item-card .card-bin {
+      font-size: 0.72rem;
+      opacity: 0.9;
+      line-height: 1.1;
+    }
+
+    /* Retos: una sola fila de opciones y teclados más bajos */
+    .quiz-container {
+      gap: 0.6rem;
+      min-height: 0;
+    }
+    .quiz-topbar {
+      padding: 0.4rem 0.8rem;
+      gap: 0.5rem;
+    }
+    .quiz-topbar .filter-btn {
+      min-height: 2.4rem;
+      padding: 0.3rem 0.75rem;
+    }
+    .streak-pill {
+      padding: 0.3rem 0.9rem;
+    }
+    .quiz-workspace {
+      padding: 0.8rem 1.4rem;
+      gap: 0.7rem;
+      justify-content: flex-start;
+    }
+    .quiz-workspace .bit-toggle {
+      min-height: 3.2rem;
+    }
+    .quiz-workspace .feedback-box {
+      padding: 0.5rem 1rem;
+      font-size: 1.15rem;
+    }
+    .quiz-actions {
+      margin-top: auto;
+      padding-top: 0.5rem;
+      gap: 0.7rem;
+    }
+    .quiz-actions .btn-large {
+      min-height: 2.6rem;
+      padding: 0.35rem 1rem;
+      font-size: 1.1rem;
+    }
+    .quiz-pad {
+      display: grid;
+      grid-template-columns: 9rem auto;
+      gap: 0.8rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .quiz-pad .numpad-grid {
+      grid-template-columns: repeat(6, 4rem);
+      gap: 0.4rem;
+    }
+    .quiz-pad .num-key {
+      min-height: 2.6rem;
+      font-size: 1.4rem;
+    }
+    .alpha-pad {
+      display: grid;
+      grid-template-columns: repeat(13, 3.6rem);
+      justify-content: center;
+      max-width: none;
+    }
+    .alpha-key {
+      min-width: 3.4rem;
+      min-height: 2.6rem;
+    }
+
+    /* Pantallas estrechas o en vertical (móvil, incrustado en una columna):
+       aquí sí hay scroll y las cajas se apilan. */
+    @media (max-width: 760px), (max-aspect-ratio: 4/5) {
+      html {
+        font-size: 15px;
+      }
+      html, body {
+        height: auto;
+        overflow: auto;
+      }
+      .app-shell, .main-viewport, .module-section, .slides-wrapper,
+      .sim-layout, .ascii-ref-layout, .quiz-container {
+        height: auto;
+      }
+      .top-nav {
+        flex-wrap: wrap;
+      }
+      .main-viewport {
+        padding: 0.6rem;
+      }
+      .sim-layout, .slide-grid-2, .sim-bottom, .quiz-pad {
         grid-template-columns: 1fr;
       }
-      .slide-grid-2 {
-        grid-template-columns: 1fr;
+      .byte-grid {
+        gap: 0.25rem;
+      }
+      .bit-toggle, .sim-layout .bit-toggle {
+        font-size: 1.6rem;
+        min-height: 2.6rem;
+      }
+      .ascii-grid-cards, .ascii-grid-cards.pocos {
+        grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+        grid-auto-rows: 4.5rem;
+        height: auto;
+      }
+      .quiz-pad .numpad-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .slide-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
       }
       .brand-badge span {
         display: none;
+      }
+      .slide-title {
+        font-size: 1.5rem;
+      }
+      .slide-header {
+        flex-wrap: wrap;
+        gap: 0.4rem;
       }
     }
   </style>
@@ -944,6 +1246,9 @@
       <button class="nav-btn" data-module="mod-ejercicios">
         <span>4. Retos en pizarra</span>
       </button>
+      <button class="nav-btn theme-btn" id="btn-tema" onclick="cambiarTema()" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar entre tema claro y oscuro">
+        🌓 Tema
+      </button>
     </nav>
   </header>
 
@@ -966,10 +1271,10 @@
           </div>
           <div class="slide-grid-2">
             <div>
-              <p style="margin-bottom: 16px;">
-                En el interior de un ordenador, los procesadores y las memorias están formados por millones de interruptores microscópicos (transistores) por los que circula electricidad.
+              <p style="margin-bottom: 0.727rem;">
+                En el interior de un ordenador, los procesadores y las memorias están formados por miles de millones de interruptores microscópicos (transistores). Cada uno solo tiene dos estados: deja pasar la corriente o no la deja pasar.
               </p>
-              <div class="info-box" style="margin-bottom: 16px;">
+              <div class="info-box" style="margin-bottom: 0.727rem;">
                 <h3>Bit (Binary Digit)</h3>
                 Es la unidad mínima de información. Solo puede tener dos valores posibles: <strong>0</strong> (apagado) o <strong>1</strong> (encendido).
               </div>
@@ -979,7 +1284,7 @@
               </div>
             </div>
             <div>
-              <p style="text-align: center; font-weight: 700; margin-bottom: 10px;">
+              <p style="text-align: center; font-weight: 700; margin-bottom: 0.455rem;">
                 Pulsa en cada interruptor para comprobar el estado eléctrico:
               </p>
               <div class="bulb-demo">
@@ -1007,22 +1312,22 @@
           <div class="slide-grid-2">
             <div class="info-box">
               <h3>Sistema decimal (Base 10)</h3>
-              <p style="margin-bottom: 12px;">Usamos 10 cifras (0 al 9) porque tenemos 10 dedos. Cada posición vale 10 veces más que la anterior:</p>
-              <div class="mono-num" style="background:#fff; padding:14px; border-radius:10px; font-size:1.3rem; text-align:center;">
+              <p style="margin-bottom: 0.545rem;">Usamos 10 cifras (del 0 al 9), seguramente porque aprendimos a contar con los 10 dedos. Cada posición vale 10 veces más que la anterior:</p>
+              <div class="mono-num" style="background: var(--bg-surface); padding:0.636rem; border-radius:0.455rem; font-size:1.3rem; text-align:center;">
                 1000 &nbsp;|&nbsp; 100 &nbsp;|&nbsp; 10 &nbsp;|&nbsp; 1<br>
-                <span style="color:#64748B; font-size:1rem;">(10³) &nbsp;&nbsp;&nbsp; (10²) &nbsp;&nbsp; (10¹) &nbsp; (10⁰)</span>
+                <span style="color:var(--text-muted); font-size:1rem;">(10³) &nbsp;&nbsp;&nbsp; (10²) &nbsp;&nbsp; (10¹) &nbsp; (10⁰)</span>
               </div>
-              <p style="margin-top: 12px;">Ejemplo: <strong>352</strong> = 3×100 + 5×10 + 2×1</p>
+              <p style="margin-top: 0.545rem;">Ejemplo: <strong>352</strong> = 3×100 + 5×10 + 2×1</p>
             </div>
 
             <div class="info-box" style="border-left-color: var(--bit-1-bg);">
               <h3>Sistema binario (Base 2)</h3>
-              <p style="margin-bottom: 12px;">Solo existen 2 cifras (0 y 1). Cada posición de derecha a izquierda vale <strong>el doble</strong> que la anterior:</p>
-              <div class="mono-num" style="background:#fff; padding:14px; border-radius:10px; font-size:1.25rem; text-align:center; font-weight:800; color:var(--bit-1-bg);">
+              <p style="margin-bottom: 0.545rem;">Solo existen 2 cifras (0 y 1). Cada posición de derecha a izquierda vale <strong>el doble</strong> que la anterior:</p>
+              <div class="mono-num" style="background: var(--bg-surface); padding:0.636rem; border-radius:0.455rem; font-size:1.25rem; text-align:center; font-weight:800; color: var(--azul-fuerte);">
                 128 · 64 · 32 · 16 · 8 · 4 · 2 · 1<br>
-                <span style="color:#64748B; font-size:0.95rem;">2⁷ &nbsp; 2⁶ &nbsp; 2⁵ &nbsp; 2⁴ &nbsp; 2³ &nbsp; 2² &nbsp; 2¹ &nbsp; 2⁰</span>
+                <span style="color:var(--text-muted); font-size:0.95rem;">2⁷ &nbsp; 2⁶ &nbsp; 2⁵ &nbsp; 2⁴ &nbsp; 2³ &nbsp; 2² &nbsp; 2¹ &nbsp; 2⁰</span>
               </div>
-              <p style="margin-top: 12px;">Memorizar esta fila de pesos de derecha a izquierda (1, 2, 4, 8, 16, 32, 64, 128) es la clave de todo.</p>
+              <p style="margin-top: 0.545rem;">Memorizar esta fila de pesos de derecha a izquierda (1, 2, 4, 8, 16, 32, 64, 128) es la clave de todo.</p>
             </div>
           </div>
         </article>
@@ -1033,13 +1338,13 @@
             <h1 class="slide-title">3. De binario a decimal: el método de los pesos</h1>
             <span class="slide-badge">Conversión directa</span>
           </div>
-          <p style="margin-bottom: 14px;">
+          <p style="margin-bottom: 0.636rem;">
             Para saber qué número decimal es un byte, colocamos cada bit debajo de su peso y <strong>sumamos únicamente las casillas que tienen un 1</strong> (las que tienen 0 están apagadas y no suman).
           </p>
-          <p style="font-weight:700; color:var(--bit-1-bg); margin-bottom:10px;">
+          <p style="font-weight:700; color: var(--azul-fuerte); margin-bottom:0.455rem;">
             Ejemplo interactivo: pulsa los bits del ejemplo para probar cómo cambia la suma:
           </p>
-          <div id="slide3-byte-demo" class="byte-grid" style="margin-bottom: 16px;"></div>
+          <div id="slide3-byte-demo" class="byte-grid" style="margin-bottom: 0.727rem;"></div>
           <div id="slide3-sum-output" class="sum-formula"></div>
         </article>
 
@@ -1049,27 +1354,28 @@
             <h1 class="slide-title">4. De decimal a binario: dos métodos en clase</h1>
             <span class="slide-badge">Conversión inversa</span>
           </div>
-          <p style="margin-bottom: 12px;">Ejemplo: convertir el número decimal <strong>75</strong> a binario (8 bits).</p>
+          <p style="margin-bottom: 0.545rem;">Ejemplo: convertir el número decimal <strong>75</strong> a binario (8 bits).</p>
           <div class="slide-grid-2">
             <div class="info-box">
               <h3>Método A: Divisiones sucesivas entre 2</h3>
-              <p style="font-size: 1.1rem; margin-bottom: 8px;">Dividimos entre 2 hasta que el cociente sea 0 y recogemos los restos <strong>de abajo hacia arriba</strong>:</p>
-              <div class="mono-num" style="background:#fff; padding:12px; border-radius:10px; font-size:1.1rem; line-height:1.5;">
-                75 ÷ 2 = 37 &nbsp;→ Resto: <strong>1</strong> (último bit)<br>
+              <p style="font-size: 1.1rem; margin-bottom: 0.364rem;">Dividimos entre 2 hasta que el cociente sea 0 y recogemos los restos <strong>de abajo hacia arriba</strong>:</p>
+              <div class="mono-num" style="background: var(--bg-surface); padding:0.545rem; border-radius:0.455rem; font-size:1.1rem; line-height:1.5;">
+                75 ÷ 2 = 37 &nbsp;→ Resto: <strong>1</strong> ← bit de la derecha<br>
                 37 ÷ 2 = 18 &nbsp;→ Resto: <strong>1</strong><br>
                 18 ÷ 2 = 9 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
                 &nbsp;9 ÷ 2 = 4 &nbsp;&nbsp;→ Resto: <strong>1</strong><br>
                 &nbsp;4 ÷ 2 = 2 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
                 &nbsp;2 ÷ 2 = 1 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
-                &nbsp;1 ÷ 2 = 0 &nbsp;&nbsp;→ Resto: <strong>1</strong> (primer 1)<br>
-                Resultado (8 bits): <strong>01001011</strong>
+                &nbsp;1 ÷ 2 = 0 &nbsp;&nbsp;→ Resto: <strong>1</strong> ← bit de la izquierda<br>
+                Restos de abajo arriba: 1001011 (7 bits)<br>
+                Con un 0 delante, 1 byte: <strong>01001011</strong>
               </div>
             </div>
 
-            <div class="info-box" style="border-left-color: #16A34A;">
+            <div class="info-box" style="border-left-color: var(--success-border);">
               <h3>Método B: Encender pesos (restas)</h3>
-              <p style="font-size: 1.1rem; margin-bottom: 8px;">Buscamos la potencia más grande que quepa en <strong>75</strong> y vamos restando:</p>
-              <div class="mono-num" style="background:#fff; padding:12px; border-radius:10px; font-size:1.1rem; line-height:1.55;">
+              <p style="font-size: 1.1rem; margin-bottom: 0.364rem;">Buscamos la potencia más grande que quepa en <strong>75</strong> y vamos restando:</p>
+              <div class="mono-num" style="background: var(--bg-surface); padding:0.545rem; border-radius:0.455rem; font-size:1.1rem; line-height:1.55;">
                 ¿Cabe 128 en 75? No → <strong>0</strong><br>
                 ¿Cabe 64 en 75? Sí → <strong>1</strong> (quedan 75 - 64 = 11)<br>
                 ¿Cabe 32 en 11? No → <strong>0</strong><br>
@@ -1091,17 +1397,17 @@
           </div>
           <div class="slide-grid-2">
             <div>
-              <p style="margin-bottom: 14px;">
-                Como el ordenador solo entiende números, en 1963 se creó el estándar <strong>ASCII</strong> (<em>American Standard Code for Information Interchange</em>): una tabla universal que asigna un número del 0 al 127 a cada letra, número o símbolo.
+              <p style="margin-bottom: 0.636rem;">
+                Como el ordenador solo entiende números, en 1963 se creó en Estados Unidos el estándar <strong>ASCII</strong> (<em>American Standard Code for Information Interchange</em>): una tabla común que asigna un número del <strong>0 al 127</strong> a cada letra, cifra, signo o orden de control. Bastan 7 bits; guardado en un byte, el primer bit es siempre 0.
               </p>
-              <div class="info-box" style="margin-bottom: 14px;">
+              <div class="info-box" style="margin-bottom: 0.636rem;">
                 <h3>¡Cuidado en los ejercicios!</h3>
                 Las <strong>mayúsculas</strong> y las <strong>minúsculas</strong> tienen códigos diferentes. La diferencia entre una mayúscula y su minúscula siempre es <strong>32</strong>.
               </div>
-              <p>Por ejemplo, al pulsar la tecla <strong>A</strong>, el teclado envía el byte <span class="mono-num" style="font-weight:800; color:var(--bit-1-bg);">01000001</span> (65).</p>
+              <p>Por ejemplo, cuando escribes una <strong>A</strong> mayúscula, el ordenador la guarda como el byte <span class="mono-num" style="font-weight:800; color: var(--azul-fuerte);">01000001</span> (65). Ojo: el «0» que se escribe como texto no vale 0, sino 48.</p>
             </div>
             <div>
-              <table class="ascii-word-table" style="background:#fff; border:2px solid var(--border-color); border-radius:12px; overflow:hidden;">
+              <table class="ascii-word-table" style="background: var(--bg-surface); border:2px solid var(--border-color); border-radius:0.545rem; overflow:hidden;">
                 <thead>
                   <tr>
                     <th>Carácter</th>
@@ -1113,30 +1419,70 @@
                   <tr>
                     <td style="font-weight:900; font-size:1.6rem;">A</td>
                     <td>65</td>
-                    <td style="color:var(--bit-1-bg); font-weight:800;">01000001</td>
+                    <td style="color: var(--azul-fuerte); font-weight:800;">01000001</td>
                   </tr>
                   <tr>
                     <td style="font-weight:900; font-size:1.6rem;">B</td>
                     <td>66</td>
-                    <td style="color:var(--bit-1-bg); font-weight:800;">01000010</td>
+                    <td style="color: var(--azul-fuerte); font-weight:800;">01000010</td>
                   </tr>
                   <tr>
                     <td style="font-weight:900; font-size:1.6rem;">a</td>
                     <td>97</td>
-                    <td style="color:#0369A1; font-weight:800;">01100001</td>
+                    <td style="color:var(--accent-primary-dark); font-weight:800;">01100001</td>
                   </tr>
                   <tr>
                     <td style="font-weight:900; font-size:1.6rem;">0</td>
                     <td>48</td>
-                    <td style="color:#475569; font-weight:800;">00110000</td>
+                    <td style="color:var(--text-muted); font-weight:800;">00110000</td>
                   </tr>
                   <tr>
                     <td style="font-weight:900; font-size:1.4rem;">Espacio</td>
                     <td>32</td>
-                    <td style="color:#475569; font-weight:800;">00100000</td>
+                    <td style="color:var(--text-muted); font-weight:800;">00100000</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- Diapositiva 6 -->
+        <article class="slide-card" data-slide="5">
+          <div class="slide-header">
+            <h1 class="slide-title">6. ¿Y la ñ, las tildes y los emojis? De ASCII a Unicode</h1>
+            <span class="slide-badge">Texto en todos los idiomas</span>
+          </div>
+          <div class="slide-grid-2">
+            <div>
+              <div class="info-box" style="margin-bottom: 0.727rem;">
+                <h3>ASCII se queda corto</h3>
+                Nació en inglés: no tiene <strong>ñ</strong>, ni <strong>á é í ó ú</strong>, ni <strong>¿ ¡</strong>, ni €. Durante años cada país usó su propia «tabla extendida» de 8 bits (del 128 al 255), y un mismo byte podía ser una letra distinta según el ordenador.
+              </div>
+              <div class="info-box" style="border-left-color: var(--success-border);">
+                <h3>Unicode y UTF-8 (hoy)</h3>
+                <strong>Unicode</strong> da un número a cada carácter de todas las lenguas del mundo, más de 150 000, emojis incluidos. <strong>UTF-8</strong> lo guarda con 1, 2, 3 o 4 bytes, y las letras de ASCII siguen ocupando 1 byte con el mismo código. Casi toda la web usa UTF-8.
+              </div>
+            </div>
+            <div>
+              <table class="ascii-word-table" style="background: var(--bg-surface); border:2px solid var(--border-color); border-radius:0.545rem; overflow:hidden;">
+                <thead>
+                  <tr>
+                    <th>Carácter</th>
+                    <th>Bytes en UTF-8</th>
+                  </tr>
+                </thead>
+                <tbody class="mono-num">
+                  <tr><td style="font-weight:900; font-size:1.6rem;">n</td><td style="color: var(--azul-fuerte); font-weight:800;">01101110</td></tr>
+                  <tr><td style="font-weight:900; font-size:1.6rem;">ñ</td><td style="color: var(--azul-fuerte); font-weight:800;">11000011 10110001</td></tr>
+                  <tr><td style="font-weight:900; font-size:1.6rem;">€</td><td style="color: var(--azul-fuerte); font-weight:800;">11100010 10000010 10101100</td></tr>
+                  <tr><td style="font-weight:900; font-size:1.6rem;">😀</td><td style="color: var(--azul-fuerte); font-weight:800; font-size:1rem;">11110000 10011111 10011000 10000000</td></tr>
+                </tbody>
+              </table>
+              <div class="info-box" style="margin-top: 0.727rem; border-left-color: var(--warning-border);">
+                <h3>Para pensar</h3>
+                ¿Has recibido alguna vez un mensaje con «EspaÃ±a» en lugar de «España»? Los dos bytes de la ñ en UTF-8 se han leído con una tabla antigua, como si fueran dos letras.
+              </div>
             </div>
           </div>
         </article>
@@ -1153,8 +1499,9 @@
             <button class="dot-btn" onclick="goToSlide(2)">3</button>
             <button class="dot-btn" onclick="goToSlide(3)">4</button>
             <button class="dot-btn" onclick="goToSlide(4)">5</button>
-            <span id="slide-counter-text" style="margin-left: 12px; font-weight: 800; color: var(--text-muted);">
-              Diapositiva 1 de 5
+            <button class="dot-btn" onclick="goToSlide(5)">6</button>
+            <span id="slide-counter-text" style="margin-left: 0.545rem; font-weight: 800; color: var(--text-muted);">
+              Diapositiva 1 de 6
             </span>
           </div>
 
@@ -1175,7 +1522,7 @@
         <div class="panel-card">
           <div class="panel-title">
             <span>Conversor interactivo de 1 byte (8 bits)</span>
-            <button class="btn-large" style="min-height:48px; padding:6px 16px; font-size:1rem;" onclick="resetSimByte()">
+            <button class="btn-large" style="min-height:2.182rem; padding:0.273rem 0.727rem; font-size:1rem;" onclick="resetSimByte()">
               Poner a 0
             </button>
           </div>
@@ -1186,25 +1533,24 @@
           <!-- Suma desarrollada -->
           <div id="sim-sum-formula" class="sum-formula">0 = 0</div>
 
-          <!-- Resultados gigantes en Decimal y ASCII -->
-          <div class="result-banner">
-            <div class="result-box">
-              <div class="result-label">Valor decimal</div>
-              <div id="sim-decimal-out" class="result-big-val">0</div>
-            </div>
-            <div class="result-box">
-              <div class="result-label">Carácter ASCII</div>
-              <div id="sim-ascii-out" class="result-big-val" style="font-size:2.2rem;">NUL (Control)</div>
-            </div>
-          </div>
-
-          <!-- Entrada numérica táctil + divisiones sucesivas -->
-          <div class="numpad-container">
-            <div>
-              <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">
-                Introducir decimal (0–255):
+          <!-- Resultados, teclado numérico y divisiones sucesivas, en tres columnas -->
+          <div class="sim-bottom">
+            <div class="result-banner">
+              <div class="result-box">
+                <div class="result-label">Valor decimal</div>
+                <div id="sim-decimal-out" class="result-big-val">0</div>
               </div>
-              <div id="sim-numpad-display" class="text-input-lg mono-num" style="min-height:54px; margin-bottom:8px; text-align:right; font-weight:900;">
+              <div class="result-box">
+                <div class="result-label">Carácter ASCII</div>
+                <div id="sim-ascii-out" class="result-big-val" style="font-size:1.6rem;">Control (0)</div>
+              </div>
+            </div>
+
+            <div class="numpad-col">
+              <div style="font-weight:700; font-size:0.95rem; margin-bottom:0.2rem;">
+                Escribe un decimal (0–255):
+              </div>
+              <div id="sim-numpad-display" class="text-input-lg mono-num" style="min-height:2.4rem; padding:0.2rem 0.6rem; margin-bottom:0.3rem; text-align:right; font-weight:900;">
                 0
               </div>
               <div class="numpad-grid">
@@ -1223,11 +1569,11 @@
               </div>
             </div>
 
-            <div>
-              <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">
-                Desglose por divisiones entre 2:
+            <div style="display:flex; flex-direction:column; min-height:0;">
+              <div style="font-weight:700; font-size:0.95rem; margin-bottom:0.2rem;">
+                Divisiones entre 2:
               </div>
-              <div id="sim-divisions-out" class="divisions-box">
+              <div id="sim-divisions-out" class="divisions-box" style="flex:1;">
                 Pulsa un bit o escribe un número para ver las divisiones sucesivas.
               </div>
             </div>
@@ -1251,10 +1597,10 @@
 
           <!-- Modo Texto -> Binario -->
           <div id="box-txt2bin">
-            <label for="input-word-ascii" style="display:block; font-weight:700; margin-bottom:8px;">
+            <label for="input-word-ascii" style="display:block; font-weight:700; margin-bottom:0.364rem;">
               Escribe una palabra o iniciales (máx. 10 caracteres):
             </label>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:0.455rem;">
               <input type="text" id="input-word-ascii" class="text-input-lg" maxlength="10" value="TIC" placeholder="Ej. HOLA">
               <button class="btn-large primary" onclick="translateTextToBinary()">Traducir</button>
             </div>
@@ -1262,24 +1608,26 @@
 
           <!-- Modo Binario -> Texto -->
           <div id="box-bin2txt" style="display:none;">
-            <label for="input-bin-seq" style="display:block; font-weight:700; margin-bottom:8px;">
+            <label for="input-bin-seq" style="display:block; font-weight:700; margin-bottom:0.364rem;">
               Escribe bytes de 8 bits separados por espacio:
             </label>
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:0.455rem;">
               <input type="text" id="input-bin-seq" class="text-input-lg" value="01010100 01001001 01000011" placeholder="01001000 01001111...">
               <button class="btn-large primary" onclick="translateBinaryToText()">Decodificar</button>
             </div>
           </div>
 
+          <div class="nota-ascii">Prueba con una <strong>ñ</strong> o una tilde: no están en ASCII y se ve cómo las guarda UTF-8 (2 bytes).</div>
+
           <div id="translator-feedback" class="feedback-box"></div>
 
-          <div style="flex:1; overflow-y:auto; border:2px solid var(--border-color); border-radius:12px;">
+          <div style="flex:1; overflow-y:auto; border:2px solid var(--border-color); border-radius:0.545rem;">
             <table class="ascii-word-table">
               <thead>
                 <tr>
                   <th>Letra</th>
                   <th>Decimal</th>
-                  <th>Binario (8 bits)</th>
+                  <th>Binario</th>
                 </tr>
               </thead>
               <tbody id="translator-table-body" class="mono-num"></tbody>
@@ -1312,18 +1660,18 @@
 
         <!-- Inspector visual del carácter seleccionado -->
         <div class="ascii-inspector">
-          <div style="display:flex; align-items:center; gap:18px;">
-            <div id="insp-char" class="ascii-char-badge" style="font-size:2.6rem; min-width:84px; padding:8px 16px; border:2px solid var(--bit-1-bg);">A</div>
+          <div style="display:flex; align-items:center; gap:0.818rem;">
+            <div id="insp-char" class="ascii-char-badge" style="font-size:2.6rem; min-width:3.818rem; padding:0.364rem 0.727rem; border:2px solid var(--bit-1-bg);">A</div>
             <div>
               <div style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">Carácter seleccionado</div>
               <div class="mono-num" style="font-size:1.6rem; font-weight:900;">
-                Decimal: <span id="insp-dec" style="color:var(--bit-1-bg);">65</span> · 
-                Byte: <span id="insp-bin" style="color:var(--bit-1-bg);">01000001</span>
+                Decimal: <span id="insp-dec" style="color: var(--azul-fuerte);">65</span> · 
+                Byte: <span id="insp-bin" style="color: var(--azul-fuerte);">01000001</span>
               </div>
             </div>
           </div>
 
-          <div id="insp-bits-mini" style="display:flex; gap:8px;"></div>
+          <div id="insp-bits-mini" style="display:flex; gap:0.364rem;"></div>
         </div>
 
         <!-- Rejilla de caracteres filtrables -->
@@ -1342,16 +1690,16 @@
 
         <!-- Barra superior de configuración del reto y racha -->
         <div class="quiz-topbar">
-          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
-            <span style="font-weight:800;">Tipo de reto:</span>
-            <button class="filter-btn active" id="qtype-A" onclick="setQuizType('A')">A: Binario → Decimal</button>
-            <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B: Decimal → Binario</button>
-            <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C: Reto ASCII</button>
+          <div style="display:flex; flex-wrap:wrap; gap:0.455rem; align-items:center;">
+            <span style="font-weight:800;">Reto:</span>
+            <button class="filter-btn active" id="qtype-A" onclick="setQuizType('A')">A · Binario → Decimal</button>
+            <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B · Decimal → Binario</button>
+            <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C · Letra ASCII</button>
           </div>
 
-          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-            <button class="filter-btn active" id="diff-4" onclick="setQuizDiff(4)">Básico: 4 bits (0–15)</button>
-            <button class="filter-btn" id="diff-8" onclick="setQuizDiff(8)">Estándar: 1 byte (0–255)</button>
+          <div style="display:flex; flex-wrap:wrap; gap:0.545rem; align-items:center;">
+            <button class="filter-btn active" id="diff-4" onclick="setQuizDiff(4)">4 bits (0–15)</button>
+            <button class="filter-btn" id="diff-8" onclick="setQuizDiff(8)">1 byte (0–255)</button>
             <div class="streak-pill">
               <span>Racha:</span>
               <span id="streak-count" class="mono-num">0</span>
@@ -1375,10 +1723,10 @@
               ✓ Comprobar respuesta
             </button>
             <button class="btn-large" onclick="showQuizSolution()">
-              💡 Mostrar solución paso a paso
+              💡 Solución paso a paso
             </button>
             <button class="btn-large" id="btn-ascii-hint" style="display:none;" onclick="openAsciiHintModal()">
-              📖 Ver pista tabla ASCII
+              📖 Pista: tabla A–Z
             </button>
             <button class="btn-large" onclick="generateNewQuestion()">
               ↻ Siguiente ejercicio
@@ -1395,12 +1743,12 @@
 <!-- Modal integrado en el DOM para pista rápida ASCII en ejercicios -->
 <div id="ascii-hint-modal" class="modal-backdrop" onclick="closeAsciiHintModal(event)">
   <div class="modal-dialog" onclick="event.stopPropagation()">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.727rem;">
       <h2 style="font-size:1.6rem;">Referencia rápida: letras mayúsculas ASCII</h2>
-      <button class="btn-large" style="min-height:48px; padding:6px 16px;" onclick="closeAsciiHintModal()">Cerrar ✕</button>
+      <button class="btn-large" style="min-height:2.182rem; padding:0.273rem 0.727rem;" onclick="closeAsciiHintModal()">Cerrar ✕</button>
     </div>
-    <p style="margin-bottom:14px;">Recuerda que la <strong>A</strong> empieza en el <strong>65</strong> (<span class="mono-num">01000001</span>) y avanzan de 1 en 1:</p>
-    <div id="modal-ascii-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
+    <p style="margin-bottom:0.636rem;">Recuerda que la <strong>A</strong> empieza en el <strong>65</strong> (<span class="mono-num">01000001</span>) y avanzan de 1 en 1:</p>
+    <div id="modal-ascii-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(5.909rem, 1fr)); gap:0.455rem;"></div>
   </div>
 </div>
 
@@ -1412,7 +1760,7 @@
   const POWERS_8  = ['2⁷', '2⁶', '2⁵', '2⁴', '2³', '2²', '2¹', '2⁰'];
 
   let currentSlide = 0;
-  const totalSlides = 5;
+  const totalSlides = 6;
 
   // Estado Diapositiva 3 (ejemplo interactivo)
   let slide3Bits = [0, 1, 0, 1, 1, 0, 1, 1]; // 91
@@ -1449,6 +1797,13 @@
 
   // Soporte para flechas del teclado en modo diapositivas
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAsciiHintModal();
+    const retosActive = document.getElementById('mod-ejercicios').classList.contains('active');
+    if (retosActive && currentQuestion && currentQuestion.type === 'A') {
+      if (/^[0-9]$/.test(e.key)) quizNumPad(e.key);
+      if (e.key === 'Backspace') quizNumPad('C');
+      if (e.key === 'Enter') checkQuizAnswer();
+    }
     const teoriaActive = document.getElementById('mod-teoria').classList.contains('active');
     if (teoriaActive) {
       if (e.key === 'ArrowRight') changeSlide(1);
@@ -1459,6 +1814,18 @@
   /* ==========================================================================
      MÓDULO 1: LÓGICA DE DIAPOSITIVAS
      ========================================================================== */
+  /* Tema claro / oscuro (se recuerda en este navegador) */
+  function aplicarTema(tema) {
+    if (tema === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  function cambiarTema() {
+    const nuevo = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    aplicarTema(nuevo);
+    try { localStorage.setItem('binario-ascii-tema', nuevo); } catch (e) { /* sin almacenamiento */ }
+  }
+  try { aplicarTema(localStorage.getItem('binario-ascii-tema')); } catch (e) { /* sin almacenamiento */ }
+
   function changeSlide(delta) {
     const next = currentSlide + delta;
     if (next >= 0 && next < totalSlides) {
@@ -1544,7 +1911,7 @@
         <span class="bit-power">${POWERS_8[idx]}</span>
         <span class="bit-weight">${WEIGHTS_8[idx]}</span>
         <button class="bit-toggle" data-val="${bit}" onclick="toggleSimBit(${idx})">${bit}</button>
-        <span class="bit-state-label" style="color:${bit ? 'var(--bit-1-bg)' : 'var(--text-muted)'}">
+        <span class="bit-state-label" style="color:${bit ? 'var(--azul-fuerte)' : 'var(--text-muted)'}">
           ${bit ? 'ON' : 'OFF'}
         </span>
       `;
@@ -1586,7 +1953,7 @@
     if (code === 32) return 'Espacio (32)';
     if (code === 127) return 'DEL (Control)';
     if (code < 32) return `Control (${code})`;
-    if (code > 127) return 'Extendido (>127)';
+    if (code > 127) return 'No es ASCII (>127)';
     return `'${String.fromCharCode(code)}'`;
   }
 
@@ -1627,7 +1994,7 @@
       lines.push(`${String(n).padStart(3, ' ')} ÷ 2 = ${String(q).padStart(3, ' ')} → Resto: <strong>${r}</strong>`);
       n = q;
     }
-    box.innerHTML = lines.join('<br>') + `<br><span style="color:var(--bit-1-bg);">↑ Leer restos de abajo arriba</span>`;
+    box.innerHTML = lines.join('<br>') + `<br><span style="color: var(--azul-fuerte);">↑ Leer restos de abajo arriba</span>`;
   }
 
   /* Traductor de palabras ASCII <-> Binario */
@@ -1639,11 +2006,33 @@
     document.getElementById('translator-feedback').className = 'feedback-box';
   }
 
+  /* Añade una fila a la tabla del traductor. Todo con textContent: lo escribe el alumnado. */
+  function filaTraductor(tbody, caracter, decimal, binario, nota) {
+    const tr = document.createElement('tr');
+    const c1 = document.createElement('td');
+    c1.style.fontWeight = '900';
+    c1.textContent = caracter;
+    const c2 = document.createElement('td');
+    c2.textContent = decimal;
+    const c3 = document.createElement('td');
+    c3.style.color = 'var(--azul-fuerte)';
+    c3.style.fontWeight = '800';
+    c3.textContent = binario;
+    if (nota) {
+      const n = document.createElement('div');
+      n.className = 'nota-ascii';
+      n.textContent = nota;
+      c3.appendChild(n);
+    }
+    tr.append(c1, c2, c3);
+    tbody.appendChild(tr);
+  }
+
   function translateTextToBinary() {
     const raw = document.getElementById('input-word-ascii').value;
     const tbody = document.getElementById('translator-table-body');
     const fb = document.getElementById('translator-feedback');
-    tbody.innerHTML = '';
+    tbody.textContent = '';
     fb.className = 'feedback-box';
 
     if (!raw) {
@@ -1652,17 +2041,23 @@
       return;
     }
 
+    let fuera = 0;
     for (const ch of raw) {
-      const code = ch.charCodeAt(0);
-      const bin = code <= 255 ? code.toString(2).padStart(8, '0') : 'Fuera ASCII';
+      const code = ch.codePointAt(0);
       const displayChar = ch === ' ' ? 'Espacio' : ch;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight:900; font-size:1.5rem;">${displayChar}</td>
-        <td>${code}</td>
-        <td style="color:var(--bit-1-bg); font-weight:800;">${bin}</td>
-      `;
-      tbody.appendChild(tr);
+      if (code <= 127) {
+        filaTraductor(tbody, displayChar, code, code.toString(2).padStart(8, '0'));
+      } else {
+        fuera++;
+        const bytes = Array.from(new TextEncoder().encode(ch)).map(n => n.toString(2).padStart(8, '0'));
+        filaTraductor(tbody, displayChar, code, bytes.join(' '), 'No es ASCII · UTF-8, ' + bytes.length + ' bytes');
+      }
+    }
+    if (fuera) {
+      fb.className = 'feedback-box info';
+      fb.textContent = fuera === 1
+        ? 'Hay 1 carácter que no está en ASCII: UTF-8 lo guarda con más de un byte.'
+        : 'Hay ' + fuera + ' caracteres que no están en ASCII: UTF-8 los guarda con más de un byte.';
     }
   }
 
@@ -1670,7 +2065,7 @@
     const raw = document.getElementById('input-bin-seq').value.trim();
     const tbody = document.getElementById('translator-table-body');
     const fb = document.getElementById('translator-feedback');
-    tbody.innerHTML = '';
+    tbody.textContent = '';
     fb.className = 'feedback-box';
 
     if (!raw) {
@@ -1689,16 +2084,10 @@
         return;
       }
       const code = parseInt(token, 2);
-      const ch = code >= 32 && code <= 126 ? String.fromCharCode(code) : `[Ctrl ${code}]`;
-      decodedWord += (code >= 32 && code <= 126) ? ch : '?';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight:900; font-size:1.5rem;">${ch === ' ' ? 'Espacio' : ch}</td>
-        <td>${code}</td>
-        <td style="color:var(--bit-1-bg); font-weight:800;">${token}</td>
-      `;
-      tbody.appendChild(tr);
+      const imprimible = code >= 32 && code <= 126;
+      const ch = imprimible ? String.fromCharCode(code) : (code > 127 ? 'No ASCII' : 'Control');
+      decodedWord += imprimible ? ch : '?';
+      filaTraductor(tbody, ch === ' ' ? 'Espacio' : ch, code, token);
     }
 
     fb.className = 'feedback-box success';
@@ -1710,7 +2099,8 @@
      ========================================================================== */
   function buildAsciiTable() {
     const container = document.getElementById('ascii-cards-container');
-    container.innerHTML = '';
+    container.textContent = '';
+    container.classList.toggle('pocos', currentAsciiFilter !== 'all');
 
     for (let code = 32; code <= 126; code++) {
       const isUpper = code >= 65 && code <= 90;
@@ -1729,13 +2119,16 @@
       const card = document.createElement('div');
       card.className = 'ascii-item-card' + (code === selectedAsciiCode ? ' selected' : '');
       card.onclick = () => selectAsciiInspector(code);
-      card.innerHTML = `
-        <span class="ascii-char-badge">${ch}</span>
-        <div class="mono-num" style="text-align:right;">
-          <div style="font-weight:900; font-size:1.25rem;">${code}</div>
-          <div style="font-size:0.95rem; opacity:0.9;">${bin}</div>
-        </div>
-      `;
+      const badge = document.createElement('span');
+      badge.className = 'ascii-char-badge';
+      badge.textContent = ch;
+      const dec = document.createElement('div');
+      dec.className = 'mono-num card-dec';
+      dec.textContent = code;
+      const binEl = document.createElement('div');
+      binEl.className = 'mono-num card-bin';
+      binEl.textContent = bin;
+      card.append(badge, dec, binEl);
       container.appendChild(card);
     }
   }
@@ -1761,13 +2154,13 @@
     bin.split('').forEach((bit, idx) => {
       const pill = document.createElement('div');
       pill.style.cssText = `
-        padding: 8px 12px;
-        border-radius: 10px;
+        padding: 0.364rem 0.545rem;
+        border-radius: 0.455rem;
         text-align: center;
         font-family: var(--font-mono);
         font-weight: 800;
-        background: ${bit === '1' ? 'var(--bit-1-bg)' : '#E2E8F0'};
-        color: ${bit === '1' ? '#fff' : '#475569'};
+        background: ${bit === '1' ? 'var(--bit-1-bg)' : 'var(--bit-0-bg)'};
+        color: ${bit === '1' ? '#fff' : 'var(--text-muted)'};
       `;
       pill.innerHTML = `<div style="font-size:0.75rem; opacity:0.85;">${WEIGHTS_8[idx]}</div><div style="font-size:1.4rem;">${bit}</div>`;
       miniContainer.appendChild(pill);
@@ -1833,7 +2226,7 @@
       currentQuestion = { type: 'B', targetDec, binStr, bitsCount: quizBitsCount };
 
       document.getElementById('quiz-prompt').innerHTML =
-        `Activa los interruptores necesarios para formar el número decimal <span class="mono-num" style="color:var(--bit-1-bg); font-size:2.3rem;">${targetDec}</span>:`;
+        `Activa los interruptores necesarios para formar el número decimal <span class="mono-num" style="color: var(--azul-fuerte); font-size:2.3rem;">${targetDec}</span>:`;
 
       renderQuizTypeB();
 
@@ -1856,7 +2249,7 @@
     const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
     const bits = currentQuestion.binStr.split('');
 
-    let bitsHtml = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}" style="margin-bottom:20px;">`;
+    let bitsHtml = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}" style="margin-bottom:0.4rem;">`;
     bits.forEach((b, i) => {
       bitsHtml += `
         <div class="bit-column">
@@ -1869,21 +2262,21 @@
 
     area.innerHTML = `
       ${bitsHtml}
-      <div style="max-width: 440px; margin: 0 auto; text-align: center;">
-        <div id="quiz-num-display" class="text-input-lg mono-num" style="font-size:2.4rem; font-weight:900; text-align:center; margin-bottom:12px;">?</div>
+      <div class="quiz-pad">
+        <div id="quiz-num-display" class="text-input-lg mono-num" style="font-size:2.4rem; font-weight:900; text-align:center; display:flex; align-items:center; justify-content:center;">?</div>
         <div class="numpad-grid">
-          <button class="num-key" onclick="quizNumPad('7')">7</button>
-          <button class="num-key" onclick="quizNumPad('8')">8</button>
-          <button class="num-key" onclick="quizNumPad('9')">9</button>
-          <button class="num-key" onclick="quizNumPad('4')">4</button>
-          <button class="num-key" onclick="quizNumPad('5')">5</button>
-          <button class="num-key" onclick="quizNumPad('6')">6</button>
           <button class="num-key" onclick="quizNumPad('1')">1</button>
           <button class="num-key" onclick="quizNumPad('2')">2</button>
           <button class="num-key" onclick="quizNumPad('3')">3</button>
-          <button class="num-key action-clear" onclick="quizNumPad('C')">Borrar</button>
+          <button class="num-key" onclick="quizNumPad('4')">4</button>
+          <button class="num-key" onclick="quizNumPad('5')">5</button>
+          <button class="num-key" onclick="quizNumPad('6')">6</button>
+          <button class="num-key" onclick="quizNumPad('7')">7</button>
+          <button class="num-key" onclick="quizNumPad('8')">8</button>
+          <button class="num-key" onclick="quizNumPad('9')">9</button>
           <button class="num-key" onclick="quizNumPad('0')">0</button>
-          <button class="num-key action-apply" onclick="checkQuizAnswer()">✓</button>
+          <button class="num-key action-clear" onclick="quizNumPad('C')" aria-label="Borrar">⌫</button>
+          <button class="num-key action-apply" onclick="checkQuizAnswer()" aria-label="Comprobar">✓</button>
         </div>
       </div>
     `;
@@ -1924,7 +2317,7 @@
     const area = document.getElementById('quiz-interactive-area');
     const bits = currentQuestion.binStr.split('');
 
-    let bitsHtml = `<div class="byte-grid" style="margin-bottom:18px;">`;
+    let bitsHtml = `<div class="byte-grid" style="margin-bottom:0.4rem;">`;
     bits.forEach((b, i) => {
       bitsHtml += `
         <div class="bit-column">
@@ -1944,9 +2337,9 @@
 
     area.innerHTML = `
       ${bitsHtml}
-      <div style="text-align:center; margin-bottom:12px;">
+      <div style="text-align:center; margin-bottom:0.545rem;">
         <span style="font-weight:700;">Letra elegida: </span>
-        <span id="quiz-letter-display" class="mono-num" style="font-size:2.4rem; font-weight:900; color:var(--bit-1-bg);">?</span>
+        <span id="quiz-letter-display" class="mono-num" style="font-size:2.4rem; font-weight:900; color: var(--azul-fuerte);">?</span>
       </div>
       ${keysHtml}
     `;
@@ -1961,6 +2354,12 @@
     const fb = document.getElementById('quiz-feedback');
     const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
 
+    if (currentQuestion.resuelta) {
+      fb.className = 'feedback-box info';
+      fb.textContent = 'Este ejercicio ya está resuelto. Pulsa «Siguiente ejercicio».';
+      return;
+    }
+
     if (currentQuestion.type === 'A') {
       if (quizUserInput === '') {
         fb.className = 'feedback-box error';
@@ -1969,6 +2368,7 @@
       }
       const userVal = parseInt(quizUserInput, 10);
       if (userVal === currentQuestion.targetDec) {
+        currentQuestion.resuelta = true;
         streak++;
         document.getElementById('streak-count').textContent = streak;
         fb.className = 'feedback-box success';
@@ -1987,6 +2387,7 @@
     } else if (currentQuestion.type === 'B') {
       const userSum = quizUserBits.reduce((acc, b, i) => acc + (b * weights[i]), 0);
       if (userSum === currentQuestion.targetDec) {
+        currentQuestion.resuelta = true;
         streak++;
         document.getElementById('streak-count').textContent = streak;
         fb.className = 'feedback-box success';
@@ -2009,6 +2410,7 @@
         return;
       }
       if (quizUserInput === currentQuestion.letter) {
+        currentQuestion.resuelta = true;
         streak++;
         document.getElementById('streak-count').textContent = streak;
         fb.className = 'feedback-box success';
@@ -2025,6 +2427,8 @@
 
   function showQuizSolution() {
     const fb = document.getElementById('quiz-feedback');
+    /* Ver la solución cierra el ejercicio: ya no suma a la racha */
+    currentQuestion.resuelta = true;
     const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
 
     if (currentQuestion.type === 'A' || currentQuestion.type === 'B') {
@@ -2051,8 +2455,8 @@
     grid.innerHTML = '';
     for (let c = 65; c <= 90; c++) {
       const div = document.createElement('div');
-      div.style.cssText = 'padding:10px; border:2px solid var(--border-color); border-radius:10px; text-align:center; background:var(--bg-subtle); font-family:var(--font-mono); font-weight:800;';
-      div.innerHTML = `<span style="font-size:1.5rem; color:var(--bit-1-bg);">${String.fromCharCode(c)}</span> = ${c}`;
+      div.style.cssText = 'padding:0.455rem; border:2px solid var(--border-color); border-radius:0.455rem; text-align:center; background:var(--bg-subtle); font-family:var(--font-mono); font-weight:800;';
+      div.innerHTML = `<span style="font-size:1.5rem; color: var(--azul-fuerte);">${String.fromCharCode(c)}</span> = ${c}`;
       grid.appendChild(div);
     }
     document.getElementById('ascii-hint-modal').classList.add('open');
