@@ -1345,6 +1345,9 @@
       font-size: 0.95rem;
       color: var(--text-muted);
     }
+    button.sello {
+      cursor: pointer;
+    }
     .sello .usuario {
       color: var(--text-main);
       font-weight: 900;
@@ -1494,6 +1497,10 @@
       .nivel-pill, .mejor-pill, .sello, .streak-pill {
         font-size: 0.9rem;
         padding: 0.2rem 0.6rem;
+      }
+      .sello {
+        white-space: normal;
+        text-align: center;
       }
       .reto-bits {
         max-width: 100% !important;
@@ -2026,7 +2033,7 @@
             <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B · Decimal → Binario</button>
             <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C · Letra ASCII</button>
           </div>
-          <div class="sello" id="sello" aria-label="Fecha y hora"></div>
+          <button class="sello" id="sello" onclick="abrirNombre()" title="Cambiar el nombre" aria-label="Nombre, fecha y hora"></button>
 
           <div style="display:flex; flex-wrap:wrap; gap:0.545rem; align-items:center;">
             <div class="nivel-pill" id="nivel-pill">Nivel 1/6</div>
@@ -2069,6 +2076,23 @@
     </section>
 
   </main>
+</div>
+
+<!-- Nombre del alumno en los retos (sale en las capturas) -->
+<div id="nombre-modal" class="modal-backdrop">
+  <form class="modal-dialog" style="max-width:32rem;" onsubmit="guardarNombre(event)">
+    <h2 style="font-size:1.6rem; margin-bottom:0.4rem;">¿Quién eres?</h2>
+    <p style="margin-bottom:0.8rem; color:var(--text-muted);">Tu nombre sale en la pantalla de los retos, para que se vea en las capturas.</p>
+    <label for="nombre-alumno" style="display:block; font-weight:700;">Nombre y primer apellido</label>
+    <input id="nombre-alumno" class="text-input-lg" style="font-family:var(--font-sans); margin-bottom:0.6rem;" maxlength="40" autocomplete="name" required>
+    <label for="grupo-alumno" style="display:block; font-weight:700;">Grupo</label>
+    <input id="grupo-alumno" class="text-input-lg" style="font-family:var(--font-sans); margin-bottom:0.6rem;" maxlength="12" placeholder="Ej. 1.º B" required>
+    <p id="nombre-aviso" class="nota-ascii" style="margin-bottom:0.6rem;">Si cambias de nombre, las rachas empiezan de 0.</p>
+    <div style="display:flex; gap:0.6rem; justify-content:flex-end;">
+      <button type="button" class="btn-large" onclick="cerrarNombre()">Ahora no</button>
+      <button type="submit" class="btn-large primary">Empezar</button>
+    </div>
+  </form>
 </div>
 
 <!-- QR para que el alumnado abra la página del site en el móvil -->
@@ -2141,7 +2165,8 @@
 
   // Soporte para flechas del teclado en modo diapositivas
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); }
+    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); cerrarNombre(); }
+    if (document.getElementById('nombre-modal').classList.contains('open')) return;
     const retosActive = document.getElementById('mod-ejercicios').classList.contains('active');
     const escribiendo = e.target && e.target.tagName === 'INPUT';
     if (retosActive && currentQuestion && !escribiendo) {
@@ -2954,6 +2979,46 @@
 
   /* Fecha y hora siempre a la vista: una captura de pantalla dice cuándo se hizo */
   let usuarioReto = '';
+
+  /* Nombre y grupo que escribe el alumno: no se comprueban, solo se muestran */
+  function limpiarTexto(t, max) {
+    return String(t || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  }
+  function cargarNombre() {
+    try {
+      const g = JSON.parse(localStorage.getItem('binario-ascii-alumno') || 'null');
+      if (g && g.nombre) usuarioReto = limpiarTexto(g.nombre, 40) + (g.grupo ? ' · ' + limpiarTexto(g.grupo, 12) : '');
+      return g;
+    } catch (e) { return null; }
+  }
+  function abrirNombre() {
+    const g = cargarNombre() || {};
+    document.getElementById('nombre-alumno').value = g.nombre || '';
+    document.getElementById('grupo-alumno').value = g.grupo || '';
+    document.getElementById('nombre-modal').classList.add('open');
+    setTimeout(() => document.getElementById('nombre-alumno').focus(), 50);
+  }
+  function cerrarNombre() {
+    document.getElementById('nombre-modal').classList.remove('open');
+  }
+  function guardarNombre(ev) {
+    ev.preventDefault();
+    const nombre = limpiarTexto(document.getElementById('nombre-alumno').value, 40);
+    const grupo = limpiarTexto(document.getElementById('grupo-alumno').value, 12);
+    if (!nombre || !grupo) return;
+    const nuevo = nombre + ' · ' + grupo;
+    if (nuevo !== usuarioReto) {
+      /* Otro nombre, rachas nuevas: la racha no se hereda de quien tenía el móvil antes */
+      ['A', 'B', 'C'].forEach(t => { rachas[t] = 0; mejores[t] = 0; });
+      guardarMejores();
+      generateNewQuestion();
+    }
+    usuarioReto = nuevo;
+    try { localStorage.setItem('binario-ascii-alumno', JSON.stringify({ nombre, grupo })); } catch (e) { /* sin almacenamiento */ }
+    cerrarNombre();
+    pintarSello();
+  }
+  cargarNombre();
   function pintarSello() {
     const el = document.getElementById('sello');
     if (!el) return;
@@ -2968,6 +3033,7 @@
       el.appendChild(u);
     }
     el.appendChild(document.createTextNode(fecha));
+    if (!usuarioReto) el.appendChild(document.createTextNode(' · 👤 ¿Quién eres?'));
   }
   cargarMejores();
   setInterval(pintarSello, 20000);
@@ -3010,6 +3076,7 @@
     /* En el móvil (llegan por el QR) se empieza directamente en los retos */
     if (window.matchMedia('(max-width: 760px), (max-aspect-ratio: 4/5)').matches) {
       document.querySelector('[data-module="mod-ejercicios"]').click();
+      if (!usuarioReto) abrirNombre();
     }
   });
 </script>
