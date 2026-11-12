@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema binario y código ASCII — TIC 1.º Bachillerato</title>
+  <style>
+    /* ==========================================================================
+       VARIABLES DE DISEÑO Y TOKENS PARA PDI DE 75 PULGADAS (ALTO CONTRASTE)
+       ========================================================================== */
+    :root {
+      --bg-app: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-subtle: #F1F5F9;
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --border-color: #CBD5E1;
+
+      /* Colores de estado para Bits */
+      --bit-1-bg: #1D4ED8;
+      --bit-1-hover: #1E40AF;
+      --bit-1-text: #FFFFFF;
+      --bit-1-glow: rgba(29, 78, 216, 0.25);
+
+      --bit-0-bg: #E2E8F0;
+      --bit-0-hover: #CBD5E1;
+      --bit-0-text: #475569;
+
+      /* Colores semánticos pedagógicos */
+      --accent-primary: #0284C7;
+      --accent-primary-dark: #0369A1;
+      --success-bg: #DCFCE7;
+      --success-border: #16A34A;
+      --success-text: #14532D;
+      --error-bg: #FEE2E2;
+      --error-border: #DC2626;
+      --error-text: #7F1D1D;
+      --warning-bg: #FEF3C7;
+      --warning-border: #D97706;
+      --warning-text: #78350F;
+
+      /* Tipografía */
+      --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: 'Consolas', 'Courier New', ui-monospace, monospace;
+
+      /* Geometría táctil */
+      --touch-min: 64px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.09);
+    }
+
+    /* ==========================================================================
+       RESET Y ESTRUCTURA DE PANTALLA COMPLETA (100vw x 100vh SIN SCROLL GLOBAL)
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none; /* Evita selecciones accidentales al tocar la PDI */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    input {
+      user-select: text;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 22px; /* Base legible a 2-10 metros */
+      line-height: 1.45;
+    }
+
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ==========================================================================
+       BARRA DE NAVEGACIÓN SUPERIOR FIJA (TÁCTIL)
+       ========================================================================== */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 24px;
+      background-color: var(--bg-surface);
+      border-bottom: 3px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: var(--bit-1-bg);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 1.2rem;
+      border-radius: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-btn {
+      min-height: var(--touch-min);
+      min-width: var(--touch-min);
+      padding: 10px 22px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn:hover {
+      background-color: #E2E8F0;
+    }
+
+    .nav-btn.active {
+      background-color: var(--bit-1-bg);
+      border-color: var(--bit-1-bg);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px var(--bit-1-glow);
+    }
+
+    /* ==========================================================================
+       CONTENEDOR PRINCIPAL DE VISTAS
+       ========================================================================== */
+    .main-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px;
+      position: relative;
+    }
+
+    .module-section {
+      display: none;
+      height: 100%;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+
+    .module-section.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tipografía tabular monoespaciada obligatoria para alineación */
+    .mono-num {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
+    /* ==========================================================================
+       COMPONENTES COMUNES DE TARJETAS DE BITS (1 BYTE)
+       ========================================================================== */
+    .byte-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .byte-grid.bits-4 {
+      grid-template-columns: repeat(4, minmax(110px, 160px));
+      justify-content: center;
+    }
+
+    .bit-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .bit-power {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .bit-weight {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--accent-primary-dark);
+      margin-bottom: 8px;
+    }
+
+    .bit-toggle {
+      width: 100%;
+      min-height: 82px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 2.6rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.1s ease, background-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bit-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .bit-toggle[data-val="0"] {
+      background-color: var(--bit-0-bg);
+      color: var(--bit-0-text);
+      border-color: #CBD5E1;
+    }
+
+    .bit-toggle[data-val="1"] {
+      background-color: var(--bit-1-bg);
+      color: var(--bit-1-text);
+      border-color: #1E3A8A;
+      box-shadow: 0 6px 14px var(--bit-1-glow);
+    }
+
+    .bit-state-label {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ==========================================================================
+       MÓDULO 1: PRESENTACIÓN TEÓRICA INTERACTIVA (DIAPOSITIVAS)
+       ========================================================================== */
+    .slides-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .slide-card {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px 36px;
+      box-shadow: var(--shadow-md);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .slide-card.active {
+      display: flex;
+    }
+
+    .slide-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--bg-subtle);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .slide-title {
+      font-size: 2.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .slide-badge {
+      background: #E0F2FE;
+      color: #0369A1;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .slide-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .info-box {
+      background: var(--bg-subtle);
+      border-left: 6px solid var(--accent-primary);
+      padding: 20px 24px;
+      border-radius: 12px;
+      font-size: 1.25rem;
+    }
+
+    .info-box h3 {
+      font-size: 1.45rem;
+      margin-bottom: 10px;
+      color: var(--accent-primary-dark);
+    }
+
+    .bulb-demo {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .bulb-card {
+      flex: 1;
+      padding: 22px;
+      border-radius: 16px;
+      text-align: center;
+      border: 3px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .bulb-card.off {
+      background: #F1F5F9;
+      color: #475569;
+    }
+
+    .bulb-card.on {
+      background: #FEF9C3;
+      border-color: #EAB308;
+      color: #713F12;
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.35);
+    }
+
+    .bulb-symbol {
+      font-size: 3.5rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .slide-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface);
+      padding: 12px 24px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .btn-large {
+      min-height: var(--touch-min);
+      padding: 12px 28px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+
+    .btn-large:hover:not(:disabled) {
+      background: #E2E8F0;
+    }
+
+    .btn-large.primary {
+      background: var(--bit-1-bg);
+      border-color: var(--bit-1-bg);
+      color: #FFFFFF;
+    }
+
+    .btn-large.primary:hover:not(:disabled) {
+      background: var(--bit-1-hover);
+    }
+
+    .btn-large:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .dot-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      font-weight: 800;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .dot-btn.active {
+      background: var(--bit-1-bg);
+      color: #fff;
+      border-color: var(--bit-1-bg);
+    }
+
+    /* ==========================================================================
+       MÓDULO 2: SIMULADOR Y CORRECTOR DE CUADERNO
+       ========================================================================== */
+    .sim-layout {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 22px;
+      height: 100%;
+    }
+
+    .panel-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-main);
+      border-bottom: 2px solid var(--bg-subtle);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .result-banner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: var(--bg-subtle);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border-color);
+    }
+
+    .result-box {
+      background: var(--bg-surface);
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 2px solid var(--border-color);
+    }
+
+    .result-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .result-big-val {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--bit-1-bg);
+      line-height: 1.15;
+    }
+
+    .sum-formula {
+      background: #EFF6FF;
+      border: 2px solid #BFDBFE;
+      color: #1E3A8A;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.35rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Teclado numérico táctil en pantalla */
+    .numpad-container {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 16px;
+      align-items: start;
+      background: var(--bg-subtle);
+      padding: 14px;
+      border-radius: var(--radius-md);
+    }
+
+    .numpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .num-key {
+      min-height: 60px;
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 800;
+      border: 2px solid var(--border-color);
+      background: var(--bg-surface);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .num-key:active {
+      background: #CBD5E1;
+    }
+
+    .num-key.action-clear {
+      background: #FEE2E2;
+      color: #991B1B;
+      border-color: #FCA5A5;
+    }
+
+    .num-key.action-apply {
+      background: #DCFCE7;
+      color: #166534;
+      border-color: #86EFAC;
+    }
+
+    .divisions-box {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.15rem;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* Traductor ASCII <-> Binario */
+    .mode-switch {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-subtle);
+      padding: 6px;
+      border-radius: 12px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      min-height: 54px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .mode-btn.active {
+      background: var(--bg-surface);
+      color: var(--bit-1-bg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .text-input-lg {
+      width: 100%;
+      min-height: 64px;
+      padding: 12px 18px;
+      font-size: 1.5rem;
+      font-family: var(--font-mono);
+      border: 3px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+
+    .text-input-lg:focus {
+      outline: none;
+      border-color: var(--bit-1-bg);
+    }
+
+    .ascii-word-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1.25rem;
+    }
+
+    .ascii-word-table th, .ascii-word-table td {
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border-color);
+      text-align: center;
+    }
+
+    .ascii-word-table th {
+      background: var(--bg-subtle);
+      font-weight: 800;
+    }
+
+    /* ==========================================================================
+       MÓDULO 3: TABLA ASCII DE CONSULTA RÁPIDA
+       ========================================================================== */
+    .ascii-ref-layout {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface);
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-color);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-btn {
+      min-height: 60px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-btn.active {
+      background: var(--bit-1-bg);
+      color: #fff;
+      border-color: var(--bit-1-bg);
+    }
+
+    .ascii-inspector {
+      background: #EFF6FF;
+      border: 3px solid #93C5FD;
+      border-radius: var(--radius-lg);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .ascii-table-scroll {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow-y: auto;
+    }
+
+    .ascii-grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .ascii-item-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      min-height: 74px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--bg-subtle);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ascii-item-card:hover {
+      border-color: var(--bit-1-bg);
+      background: #EFF6FF;
+    }
+
+    .ascii-item-card.selected {
+      background: var(--bit-1-bg);
+      color: #FFFFFF;
+      border-color: #1E3A8A;
+    }
+
+    .ascii-char-badge {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 900;
+      min-width: 54px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 2px 8px;
+    }
+
+    /* ==========================================================================
+       MÓDULO 4: EJERCICIOS INTERACTIVOS PARA EL AULA
+       ========================================================================== */
+    .quiz-container {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: 100%;
+    }
+
+    .quiz-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--bg-surface);
+      padding: 14px 24px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-color);
+    }
+
+    .streak-pill {
+      background: #FEF3C7;
+      border: 2px solid #F59E0B;
+      color: #92400E;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quiz-workspace {
+      flex: 1;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .question-prompt {
+      font-size: 1.7rem;
+      font-weight: 800;
+      text-align: center;
+      color: var(--text-main);
+    }
+
+    .feedback-box {
+      padding: 18px 24px;
+      border-radius: 14px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: none;
+    }
+
+    .feedback-box.success {
+      display: block;
+      background: var(--success-bg);
+      border: 3px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .feedback-box.error {
+      display: block;
+      background: var(--error-bg);
+      border: 3px solid var(--error-border);
+      color: var(--error-text);
+    }
+
+    .feedback-box.info {
+      display: block;
+      background: #EFF6FF;
+      border: 3px solid #3B82F6;
+      color: #1E3A8A;
+    }
+
+    .quiz-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      padding-top: 10px;
+      border-top: 2px solid var(--bg-subtle);
+    }
+
+    /* Teclado alfabético táctil para Reto ASCII en PDI */
+    .alpha-pad {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .alpha-key {
+      min-width: 60px;
+      min-height: 60px;
+      font-family: var(--font-mono);
+      font-size: 1.45rem;
+      font-weight: 800;
+      border: 2px solid var(--border-color);
+      background: var(--bg-subtle);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .alpha-key:active {
+      background: var(--bit-1-bg);
+      color: #fff;
+    }
+
+    /* ==========================================================================
+       MODAL INTEGRADO EN DOM (SIN ALERT/CONFIRM/PROMPT)
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      max-width: 820px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border: 3px solid var(--border-color);
+    }
+
+    /* ==========================================================================
+       ADAPTABILIDAD RESPONSIVE PARA PANTALLAS MEDIANAS
+       ========================================================================== */
+    @media (max-width: 1150px) {
+      .sim-layout {
+        grid-template-columns: 1fr;
+      }
+      .slide-grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .brand-badge span {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ========================================================================
+       BARRA SUPERIOR DE NAVEGACIÓN (4 MÓDULOS)
+       ======================================================================== -->
+  <header class="top-nav">
+    <div class="brand-badge">
+      <div class="brand-icon">01</div>
+      <span>TIC 1.º Bachillerato · Binario y ASCII</span>
+    </div>
+
+    <nav class="nav-tabs" aria-label="Módulos principales">
+      <button class="nav-btn active" data-module="mod-teoria">
+        <span>1. Teoría guiada</span>
+      </button>
+      <button class="nav-btn" data-module="mod-simulador">
+        <span>2. Simulador y corrector</span>
+      </button>
+      <button class="nav-btn" data-module="mod-tabla">
+        <span>3. Tabla ASCII</span>
+      </button>
+      <button class="nav-btn" data-module="mod-ejercicios">
+        <span>4. Retos en pizarra</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ========================================================================
+       ÁREA PRINCIPAL DE CONTENIDO
+       ======================================================================== -->
+  <main class="main-viewport">
+
+    <!-- ======================================================================
+         MÓDULO 1: PRESENTACIÓN TEÓRICA INTERACTIVA
+         ====================================================================== -->
+    <section id="mod-teoria" class="module-section active">
+      <div class="slides-wrapper">
+
+        <!-- Diapositiva 1 -->
+        <article class="slide-card active" data-slide="0">
+          <div class="slide-header">
+            <h1 class="slide-title">1. ¿Por qué los ordenadores usan el sistema binario?</h1>
+            <span class="slide-badge">Fundamentos del hardware</span>
+          </div>
+          <div class="slide-grid-2">
+            <div>
+              <p style="margin-bottom: 16px;">
+                En el interior de un ordenador, los procesadores y las memorias están formados por millones de interruptores microscópicos (transistores) por los que circula electricidad.
+              </p>
+              <div class="info-box" style="margin-bottom: 16px;">
+                <h3>Bit (Binary Digit)</h3>
+                Es la unidad mínima de información. Solo puede tener dos valores posibles: <strong>0</strong> (apagado) o <strong>1</strong> (encendido).
+              </div>
+              <div class="info-box">
+                <h3>Byte (8 bits)</h3>
+                Un solo bit apenas da información. Por eso, los ordenadores agrupan los bits de 8 en 8. Un <strong>byte</strong> permite representar <strong>256 combinaciones</strong> distintas (del 0 al 255).
+              </div>
+            </div>
+            <div>
+              <p style="text-align: center; font-weight: 700; margin-bottom: 10px;">
+                Pulsa en cada interruptor para comprobar el estado eléctrico:
+              </p>
+              <div class="bulb-demo">
+                <div class="bulb-card off" id="demo-bulb-0" onclick="toggleDemoBulb(0)">
+                  <span class="bulb-symbol">🔌</span>
+                  <div class="mono-num" style="font-size: 3.2rem; font-weight: 900;">0</div>
+                  <strong>Sin corriente (Apagado)</strong>
+                </div>
+                <div class="bulb-card on" id="demo-bulb-1" onclick="toggleDemoBulb(1)">
+                  <span class="bulb-symbol">💡</span>
+                  <div class="mono-num" style="font-size: 3.2rem; font-weight: 900;">1</div>
+                  <strong>Con corriente (Encendido)</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Diapositiva 2 -->
+        <article class="slide-card" data-slide="1">
+          <div class="slide-header">
+            <h1 class="slide-title">2. Sistema decimal (base 10) vs. binario (base 2)</h1>
+            <span class="slide-badge">Sistemas posicionales</span>
+          </div>
+          <div class="slide-grid-2">
+            <div class="info-box">
+              <h3>Sistema decimal (Base 10)</h3>
+              <p style="margin-bottom: 12px;">Usamos 10 cifras (0 al 9) porque tenemos 10 dedos. Cada posición vale 10 veces más que la anterior:</p>
+              <div class="mono-num" style="background:#fff; padding:14px; border-radius:10px; font-size:1.3rem; text-align:center;">
+                1000 &nbsp;|&nbsp; 100 &nbsp;|&nbsp; 10 &nbsp;|&nbsp; 1<br>
+                <span style="color:#64748B; font-size:1rem;">(10³) &nbsp;&nbsp;&nbsp; (10²) &nbsp;&nbsp; (10¹) &nbsp; (10⁰)</span>
+              </div>
+              <p style="margin-top: 12px;">Ejemplo: <strong>352</strong> = 3×100 + 5×10 + 2×1</p>
+            </div>
+
+            <div class="info-box" style="border-left-color: var(--bit-1-bg);">
+              <h3>Sistema binario (Base 2)</h3>
+              <p style="margin-bottom: 12px;">Solo existen 2 cifras (0 y 1). Cada posición de derecha a izquierda vale <strong>el doble</strong> que la anterior:</p>
+              <div class="mono-num" style="background:#fff; padding:14px; border-radius:10px; font-size:1.25rem; text-align:center; font-weight:800; color:var(--bit-1-bg);">
+                128 · 64 · 32 · 16 · 8 · 4 · 2 · 1<br>
+                <span style="color:#64748B; font-size:0.95rem;">2⁷ &nbsp; 2⁶ &nbsp; 2⁵ &nbsp; 2⁴ &nbsp; 2³ &nbsp; 2² &nbsp; 2¹ &nbsp; 2⁰</span>
+              </div>
+              <p style="margin-top: 12px;">Memorizar esta fila de pesos de derecha a izquierda (1, 2, 4, 8, 16, 32, 64, 128) es la clave de todo.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Diapositiva 3 -->
+        <article class="slide-card" data-slide="2">
+          <div class="slide-header">
+            <h1 class="slide-title">3. De binario a decimal: el método de los pesos</h1>
+            <span class="slide-badge">Conversión directa</span>
+          </div>
+          <p style="margin-bottom: 14px;">
+            Para saber qué número decimal es un byte, colocamos cada bit debajo de su peso y <strong>sumamos únicamente las casillas que tienen un 1</strong> (las que tienen 0 están apagadas y no suman).
+          </p>
+          <p style="font-weight:700; color:var(--bit-1-bg); margin-bottom:10px;">
+            Ejemplo interactivo: pulsa los bits del ejemplo para probar cómo cambia la suma:
+          </p>
+          <div id="slide3-byte-demo" class="byte-grid" style="margin-bottom: 16px;"></div>
+          <div id="slide3-sum-output" class="sum-formula"></div>
+        </article>
+
+        <!-- Diapositiva 4 -->
+        <article class="slide-card" data-slide="3">
+          <div class="slide-header">
+            <h1 class="slide-title">4. De decimal a binario: dos métodos en clase</h1>
+            <span class="slide-badge">Conversión inversa</span>
+          </div>
+          <p style="margin-bottom: 12px;">Ejemplo: convertir el número decimal <strong>75</strong> a binario (8 bits).</p>
+          <div class="slide-grid-2">
+            <div class="info-box">
+              <h3>Método A: Divisiones sucesivas entre 2</h3>
+              <p style="font-size: 1.1rem; margin-bottom: 8px;">Dividimos entre 2 hasta que el cociente sea 0 y recogemos los restos <strong>de abajo hacia arriba</strong>:</p>
+              <div class="mono-num" style="background:#fff; padding:12px; border-radius:10px; font-size:1.1rem; line-height:1.5;">
+                75 ÷ 2 = 37 &nbsp;→ Resto: <strong>1</strong> (último bit)<br>
+                37 ÷ 2 = 18 &nbsp;→ Resto: <strong>1</strong><br>
+                18 ÷ 2 = 9 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
+                &nbsp;9 ÷ 2 = 4 &nbsp;&nbsp;→ Resto: <strong>1</strong><br>
+                &nbsp;4 ÷ 2 = 2 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
+                &nbsp;2 ÷ 2 = 1 &nbsp;&nbsp;→ Resto: <strong>0</strong><br>
+                &nbsp;1 ÷ 2 = 0 &nbsp;&nbsp;→ Resto: <strong>1</strong> (primer 1)<br>
+                Resultado (8 bits): <strong>01001011</strong>
+              </div>
+            </div>
+
+            <div class="info-box" style="border-left-color: #16A34A;">
+              <h3>Método B: Encender pesos (restas)</h3>
+              <p style="font-size: 1.1rem; margin-bottom: 8px;">Buscamos la potencia más grande que quepa en <strong>75</strong> y vamos restando:</p>
+              <div class="mono-num" style="background:#fff; padding:12px; border-radius:10px; font-size:1.1rem; line-height:1.55;">
+                ¿Cabe 128 en 75? No → <strong>0</strong><br>
+                ¿Cabe 64 en 75? Sí → <strong>1</strong> (quedan 75 - 64 = 11)<br>
+                ¿Cabe 32 en 11? No → <strong>0</strong><br>
+                ¿Cabe 16 en 11? No → <strong>0</strong><br>
+                ¿Cabe 8 en 11? Sí → <strong>1</strong> (quedan 11 - 8 = 3)<br>
+                ¿Cabe 4 en 3? No → <strong>0</strong><br>
+                ¿Cabe 2 en 3? Sí → <strong>1</strong> (queda 3 - 2 = 1)<br>
+                ¿Cabe 1 en 1? Sí → <strong>1</strong> (queda 0) → <strong>01001011</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Diapositiva 5 -->
+        <article class="slide-card" data-slide="4">
+          <div class="slide-header">
+            <h1 class="slide-title">5. El código ASCII: cómo se guarda el texto</h1>
+            <span class="slide-badge">Codificación de caracteres</span>
+          </div>
+          <div class="slide-grid-2">
+            <div>
+              <p style="margin-bottom: 14px;">
+                Como el ordenador solo entiende números, en 1963 se creó el estándar <strong>ASCII</strong> (<em>American Standard Code for Information Interchange</em>): una tabla universal que asigna un número del 0 al 127 a cada letra, número o símbolo.
+              </p>
+              <div class="info-box" style="margin-bottom: 14px;">
+                <h3>¡Cuidado en los ejercicios!</h3>
+                Las <strong>mayúsculas</strong> y las <strong>minúsculas</strong> tienen códigos diferentes. La diferencia entre una mayúscula y su minúscula siempre es <strong>32</strong>.
+              </div>
+              <p>Por ejemplo, al pulsar la tecla <strong>A</strong>, el teclado envía el byte <span class="mono-num" style="font-weight:800; color:var(--bit-1-bg);">01000001</span> (65).</p>
+            </div>
+            <div>
+              <table class="ascii-word-table" style="background:#fff; border:2px solid var(--border-color); border-radius:12px; overflow:hidden;">
+                <thead>
+                  <tr>
+                    <th>Carácter</th>
+                    <th>Decimal</th>
+                    <th>Binario (1 byte)</th>
+                  </tr>
+                </thead>
+                <tbody class="mono-num">
+                  <tr>
+                    <td style="font-weight:900; font-size:1.6rem;">A</td>
+                    <td>65</td>
+                    <td style="color:var(--bit-1-bg); font-weight:800;">01000001</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:900; font-size:1.6rem;">B</td>
+                    <td>66</td>
+                    <td style="color:var(--bit-1-bg); font-weight:800;">01000010</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:900; font-size:1.6rem;">a</td>
+                    <td>97</td>
+                    <td style="color:#0369A1; font-weight:800;">01100001</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:900; font-size:1.6rem;">0</td>
+                    <td>48</td>
+                    <td style="color:#475569; font-weight:800;">00110000</td>
+                  </tr>
+                  <tr>
+                    <td style="font-weight:900; font-size:1.4rem;">Espacio</td>
+                    <td>32</td>
+                    <td style="color:#475569; font-weight:800;">00100000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <!-- Barra de control inferior de diapositivas -->
+        <div class="slide-controls">
+          <button class="btn-large" id="btn-prev-slide" onclick="changeSlide(-1)">
+            ◀ Anterior
+          </button>
+
+          <div class="progress-dots" id="slide-dots">
+            <button class="dot-btn active" onclick="goToSlide(0)">1</button>
+            <button class="dot-btn" onclick="goToSlide(1)">2</button>
+            <button class="dot-btn" onclick="goToSlide(2)">3</button>
+            <button class="dot-btn" onclick="goToSlide(3)">4</button>
+            <button class="dot-btn" onclick="goToSlide(4)">5</button>
+            <span id="slide-counter-text" style="margin-left: 12px; font-weight: 800; color: var(--text-muted);">
+              Diapositiva 1 de 5
+            </span>
+          </div>
+
+          <button class="btn-large primary" id="btn-next-slide" onclick="changeSlide(1)">
+            Siguiente ▶
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         MÓDULO 2: SIMULADOR Y CORRECTOR DE CUADERNO
+         ====================================================================== -->
+    <section id="mod-simulador" class="module-section">
+      <div class="sim-layout">
+
+        <!-- Herramienta Izquierda: Conversor interactivo de 1 Byte (8 bits) -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>Conversor interactivo de 1 byte (8 bits)</span>
+            <button class="btn-large" style="min-height:48px; padding:6px 16px; font-size:1rem;" onclick="resetSimByte()">
+              Poner a 0
+            </button>
+          </div>
+
+          <!-- 8 tarjetas táctiles de bits -->
+          <div id="sim-byte-grid" class="byte-grid"></div>
+
+          <!-- Suma desarrollada -->
+          <div id="sim-sum-formula" class="sum-formula">0 = 0</div>
+
+          <!-- Resultados gigantes en Decimal y ASCII -->
+          <div class="result-banner">
+            <div class="result-box">
+              <div class="result-label">Valor decimal</div>
+              <div id="sim-decimal-out" class="result-big-val">0</div>
+            </div>
+            <div class="result-box">
+              <div class="result-label">Carácter ASCII</div>
+              <div id="sim-ascii-out" class="result-big-val" style="font-size:2.2rem;">NUL (Control)</div>
+            </div>
+          </div>
+
+          <!-- Entrada numérica táctil + divisiones sucesivas -->
+          <div class="numpad-container">
+            <div>
+              <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">
+                Introducir decimal (0–255):
+              </div>
+              <div id="sim-numpad-display" class="text-input-lg mono-num" style="min-height:54px; margin-bottom:8px; text-align:right; font-weight:900;">
+                0
+              </div>
+              <div class="numpad-grid">
+                <button class="num-key" onclick="simPadInput('7')">7</button>
+                <button class="num-key" onclick="simPadInput('8')">8</button>
+                <button class="num-key" onclick="simPadInput('9')">9</button>
+                <button class="num-key" onclick="simPadInput('4')">4</button>
+                <button class="num-key" onclick="simPadInput('5')">5</button>
+                <button class="num-key" onclick="simPadInput('6')">6</button>
+                <button class="num-key" onclick="simPadInput('1')">1</button>
+                <button class="num-key" onclick="simPadInput('2')">2</button>
+                <button class="num-key" onclick="simPadInput('3')">3</button>
+                <button class="num-key action-clear" onclick="simPadClear()">C</button>
+                <button class="num-key" onclick="simPadInput('0')">0</button>
+                <button class="num-key action-apply" onclick="simPadApply()">OK</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-weight:700; font-size:1rem; margin-bottom:6px;">
+                Desglose por divisiones entre 2:
+              </div>
+              <div id="sim-divisions-out" class="divisions-box">
+                Pulsa un bit o escribe un número para ver las divisiones sucesivas.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Herramienta Derecha: Traductor de palabras ASCII <-> Binario -->
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>Traductor de palabras (cuaderno)</span>
+          </div>
+
+          <div class="mode-switch">
+            <button class="mode-btn active" id="btn-mode-txt2bin" onclick="setTranslatorMode('txt2bin')">
+              Texto → Binario
+            </button>
+            <button class="mode-btn" id="btn-mode-bin2txt" onclick="setTranslatorMode('bin2txt')">
+              Binario → Texto
+            </button>
+          </div>
+
+          <!-- Modo Texto -> Binario -->
+          <div id="box-txt2bin">
+            <label for="input-word-ascii" style="display:block; font-weight:700; margin-bottom:8px;">
+              Escribe una palabra o iniciales (máx. 10 caracteres):
+            </label>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="input-word-ascii" class="text-input-lg" maxlength="10" value="TIC" placeholder="Ej. HOLA">
+              <button class="btn-large primary" onclick="translateTextToBinary()">Traducir</button>
+            </div>
+          </div>
+
+          <!-- Modo Binario -> Texto -->
+          <div id="box-bin2txt" style="display:none;">
+            <label for="input-bin-seq" style="display:block; font-weight:700; margin-bottom:8px;">
+              Escribe bytes de 8 bits separados por espacio:
+            </label>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="input-bin-seq" class="text-input-lg" value="01010100 01001001 01000011" placeholder="01001000 01001111...">
+              <button class="btn-large primary" onclick="translateBinaryToText()">Decodificar</button>
+            </div>
+          </div>
+
+          <div id="translator-feedback" class="feedback-box"></div>
+
+          <div style="flex:1; overflow-y:auto; border:2px solid var(--border-color); border-radius:12px;">
+            <table class="ascii-word-table">
+              <thead>
+                <tr>
+                  <th>Letra</th>
+                  <th>Decimal</th>
+                  <th>Binario (8 bits)</th>
+                </tr>
+              </thead>
+              <tbody id="translator-table-body" class="mono-num"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         MÓDULO 3: TABLA ASCII DE CONSULTA RÁPIDA
+         ====================================================================== -->
+    <section id="mod-tabla" class="module-section">
+      <div class="ascii-ref-layout">
+
+        <!-- Filtros rápidos -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="filterAsciiTable('all', this)">Todos (32–126)</button>
+            <button class="filter-btn" data-filter="upper" onclick="filterAsciiTable('upper', this)">Mayúsculas (A–Z)</button>
+            <button class="filter-btn" data-filter="lower" onclick="filterAsciiTable('lower', this)">Minúsculas (a–z)</button>
+            <button class="filter-btn" data-filter="digits" onclick="filterAsciiTable('digits', this)">Números (0–9)</button>
+            <button class="filter-btn" data-filter="symbols" onclick="filterAsciiTable('symbols', this)">Símbolos</button>
+          </div>
+          <div style="font-weight:700; color:var(--text-muted);">
+            Toca cualquier carácter para ver sus 8 bits
+          </div>
+        </div>
+
+        <!-- Inspector visual del carácter seleccionado -->
+        <div class="ascii-inspector">
+          <div style="display:flex; align-items:center; gap:18px;">
+            <div id="insp-char" class="ascii-char-badge" style="font-size:2.6rem; min-width:84px; padding:8px 16px; border:2px solid var(--bit-1-bg);">A</div>
+            <div>
+              <div style="font-size:1.1rem; font-weight:700; color:var(--text-muted);">Carácter seleccionado</div>
+              <div class="mono-num" style="font-size:1.6rem; font-weight:900;">
+                Decimal: <span id="insp-dec" style="color:var(--bit-1-bg);">65</span> · 
+                Byte: <span id="insp-bin" style="color:var(--bit-1-bg);">01000001</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="insp-bits-mini" style="display:flex; gap:8px;"></div>
+        </div>
+
+        <!-- Rejilla de caracteres filtrables -->
+        <div class="ascii-table-scroll">
+          <div id="ascii-cards-container" class="ascii-grid-cards"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         MÓDULO 4: EJERCICIOS INTERACTIVOS PARA EL AULA
+         ====================================================================== -->
+    <section id="mod-ejercicios" class="module-section">
+      <div class="quiz-container">
+
+        <!-- Barra superior de configuración del reto y racha -->
+        <div class="quiz-topbar">
+          <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+            <span style="font-weight:800;">Tipo de reto:</span>
+            <button class="filter-btn active" id="qtype-A" onclick="setQuizType('A')">A: Binario → Decimal</button>
+            <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B: Decimal → Binario</button>
+            <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C: Reto ASCII</button>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+            <button class="filter-btn active" id="diff-4" onclick="setQuizDiff(4)">Básico: 4 bits (0–15)</button>
+            <button class="filter-btn" id="diff-8" onclick="setQuizDiff(8)">Estándar: 1 byte (0–255)</button>
+            <div class="streak-pill">
+              <span>Racha:</span>
+              <span id="streak-count" class="mono-num">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Área central del ejercicio activo -->
+        <div class="quiz-workspace">
+          <div id="quiz-prompt" class="question-prompt">Cargando ejercicio...</div>
+
+          <!-- Contenedor dinámico según el tipo de pregunta -->
+          <div id="quiz-interactive-area"></div>
+
+          <!-- Retroalimentación pedagógica detallada -->
+          <div id="quiz-feedback" class="feedback-box"></div>
+
+          <!-- Botonera inferior de acción -->
+          <div class="quiz-actions">
+            <button class="btn-large primary" id="btn-check-answer" onclick="checkQuizAnswer()">
+              ✓ Comprobar respuesta
+            </button>
+            <button class="btn-large" onclick="showQuizSolution()">
+              💡 Mostrar solución paso a paso
+            </button>
+            <button class="btn-large" id="btn-ascii-hint" style="display:none;" onclick="openAsciiHintModal()">
+              📖 Ver pista tabla ASCII
+            </button>
+            <button class="btn-large" onclick="generateNewQuestion()">
+              ↻ Siguiente ejercicio
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal integrado en el DOM para pista rápida ASCII en ejercicios -->
+<div id="ascii-hint-modal" class="modal-backdrop" onclick="closeAsciiHintModal(event)">
+  <div class="modal-dialog" onclick="event.stopPropagation()">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:1.6rem;">Referencia rápida: letras mayúsculas ASCII</h2>
+      <button class="btn-large" style="min-height:48px; padding:6px 16px;" onclick="closeAsciiHintModal()">Cerrar ✕</button>
+    </div>
+    <p style="margin-bottom:14px;">Recuerda que la <strong>A</strong> empieza en el <strong>65</strong> (<span class="mono-num">01000001</span>) y avanzan de 1 en 1:</p>
+    <div id="modal-ascii-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px;"></div>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     ESTADO GLOBAL DE LA APLICACIÓN
+     ========================================================================== */
+  const WEIGHTS_8 = [128, 64, 32, 16, 8, 4, 2, 1];
+  const POWERS_8  = ['2⁷', '2⁶', '2⁵', '2⁴', '2³', '2²', '2¹', '2⁰'];
+
+  let currentSlide = 0;
+  const totalSlides = 5;
+
+  // Estado Diapositiva 3 (ejemplo interactivo)
+  let slide3Bits = [0, 1, 0, 1, 1, 0, 1, 1]; // 91
+
+  // Estado Módulo 2 (Simulador)
+  let simBits = [0, 0, 0, 0, 0, 0, 0, 0];
+  let simPadBuffer = '';
+
+  // Estado Módulo 3 (Tabla ASCII)
+  let currentAsciiFilter = 'all';
+  let selectedAsciiCode = 65;
+
+  // Estado Módulo 4 (Ejercicios)
+  let quizType = 'A'; // 'A', 'B', 'C'
+  let quizBitsCount = 4; // 4 u 8
+  let streak = 0;
+  let currentQuestion = null;
+  let quizUserBits = [];
+  let quizUserInput = '';
+
+  /* ==========================================================================
+     NAVEGACIÓN ENTRE MÓDULOS Y ATAJOS DE TECLADO
+     ========================================================================== */
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const targetId = btn.getAttribute('data-module');
+      document.querySelectorAll('.module-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+
+  // Soporte para flechas del teclado en modo diapositivas
+  document.addEventListener('keydown', (e) => {
+    const teoriaActive = document.getElementById('mod-teoria').classList.contains('active');
+    if (teoriaActive) {
+      if (e.key === 'ArrowRight') changeSlide(1);
+      if (e.key === 'ArrowLeft') changeSlide(-1);
+    }
+  });
+
+  /* ==========================================================================
+     MÓDULO 1: LÓGICA DE DIAPOSITIVAS
+     ========================================================================== */
+  function changeSlide(delta) {
+    const next = currentSlide + delta;
+    if (next >= 0 && next < totalSlides) {
+      goToSlide(next);
+    }
+  }
+
+  function goToSlide(index) {
+    currentSlide = index;
+    document.querySelectorAll('.slide-card').forEach((card, idx) => {
+      card.classList.toggle('active', idx === currentSlide);
+    });
+    document.querySelectorAll('#slide-dots .dot-btn').forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentSlide);
+    });
+
+    document.getElementById('slide-counter-text').textContent = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+    document.getElementById('btn-prev-slide').disabled = (currentSlide === 0);
+    document.getElementById('btn-next-slide').disabled = (currentSlide === totalSlides - 1);
+  }
+
+  function toggleDemoBulb(which) {
+    const card = document.getElementById(`demo-bulb-${which}`);
+    const isOn = card.classList.contains('on');
+    card.classList.toggle('on', !isOn);
+    card.classList.toggle('off', isOn);
+    const numEl = card.querySelector('.mono-num');
+    const lblEl = card.querySelector('strong');
+    const symEl = card.querySelector('.bulb-symbol');
+    if (!isOn) {
+      numEl.textContent = '1';
+      lblEl.textContent = 'Con corriente (Encendido)';
+      symEl.textContent = '💡';
+    } else {
+      numEl.textContent = '0';
+      lblEl.textContent = 'Sin corriente (Apagado)';
+      symEl.textContent = '🔌';
+    }
+  }
+
+  function renderSlide3Demo() {
+    const container = document.getElementById('slide3-byte-demo');
+    container.innerHTML = '';
+    slide3Bits.forEach((bit, i) => {
+      const col = document.createElement('div');
+      col.className = 'bit-column';
+      col.innerHTML = `
+        <span class="bit-power">${POWERS_8[i]}</span>
+        <span class="bit-weight">${WEIGHTS_8[i]}</span>
+        <button class="bit-toggle" data-val="${bit}" onclick="toggleSlide3Bit(${i})">${bit}</button>
+      `;
+      container.appendChild(col);
+    });
+
+    const activeWeights = [];
+    let sum = 0;
+    slide3Bits.forEach((bit, i) => {
+      if (bit === 1) {
+        activeWeights.push(WEIGHTS_8[i]);
+        sum += WEIGHTS_8[i];
+      }
+    });
+    const expr = activeWeights.length > 0 ? activeWeights.join(' + ') : '0';
+    document.getElementById('slide3-sum-output').textContent = `${expr} = ${sum}`;
+  }
+
+  function toggleSlide3Bit(idx) {
+    slide3Bits[idx] = slide3Bits[idx] === 1 ? 0 : 1;
+    renderSlide3Demo();
+  }
+
+  /* ==========================================================================
+     MÓDULO 2: SIMULADOR Y CORRECTOR DE CUADERNO
+     ========================================================================== */
+  function renderSimByte() {
+    const grid = document.getElementById('sim-byte-grid');
+    grid.innerHTML = '';
+
+    simBits.forEach((bit, idx) => {
+      const col = document.createElement('div');
+      col.className = 'bit-column';
+      col.innerHTML = `
+        <span class="bit-power">${POWERS_8[idx]}</span>
+        <span class="bit-weight">${WEIGHTS_8[idx]}</span>
+        <button class="bit-toggle" data-val="${bit}" onclick="toggleSimBit(${idx})">${bit}</button>
+        <span class="bit-state-label" style="color:${bit ? 'var(--bit-1-bg)' : 'var(--text-muted)'}">
+          ${bit ? 'ON' : 'OFF'}
+        </span>
+      `;
+      grid.appendChild(col);
+    });
+
+    // Calcular suma desarrollada y decimal
+    let total = 0;
+    const terms = [];
+    simBits.forEach((b, i) => {
+      if (b === 1) {
+        total += WEIGHTS_8[i];
+        terms.push(WEIGHTS_8[i]);
+      } else {
+        terms.push(0);
+      }
+    });
+
+    document.getElementById('sim-sum-formula').textContent = `${terms.join(' + ')} = ${total}`;
+    document.getElementById('sim-decimal-out').textContent = total;
+    document.getElementById('sim-ascii-out').textContent = formatAsciiLabel(total);
+    document.getElementById('sim-numpad-display').textContent = total;
+    renderDivisionsSteps(total);
+  }
+
+  function toggleSimBit(idx) {
+    simBits[idx] = simBits[idx] === 1 ? 0 : 1;
+    simPadBuffer = '';
+    renderSimByte();
+  }
+
+  function resetSimByte() {
+    simBits = [0, 0, 0, 0, 0, 0, 0, 0];
+    simPadBuffer = '';
+    renderSimByte();
+  }
+
+  function formatAsciiLabel(code) {
+    if (code === 32) return 'Espacio (32)';
+    if (code === 127) return 'DEL (Control)';
+    if (code < 32) return `Control (${code})`;
+    if (code > 127) return 'Extendido (>127)';
+    return `'${String.fromCharCode(code)}'`;
+  }
+
+  function simPadInput(digit) {
+    if (simPadBuffer.length >= 3) return;
+    const candidate = simPadBuffer + digit;
+    if (parseInt(candidate, 10) <= 255) {
+      simPadBuffer = candidate;
+      document.getElementById('sim-numpad-display').textContent = simPadBuffer;
+    }
+  }
+
+  function simPadClear() {
+    simPadBuffer = '';
+    document.getElementById('sim-numpad-display').textContent = '0';
+  }
+
+  function simPadApply() {
+    const val = simPadBuffer === '' ? 0 : parseInt(simPadBuffer, 10);
+    const clamped = Math.max(0, Math.min(255, val));
+    const binStr = clamped.toString(2).padStart(8, '0');
+    simBits = binStr.split('').map(Number);
+    simPadBuffer = '';
+    renderSimByte();
+  }
+
+  function renderDivisionsSteps(num) {
+    const box = document.getElementById('sim-divisions-out');
+    if (num === 0) {
+      box.innerHTML = '0 ÷ 2 = 0 (Resto <strong>0</strong>)<br>Byte: <strong>00000000</strong>';
+      return;
+    }
+    let n = num;
+    const lines = [];
+    while (n > 0) {
+      const q = Math.floor(n / 2);
+      const r = n % 2;
+      lines.push(`${String(n).padStart(3, ' ')} ÷ 2 = ${String(q).padStart(3, ' ')} → Resto: <strong>${r}</strong>`);
+      n = q;
+    }
+    box.innerHTML = lines.join('<br>') + `<br><span style="color:var(--bit-1-bg);">↑ Leer restos de abajo arriba</span>`;
+  }
+
+  /* Traductor de palabras ASCII <-> Binario */
+  function setTranslatorMode(mode) {
+    document.getElementById('btn-mode-txt2bin').classList.toggle('active', mode === 'txt2bin');
+    document.getElementById('btn-mode-bin2txt').classList.toggle('active', mode === 'bin2txt');
+    document.getElementById('box-txt2bin').style.display = mode === 'txt2bin' ? 'block' : 'none';
+    document.getElementById('box-bin2txt').style.display = mode === 'bin2txt' ? 'block' : 'none';
+    document.getElementById('translator-feedback').className = 'feedback-box';
+  }
+
+  function translateTextToBinary() {
+    const raw = document.getElementById('input-word-ascii').value;
+    const tbody = document.getElementById('translator-table-body');
+    const fb = document.getElementById('translator-feedback');
+    tbody.innerHTML = '';
+    fb.className = 'feedback-box';
+
+    if (!raw) {
+      fb.className = 'feedback-box error';
+      fb.textContent = 'Escribe al menos un carácter para traducir.';
+      return;
+    }
+
+    for (const ch of raw) {
+      const code = ch.charCodeAt(0);
+      const bin = code <= 255 ? code.toString(2).padStart(8, '0') : 'Fuera ASCII';
+      const displayChar = ch === ' ' ? 'Espacio' : ch;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:900; font-size:1.5rem;">${displayChar}</td>
+        <td>${code}</td>
+        <td style="color:var(--bit-1-bg); font-weight:800;">${bin}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function translateBinaryToText() {
+    const raw = document.getElementById('input-bin-seq').value.trim();
+    const tbody = document.getElementById('translator-table-body');
+    const fb = document.getElementById('translator-feedback');
+    tbody.innerHTML = '';
+    fb.className = 'feedback-box';
+
+    if (!raw) {
+      fb.className = 'feedback-box error';
+      fb.textContent = 'Introduce al menos un byte de 8 bits (ejemplo: 01000001).';
+      return;
+    }
+
+    const tokens = raw.split(/\s+/);
+    let decodedWord = '';
+
+    for (const token of tokens) {
+      if (!/^[01]{8}$/.test(token)) {
+        fb.className = 'feedback-box error';
+        fb.textContent = `El bloque "${token}" no es válido. Cada letra debe tener exactamente 8 bits (0 y 1).`;
+        return;
+      }
+      const code = parseInt(token, 2);
+      const ch = code >= 32 && code <= 126 ? String.fromCharCode(code) : `[Ctrl ${code}]`;
+      decodedWord += (code >= 32 && code <= 126) ? ch : '?';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight:900; font-size:1.5rem;">${ch === ' ' ? 'Espacio' : ch}</td>
+        <td>${code}</td>
+        <td style="color:var(--bit-1-bg); font-weight:800;">${token}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    fb.className = 'feedback-box success';
+    fb.textContent = `Mensaje decodificado: "${decodedWord}"`;
+  }
+
+  /* ==========================================================================
+     MÓDULO 3: TABLA ASCII DE CONSULTA RÁPIDA (32 A 126)
+     ========================================================================== */
+  function buildAsciiTable() {
+    const container = document.getElementById('ascii-cards-container');
+    container.innerHTML = '';
+
+    for (let code = 32; code <= 126; code++) {
+      const isUpper = code >= 65 && code <= 90;
+      const isLower = code >= 97 && code <= 122;
+      const isDigit = code >= 48 && code <= 57;
+      const isSymbol = !isUpper && !isLower && !isDigit;
+
+      if (currentAsciiFilter === 'upper' && !isUpper) continue;
+      if (currentAsciiFilter === 'lower' && !isLower) continue;
+      if (currentAsciiFilter === 'digits' && !isDigit) continue;
+      if (currentAsciiFilter === 'symbols' && !isSymbol) continue;
+
+      const ch = code === 32 ? 'ESP' : String.fromCharCode(code);
+      const bin = code.toString(2).padStart(8, '0');
+
+      const card = document.createElement('div');
+      card.className = 'ascii-item-card' + (code === selectedAsciiCode ? ' selected' : '');
+      card.onclick = () => selectAsciiInspector(code);
+      card.innerHTML = `
+        <span class="ascii-char-badge">${ch}</span>
+        <div class="mono-num" style="text-align:right;">
+          <div style="font-weight:900; font-size:1.25rem;">${code}</div>
+          <div style="font-size:0.95rem; opacity:0.9;">${bin}</div>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  function filterAsciiTable(filter, btnEl) {
+    currentAsciiFilter = filter;
+    document.querySelectorAll('.filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+    buildAsciiTable();
+  }
+
+  function selectAsciiInspector(code) {
+    selectedAsciiCode = code;
+    const ch = code === 32 ? 'Espacio' : String.fromCharCode(code);
+    const bin = code.toString(2).padStart(8, '0');
+
+    document.getElementById('insp-char').textContent = ch;
+    document.getElementById('insp-dec').textContent = code;
+    document.getElementById('insp-bin').textContent = bin;
+
+    const miniContainer = document.getElementById('insp-bits-mini');
+    miniContainer.innerHTML = '';
+    bin.split('').forEach((bit, idx) => {
+      const pill = document.createElement('div');
+      pill.style.cssText = `
+        padding: 8px 12px;
+        border-radius: 10px;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-weight: 800;
+        background: ${bit === '1' ? 'var(--bit-1-bg)' : '#E2E8F0'};
+        color: ${bit === '1' ? '#fff' : '#475569'};
+      `;
+      pill.innerHTML = `<div style="font-size:0.75rem; opacity:0.85;">${WEIGHTS_8[idx]}</div><div style="font-size:1.4rem;">${bit}</div>`;
+      miniContainer.appendChild(pill);
+    });
+
+    buildAsciiTable();
+  }
+
+  /* ==========================================================================
+     MÓDULO 4: EJERCICIOS INTERACTIVOS PARA EL AULA
+     ========================================================================== */
+  function setQuizType(type) {
+    quizType = type;
+    ['A', 'B', 'C'].forEach(t => {
+      document.getElementById(`qtype-${t}`).classList.toggle('active', t === type);
+    });
+    // El reto ASCII siempre utiliza 1 byte (8 bits)
+    if (type === 'C' && quizBitsCount === 4) {
+      setQuizDiff(8);
+      return;
+    }
+    generateNewQuestion();
+  }
+
+  function setQuizDiff(bits) {
+    if (quizType === 'C' && bits === 4) {
+      // ASCII estándar requiere 8 bits
+      bits = 8;
+    }
+    quizBitsCount = bits;
+    document.getElementById('diff-4').classList.toggle('active', bits === 4);
+    document.getElementById('diff-8').classList.toggle('active', bits === 8);
+    generateNewQuestion();
+  }
+
+  function generateNewQuestion() {
+    const fb = document.getElementById('quiz-feedback');
+    fb.className = 'feedback-box';
+    fb.innerHTML = '';
+    quizUserInput = '';
+
+    const hintBtn = document.getElementById('btn-ascii-hint');
+    hintBtn.style.display = (quizType === 'C') ? 'inline-flex' : 'none';
+
+    const maxVal = quizBitsCount === 4 ? 15 : 255;
+
+    if (quizType === 'A') {
+      // Tipo A: Binario -> Decimal
+      const targetDec = Math.floor(Math.random() * maxVal) + 1;
+      const binStr = targetDec.toString(2).padStart(quizBitsCount, '0');
+      currentQuestion = { type: 'A', targetDec, binStr, bitsCount: quizBitsCount };
+
+      document.getElementById('quiz-prompt').innerHTML =
+        `Calcula el valor <strong>decimal</strong> de este número binario (${quizBitsCount} bits):`;
+
+      renderQuizTypeA();
+
+    } else if (quizType === 'B') {
+      // Tipo B: Decimal -> Binario
+      const targetDec = Math.floor(Math.random() * maxVal) + 1;
+      const binStr = targetDec.toString(2).padStart(quizBitsCount, '0');
+      quizUserBits = new Array(quizBitsCount).fill(0);
+      currentQuestion = { type: 'B', targetDec, binStr, bitsCount: quizBitsCount };
+
+      document.getElementById('quiz-prompt').innerHTML =
+        `Activa los interruptores necesarios para formar el número decimal <span class="mono-num" style="color:var(--bit-1-bg); font-size:2.3rem;">${targetDec}</span>:`;
+
+      renderQuizTypeB();
+
+    } else if (quizType === 'C') {
+      // Tipo C: Reto ASCII (Letra mayúscula A-Z)
+      const code = Math.floor(Math.random() * 26) + 65; // 65..90 ('A'..'Z')
+      const letter = String.fromCharCode(code);
+      const binStr = code.toString(2).padStart(8, '0');
+      currentQuestion = { type: 'C', code, letter, binStr };
+
+      document.getElementById('quiz-prompt').innerHTML =
+        `Descifra qué <strong>letra mayúscula ASCII</strong> representa este byte:`;
+
+      renderQuizTypeC();
+    }
+  }
+
+  function renderQuizTypeA() {
+    const area = document.getElementById('quiz-interactive-area');
+    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+    const bits = currentQuestion.binStr.split('');
+
+    let bitsHtml = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}" style="margin-bottom:20px;">`;
+    bits.forEach((b, i) => {
+      bitsHtml += `
+        <div class="bit-column">
+          <span class="bit-weight">${weights[i]}</span>
+          <div class="bit-toggle" data-val="${b}" style="cursor:default;">${b}</div>
+        </div>
+      `;
+    });
+    bitsHtml += `</div>`;
+
+    area.innerHTML = `
+      ${bitsHtml}
+      <div style="max-width: 440px; margin: 0 auto; text-align: center;">
+        <div id="quiz-num-display" class="text-input-lg mono-num" style="font-size:2.4rem; font-weight:900; text-align:center; margin-bottom:12px;">?</div>
+        <div class="numpad-grid">
+          <button class="num-key" onclick="quizNumPad('7')">7</button>
+          <button class="num-key" onclick="quizNumPad('8')">8</button>
+          <button class="num-key" onclick="quizNumPad('9')">9</button>
+          <button class="num-key" onclick="quizNumPad('4')">4</button>
+          <button class="num-key" onclick="quizNumPad('5')">5</button>
+          <button class="num-key" onclick="quizNumPad('6')">6</button>
+          <button class="num-key" onclick="quizNumPad('1')">1</button>
+          <button class="num-key" onclick="quizNumPad('2')">2</button>
+          <button class="num-key" onclick="quizNumPad('3')">3</button>
+          <button class="num-key action-clear" onclick="quizNumPad('C')">Borrar</button>
+          <button class="num-key" onclick="quizNumPad('0')">0</button>
+          <button class="num-key action-apply" onclick="checkQuizAnswer()">✓</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function quizNumPad(key) {
+    if (key === 'C') {
+      quizUserInput = '';
+    } else if (quizUserInput.length < 3) {
+      quizUserInput += key;
+    }
+    document.getElementById('quiz-num-display').textContent = quizUserInput || '?';
+  }
+
+  function renderQuizTypeB() {
+    const area = document.getElementById('quiz-interactive-area');
+    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+
+    let html = `<div class="byte-grid ${quizBitsCount === 4 ? 'bits-4' : ''}">`;
+    quizUserBits.forEach((b, i) => {
+      html += `
+        <div class="bit-column">
+          <span class="bit-weight">${weights[i]}</span>
+          <button class="bit-toggle" data-val="${b}" onclick="toggleQuizBit(${i})">${b}</button>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    area.innerHTML = html;
+  }
+
+  function toggleQuizBit(idx) {
+    quizUserBits[idx] = quizUserBits[idx] === 1 ? 0 : 1;
+    renderQuizTypeB();
+  }
+
+  function renderQuizTypeC() {
+    const area = document.getElementById('quiz-interactive-area');
+    const bits = currentQuestion.binStr.split('');
+
+    let bitsHtml = `<div class="byte-grid" style="margin-bottom:18px;">`;
+    bits.forEach((b, i) => {
+      bitsHtml += `
+        <div class="bit-column">
+          <span class="bit-weight">${WEIGHTS_8[i]}</span>
+          <div class="bit-toggle" data-val="${b}" style="cursor:default;">${b}</div>
+        </div>
+      `;
+    });
+    bitsHtml += `</div>`;
+
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    let keysHtml = `<div class="alpha-pad">`;
+    alphabet.forEach(letter => {
+      keysHtml += `<button class="alpha-key" onclick="selectQuizLetter('${letter}')">${letter}</button>`;
+    });
+    keysHtml += `</div>`;
+
+    area.innerHTML = `
+      ${bitsHtml}
+      <div style="text-align:center; margin-bottom:12px;">
+        <span style="font-weight:700;">Letra elegida: </span>
+        <span id="quiz-letter-display" class="mono-num" style="font-size:2.4rem; font-weight:900; color:var(--bit-1-bg);">?</span>
+      </div>
+      ${keysHtml}
+    `;
+  }
+
+  function selectQuizLetter(letter) {
+    quizUserInput = letter;
+    document.getElementById('quiz-letter-display').textContent = letter;
+  }
+
+  function checkQuizAnswer() {
+    const fb = document.getElementById('quiz-feedback');
+    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+
+    if (currentQuestion.type === 'A') {
+      if (quizUserInput === '') {
+        fb.className = 'feedback-box error';
+        fb.textContent = 'Introduce un número con el teclado táctil antes de comprobar.';
+        return;
+      }
+      const userVal = parseInt(quizUserInput, 10);
+      if (userVal === currentQuestion.targetDec) {
+        streak++;
+        document.getElementById('streak-count').textContent = streak;
+        fb.className = 'feedback-box success';
+        fb.innerHTML = `¡Excelente! <strong>${currentQuestion.binStr}</strong> en binario equivale a <strong>${currentQuestion.targetDec}</strong>.`;
+      } else {
+        streak = 0;
+        document.getElementById('streak-count').textContent = streak;
+        const diff = userVal - currentQuestion.targetDec;
+        const pista = diff > 0
+          ? `Te has pasado por ${diff} unidades. Revisa si has sumado algún bit que estaba en 0.`
+          : `Te faltan ${Math.abs(diff)} unidades. Revisa si te has dejado algún bit en 1 sin sumar.`;
+        fb.className = 'feedback-box error';
+        fb.innerHTML = `Respuesta incorrecta (has puesto <strong>${userVal}</strong>). ${pista}`;
+      }
+
+    } else if (currentQuestion.type === 'B') {
+      const userSum = quizUserBits.reduce((acc, b, i) => acc + (b * weights[i]), 0);
+      if (userSum === currentQuestion.targetDec) {
+        streak++;
+        document.getElementById('streak-count').textContent = streak;
+        fb.className = 'feedback-box success';
+        fb.innerHTML = `¡Correcto! Has formado exactamente el número <strong>${currentQuestion.targetDec}</strong> (${quizUserBits.join('')}).`;
+      } else {
+        streak = 0;
+        document.getElementById('streak-count').textContent = streak;
+        const diff = userSum - currentQuestion.targetDec;
+        const diag = diff > 0
+          ? `Tus bits suman <strong>${userSum}</strong> (te sobran <strong>${diff}</strong>). Apaga algún bit.`
+          : `Tus bits suman <strong>${userSum}</strong> (te faltan <strong>${Math.abs(diff)}</strong>). Enciende algún bit más.`;
+        fb.className = 'feedback-box error';
+        fb.innerHTML = `Aún no es correcto. ${diag}`;
+      }
+
+    } else if (currentQuestion.type === 'C') {
+      if (!quizUserInput) {
+        fb.className = 'feedback-box error';
+        fb.textContent = 'Pulsa una letra en el teclado en pantalla antes de comprobar.';
+        return;
+      }
+      if (quizUserInput === currentQuestion.letter) {
+        streak++;
+        document.getElementById('streak-count').textContent = streak;
+        fb.className = 'feedback-box success';
+        fb.innerHTML = `¡Muy bien! El byte <strong>${currentQuestion.binStr}</strong> vale <strong>${currentQuestion.code}</strong> en decimal, que corresponde a la letra <strong>${currentQuestion.letter}</strong>.`;
+      } else {
+        streak = 0;
+        document.getElementById('streak-count').textContent = streak;
+        const userCode = quizUserInput.charCodeAt(0);
+        fb.className = 'feedback-box error';
+        fb.innerHTML = `Has elegido la letra <strong>${quizUserInput}</strong> (código ASCII ${userCode}), pero el byte suma <strong>${currentQuestion.code}</strong>. ¡Inténtalo de nuevo!`;
+      }
+    }
+  }
+
+  function showQuizSolution() {
+    const fb = document.getElementById('quiz-feedback');
+    const weights = quizBitsCount === 4 ? [8, 4, 2, 1] : WEIGHTS_8;
+
+    if (currentQuestion.type === 'A' || currentQuestion.type === 'B') {
+      const bits = currentQuestion.binStr.split('').map(Number);
+      const active = [];
+      bits.forEach((b, i) => { if (b === 1) active.push(weights[i]); });
+      fb.className = 'feedback-box info';
+      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>
+        Binario: <span class="mono-num">${currentQuestion.binStr}</span><br>
+        Pesos activos: <span class="mono-num">${active.join(' + ')} = <strong>${currentQuestion.targetDec}</strong></span>`;
+    } else {
+      const bits = currentQuestion.binStr.split('').map(Number);
+      const active = [];
+      bits.forEach((b, i) => { if (b === 1) active.push(WEIGHTS_8[i]); });
+      fb.className = 'feedback-box info';
+      fb.innerHTML = `<strong>Solución paso a paso:</strong><br>
+        1. Sumamos los pesos en 1: <span class="mono-num">${active.join(' + ')} = <strong>${currentQuestion.code}</strong></span>.<br>
+        2. Como la 'A' es el 65, la posición ${currentQuestion.code} corresponde a la letra <strong>${currentQuestion.letter}</strong>.`;
+    }
+  }
+
+  function openAsciiHintModal() {
+    const grid = document.getElementById('modal-ascii-grid');
+    grid.innerHTML = '';
+    for (let c = 65; c <= 90; c++) {
+      const div = document.createElement('div');
+      div.style.cssText = 'padding:10px; border:2px solid var(--border-color); border-radius:10px; text-align:center; background:var(--bg-subtle); font-family:var(--font-mono); font-weight:800;';
+      div.innerHTML = `<span style="font-size:1.5rem; color:var(--bit-1-bg);">${String.fromCharCode(c)}</span> = ${c}`;
+      grid.appendChild(div);
+    }
+    document.getElementById('ascii-hint-modal').classList.add('open');
+  }
+
+  function closeAsciiHintModal() {
+    document.getElementById('ascii-hint-modal').classList.remove('open');
+  }
+
+  /* ==========================================================================
+     INICIALIZACIÓN AL CARGAR LA PÁGINA
+     ========================================================================== */
+  window.addEventListener('DOMContentLoaded', () => {
+    renderSlide3Demo();
+    renderSimByte();
+    translateTextToBinary();
+    selectAsciiInspector(65);
+    generateNewQuestion();
+  });
+</script>
+</body>
+</html>
