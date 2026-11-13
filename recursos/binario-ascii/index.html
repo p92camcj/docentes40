@@ -1519,145 +1519,265 @@
 
     /* Pantallas estrechas o en vertical (móvil, incrustado en una columna):
        aquí sí hay scroll y las cajas se apilan. */
+    /* ==========================================================================
+       MÓVIL (o pantalla en vertical): los retos caben enteros, sin scroll.
+       La base depende del ancho y del alto visibles (dvh: sin las barras del
+       navegador). Teoría, simulador y tabla se desplazan dentro de su zona.
+       ========================================================================== */
+    .corto {
+      display: none;
+    }
     @media (max-width: 760px), (max-aspect-ratio: 4/5) {
       html {
-        font-size: 15px;
+        font-size: clamp(10px, min(3.6vw, 2.05vh), 17px);
+        font-size: clamp(10px, min(3.6vw, 2.05dvh), 17px);
       }
-      html, body {
-        height: auto;
-        overflow: auto;
+      .app-shell {
+        height: 100vh;
+        height: 100dvh;
       }
-      .app-shell, .main-viewport, .module-section, .slides-wrapper,
-      .sim-layout, .ascii-ref-layout, .quiz-container {
-        height: auto;
+      .largo {
+        display: none;
       }
+      .corto {
+        display: inline;
+      }
+
+      /* Barra superior en una fila */
       .top-nav {
-        flex-wrap: wrap;
+        padding: 0.3rem;
+        gap: 0.25rem;
+        justify-content: center;
+      }
+      .brand-badge {
+        display: none;
       }
       .nav-tabs {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 0.25rem;
+        width: 100%;
+      }
+      .nav-btn, .theme-btn {
+        min-height: 2.3rem;
+        min-width: 0;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.95rem;
+        flex: 1 1 auto;
+        justify-content: center;
+      }
+      .theme-btn {
+        flex: 0 0 auto;
       }
       .main-viewport {
-        padding: 0.6rem;
+        padding: 0.35rem;
       }
-      .sim-layout, .slide-grid-2, .sim-bottom, .quiz-pad {
+
+      /* Teoría, simulador y tabla: apiladas, con desplazamiento interno */
+      .module-section, .slides-wrapper, .sim-layout, .ascii-ref-layout {
+        height: auto;
+      }
+      .sim-layout, .slide-grid-2, .sim-bottom, .cajones-intro {
         grid-template-columns: 1fr;
       }
+      .cajones-fila {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .slide-title {
+        font-size: 1.4rem;
+      }
+      .slide-header {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+      .slide-controls {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
       .byte-grid {
-        gap: 0.25rem;
+        gap: 0.2rem;
       }
       .bit-toggle, .sim-layout .bit-toggle {
-        font-size: 1.6rem;
-        min-height: 2.6rem;
+        font-size: 1.4rem;
+        min-height: 2.4rem;
       }
       .ascii-grid-cards, .ascii-grid-cards.pocos {
         grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
         grid-auto-rows: 4.5rem;
         height: auto;
       }
-      .quiz-pad .numpad-grid {
-        grid-template-columns: repeat(6, 1fr);
+
+      /* Retos: todo en la pantalla */
+      #mod-ejercicios.module-section {
+        height: 100%;
       }
-      .reto-c-palabra {
+      .quiz-container {
+        height: 100%;
+        gap: 0.3rem;
+      }
+      .quiz-topbar {
+        display: grid;
         grid-template-columns: 1fr;
-        gap: 0.6rem;
-      }
-      .top-nav {
-        padding: 0.4rem;
-        gap: 0.3rem;
-      }
-      .brand-badge {
-        display: none;
-      }
-      .nav-tabs {
-        justify-content: center;
-        gap: 0.3rem;
-      }
-      .nav-btn {
-        min-height: 2.4rem;
-        min-width: 0;
-        padding: 0.2rem 0.55rem;
-        font-size: 0.9rem;
-      }
-      .quiz-topbar > div:first-child > span {
-        display: none;
+        justify-items: center;
+        gap: 0.25rem;
+        padding: 0.3rem;
       }
       .quiz-topbar > div {
         justify-content: center;
         flex-wrap: wrap;
-        gap: 0.3rem !important;
+        gap: 0.25rem !important;
       }
       .quiz-topbar .filter-btn {
-        font-size: 0.9rem;
+        min-height: 2.1rem;
+        padding: 0.1rem 0.6rem;
+        font-size: 0.95rem;
+      }
+      #etiqueta-practica {
+        font-size: 0.8rem;
+        color: var(--text-muted);
       }
       .nivel-pill, .mejor-pill, .sello, .streak-pill, .medalla-pill {
-        font-size: 0.9rem;
-        padding: 0.2rem 0.6rem;
+        font-size: 0.82rem;
+        padding: 0.1rem 0.5rem;
+        border-width: 2px;
       }
       .sello {
         white-space: normal;
         text-align: center;
       }
+      .peldanos {
+        gap: 0.3rem;
+        flex-wrap: nowrap;
+      }
+      .peldano-nivel {
+        gap: 0.08rem;
+        font-size: 0.65rem;
+      }
+      .peldano {
+        width: 1.05rem;
+        height: 1.05rem;
+        font-size: 0.55rem;
+        border-radius: 0.2rem;
+      }
+      .quiz-workspace {
+        flex: 1;
+        min-height: 0;
+        padding: 0.45rem;
+        gap: 0.35rem;
+        overflow-y: auto;
+      }
+      .question-prompt {
+        font-size: 1.1rem;
+        line-height: 1.25;
+      }
+      .question-prompt .mono-num {
+        font-size: 1.5rem !important;
+      }
       .reto-bits {
         max-width: 100% !important;
+        margin-bottom: 0.2rem !important;
       }
-      .quiz-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.4rem;
+      .quiz-workspace .bit-column {
+        padding: 0.15rem 0.05rem;
       }
-      .quiz-actions .btn-large {
-        font-size: 0.95rem;
-        justify-content: center;
-        padding: 0.3rem 0.4rem;
+      .quiz-workspace .bit-weight {
+        font-size: 0.85rem;
+        margin-bottom: 0.1rem;
       }
-      .solucion-c {
+      .quiz-workspace .bit-toggle {
+        min-height: 2.5rem;
+        font-size: 1.5rem;
+      }
+      .quiz-pad {
         grid-template-columns: 1fr;
+        gap: 0.3rem;
       }
-      .alpha-pad, .alpha-pad.digitos {
-        grid-template-columns: repeat(7, 1fr);
+      .quiz-pad #quiz-num-display {
+        min-height: 2.4rem;
+        font-size: 1.6rem !important;
+        padding: 0.1rem;
+      }
+      .quiz-pad .numpad-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.25rem;
+      }
+      .quiz-pad .num-key {
+        min-height: 2.5rem;
+        font-size: 1.3rem;
+      }
+      #quiz-letter-display {
+        font-size: 1.6rem !important;
+      }
+      .alpha-pad {
+        grid-template-columns: repeat(9, 1fr);
+        gap: 0.2rem;
+      }
+      .alpha-pad.digitos {
+        grid-template-columns: repeat(10, 1fr);
       }
       .alpha-key {
         min-width: 0;
+        min-height: 2.3rem;
+        font-size: 1.15rem;
+      }
+      .pad-modos {
+        margin-top: 0.25rem;
+        gap: 0.25rem;
+      }
+      .pad-modos .filter-btn {
+        min-height: 2rem;
+        padding: 0.1rem 0.7rem;
+      }
+      .reto-c-palabra {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+      }
+      .reto-palabra {
+        border-spacing: 0.12rem;
       }
       .reto-palabra th {
         min-width: 0;
-        font-size: 0.7rem;
+        font-size: 0.6rem;
       }
-      .reto-palabra td {
-        font-size: 1.1rem;
+      .reto-palabra td, .reto-c-palabra .reto-palabra td {
+        font-size: 0.95rem;
+        min-width: 1.6rem;
+        padding: 0.02rem 0;
       }
-      .quiz-topbar {
-        justify-content: center;
+      .reto-c-palabra .reto-palabra td.respuesta {
+        min-width: 2rem;
       }
-      .quiz-topbar .filter-btn {
+      .quiz-workspace .feedback-box {
+        font-size: 0.85rem;
         padding: 0.3rem 0.5rem;
+        border-width: 2px;
+        line-height: 1.3;
       }
-      .quiz-workspace {
-        padding: 0.6rem;
-      }
-      .question-prompt {
-        font-size: 1.25rem;
-      }
-      .slide-controls {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-      .brand-badge span {
-        display: none;
-      }
-      .slide-title {
-        font-size: 1.5rem;
-      }
-      .cajones-intro {
+      .solucion-c {
         grid-template-columns: 1fr;
+        font-size: 0.78rem;
       }
-      .cajones-fila {
-        grid-template-columns: repeat(4, 1fr);
+      .quiz-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        grid-auto-flow: column;
+        gap: 0.25rem;
+        padding-top: 0.3rem;
       }
-      .slide-header {
-        flex-wrap: wrap;
-        gap: 0.4rem;
+      .quiz-actions .btn-large {
+        min-height: 2.5rem;
+        font-size: 0.85rem;
+        justify-content: center;
+        padding: 0.1rem 0.2rem;
+        gap: 0.2rem;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+      .medalla-icono {
+        font-size: 5rem;
+      }
+      .medalla-titulo {
+        font-size: 2rem;
       }
     }
   </style>
@@ -1676,19 +1796,19 @@
 
     <nav class="nav-tabs" aria-label="Módulos principales">
       <button class="nav-btn active" data-module="mod-teoria">
-        <span>1. Teoría guiada</span>
+        <span class="largo">1. Teoría guiada</span><span class="corto">Teoría</span>
       </button>
       <button class="nav-btn" data-module="mod-simulador">
-        <span>2. Simulador y corrector</span>
+        <span class="largo">2. Simulador y corrector</span><span class="corto">Simulador</span>
       </button>
       <button class="nav-btn" data-module="mod-tabla">
-        <span>3. Tabla ASCII</span>
+        <span class="largo">3. Tabla ASCII</span><span class="corto">Tabla</span>
       </button>
       <button class="nav-btn" data-module="mod-ejercicios">
-        <span>4. Retos en pizarra</span>
+        <span class="largo">4. Retos en pizarra</span><span class="corto">Retos</span>
       </button>
       <button class="nav-btn theme-btn" onclick="abrirQr()" title="Abrir esta web en el móvil" aria-label="Código QR para abrir esta web en el móvil">
-        📱 QR
+        📱<span class="largo"> QR</span>
       </button>
       <button class="nav-btn theme-btn" id="btn-tema" onclick="cambiarTema()" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar entre tema claro y oscuro">
         🌓
@@ -2126,9 +2246,9 @@
           <div style="display:flex; flex-wrap:wrap; gap:0.455rem; align-items:center;">
             <button class="filter-btn escalera-btn active" id="btn-escalera" onclick="setModoEscalera()">🏆 Escalera</button>
             <span style="font-weight:800;" id="etiqueta-practica">Práctica:</span>
-            <button class="filter-btn" id="qtype-A" onclick="setQuizType('A')">A · Binario → Decimal</button>
-            <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B · Decimal → Binario</button>
-            <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C · Letra ASCII</button>
+            <button class="filter-btn" id="qtype-A" onclick="setQuizType('A')"><span class="largo">A · Binario → Decimal</span><span class="corto">A</span></button>
+            <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')"><span class="largo">B · Decimal → Binario</span><span class="corto">B</span></button>
+            <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')"><span class="largo">C · Letra ASCII</span><span class="corto">C</span></button>
           </div>
           <button class="sello" id="sello" onclick="abrirNombre()" title="Cambiar el nombre" aria-label="Nombre, fecha y hora"></button>
 
@@ -2157,16 +2277,16 @@
           <!-- Botonera inferior de acción -->
           <div class="quiz-actions">
             <button class="btn-large primary" id="btn-check-answer" onclick="checkQuizAnswer()">
-              ✓ Comprobar respuesta
+              ✓ <span class="largo">Comprobar respuesta</span><span class="corto">Comprobar</span>
             </button>
             <button class="btn-large" onclick="showQuizSolution()">
-              💡 Solución paso a paso
+              💡 <span class="largo">Solución paso a paso</span><span class="corto">Solución</span>
             </button>
             <button class="btn-large" id="btn-ascii-hint" style="display:none;" onclick="openAsciiHintModal()">
-              📖 Pista: tabla ASCII
+              📖 <span class="largo">Pista: tabla ASCII</span><span class="corto">Pista</span>
             </button>
             <button class="btn-large" onclick="siguienteEjercicio()">
-              ↻ Siguiente ejercicio
+              ↻ <span class="largo">Siguiente ejercicio</span><span class="corto">Siguiente</span>
             </button>
           </div>
         </div>
@@ -3037,7 +3157,7 @@
         avisoSaltar = true;
         const fb = document.getElementById('quiz-feedback');
         fb.className = 'feedback-box info';
-        fb.textContent = 'Si pasas sin resolverlo, la racha vuelve a 0. Pulsa otra vez «Siguiente ejercicio» para pasar.';
+        fb.textContent = 'Si pasas sin resolverlo, la racha vuelve a 0. Pulsa otra vez «Siguiente» para pasar.';
         return;
       }
       anotarFallo();
@@ -3265,7 +3385,7 @@
 
     if (q.resuelta) {
       fb.className = 'feedback-box info';
-      fb.textContent = 'Este ejercicio ya está resuelto. Pulsa «Siguiente ejercicio».';
+      fb.textContent = 'Este ejercicio ya está resuelto. Pulsa «Siguiente».';
       return;
     }
 
