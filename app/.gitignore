@@ -1,0 +1,5 @@
+.clasp.json
+despliegues.local.json
+src/Despliegue.gs
+src/Integrantes.gs
+node_modules/

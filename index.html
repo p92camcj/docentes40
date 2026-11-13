@@ -1,548 +1,124 @@
-<!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docentes 4.0: Inteligencia Colectiva e IA</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f6ff',
-                            100: '#e0edff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#0f172a',
-                            neonCyan: '#06b6d4',
-                            neonPurple: '#a855f7',
-                        }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        glow: {
-                            '0%': { boxShadow: '0 0 15px rgba(6, 182, 212, 0.4)' },
-                            '100%': { boxShadow: '0 0 30px rgba(168, 85, 247, 0.8)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom scrollbar and glassmorphism styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .glass-card-hover:hover {
-            transform: translateY(-5px);
-            background: rgba(30, 41, 59, 0.85);
-            border-color: rgba(6, 182, 212, 0.4);
-            box-shadow: 0 20px 30px -10px rgba(6, 182, 212, 0.2);
-        }
-        .text-gradient {
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .text-gradient-gold {
-            background: linear-gradient(135deg, #fde047 0%, #f97316 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-    </style>
+<title>Docentes 4.0 · IES Vega de Mar</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="comun/gt.css">
+<script src="comun/gt.js"></script>
+<style>
+  .portada { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: stretch; }
+  .titular { display: flex; flex-direction: column; gap: 14px; padding-block: 8px; }
+  .antetitulo { font-size: .85rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
+  .titular h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); font-weight: 800; line-height: 1.02; }
+  .titular h1 span { color: var(--acento); }
+  .entradilla { font-size: 1.1rem; color: var(--suave); max-width: 52ch; }
+  .proxima { background: var(--acento); color: var(--papel); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .proxima .etq { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; opacity: .85; }
+  .proxima .fecha { font-family: var(--display); font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+  .proxima ul { margin: 0; padding-left: 1.1em; }
+  .regla { border: 2px solid var(--acento); border-radius: 14px; padding: 16px 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; align-items: center; }
+  .regla strong { font-family: var(--display); font-size: 1.15rem; }
+  .regla .icono { font-family: var(--display); font-weight: 800; font-size: 2rem; color: var(--acento); grid-row: span 2; }
+  .seccion { display: flex; flex-direction: column; gap: 12px; }
+  .seccion > .cab { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+  .seccion > .cab p { color: var(--suave); }
+  .fases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 3px solid var(--linea); }
+  .fase { padding: 14px 14px 0 0; position: relative; display: flex; flex-direction: column; gap: 4px; }
+  .fase::before { content: ""; position: absolute; top: -9px; left: 0; width: 15px; height: 15px; border-radius: 50%; background: var(--fondo); border: 3px solid var(--linea); }
+  .fase.actual::before { background: var(--acento); border-color: var(--acento); }
+  .fase .meses { font-size: .8rem; font-weight: 700; color: var(--suave); text-transform: uppercase; letter-spacing: .05em; }
+  .fase.actual .meses { color: var(--acento); }
+  .fase p { font-size: .92rem; color: var(--suave); }
+  .sesiones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+  .sesion { background: var(--papel); border: 1px solid var(--linea); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--tinta); }
+  a.sesion:hover { border-color: var(--acento); }
+  .sesion .n { font-family: var(--display); font-weight: 800; }
+  .sesion .f { font-size: .85rem; color: var(--suave); font-variant-numeric: tabular-nums; }
+  .sesion.futura { background: transparent; border-style: dashed; color: var(--suave); }
+  @media (max-width: 760px) {
+    .portada { grid-template-columns: minmax(0, 1fr); }
+    .fases { grid-template-columns: minmax(0, 1fr); border-top: 0; border-left: 3px solid var(--linea); padding-left: 16px; gap: 14px; }
+    .fase { padding: 0; } .fase::before { top: 4px; left: -26px; }
+  }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 min-h-screen overflow-x-hidden">
-
-    <!-- CANVAS INTERACTIVO DE FONDO (RED NEURONAL) -->
-    <canvas id="neuralCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0 opacity-40"></canvas>
-
-    <!-- MAIN CONTAINER -->
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
-
-        <!-- HEADER BANNER & HERO SECTION -->
-        <header class="relative rounded-3xl glass-card p-6 sm:p-12 overflow-hidden border border-slate-800 shadow-2xl">
-            <!-- Decorative Glow Orbs -->
-            <div class="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="relative z-10 text-center space-y-6">
-                <!-- Badges -->
-                <div class="inline-flex flex-wrap items-center justify-center gap-2">
-                    <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-sm flex items-center gap-2">
-                        <i class="fa-solid fa-graduation-cap"></i> Grupo de Trabajo Séneca
-                    </span>
-                    <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-300 border border-purple-500/30 flex items-center gap-2">
-                        <i class="fa-solid fa-users"></i> Autoformación «Todos para Todos»
-                    </span>
-                </div>
-
-                <!-- Main Title -->
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-                    Docentes <span class="text-gradient">4.0</span>
-                    <span class="block text-xl sm:text-3xl lg:text-4xl font-extrabold text-slate-300 mt-2">
-                        Inteligencia Colectiva e IA
-                    </span>
-                </h1>
-
-                <!-- Subtitle / Mission Statement -->
-                <p class="max-w-3xl mx-auto text-slate-300 text-sm sm:text-base lg:text-lg leading-relaxed">
-                    Un espacio collaborative diseñado por y para docentes. Automatizamos tareas burocráticas, dominamos el <strong class="text-cyan-300 font-semibold">Cuaderno de Séneca</strong> y creamos <strong class="text-purple-300 font-semibold">Situaciones de Aprendizaje con IA</strong> bajo un marco seguro, normativo y ético.
-                </p>
-
-                <!-- Action / CTA Buttons -->
-                <div class="pt-4 flex flex-wrap justify-center gap-4">
-                    <a href="#explora" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold hover:from-cyan-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-cyan-500/25 flex items-center gap-2">
-                        <i class="fa-solid fa-compass"></i> Explorar el Site
-                    </a>
-                    <a href="#cronograma" class="px-6 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700 font-semibold transition-all duration-300 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-alt"></i> Ver Cronograma
-                    </a>
-                </div>
-            </div>
-
-            <!-- Stats Bar -->
-            <div class="mt-10 pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="p-3 glass-card rounded-2xl">
-                    <div class="text-2xl lg:text-3xl font-extrabold text-cyan-400">100%</div>
-                    <div class="text-xs text-slate-400 mt-1">Uso Seguro de IA</div>
-                </div>
-                <div class="p-3 glass-card rounded-2xl">
-                    <div class="text-2xl lg:text-3xl font-extrabold text-purple-400">4 Fases</div>
-                    <div class="text-xs text-slate-400 mt-1">Noviembre a Mayo</div>
-                </div>
-                <div class="p-3 glass-card rounded-2xl">
-                    <div class="text-2xl lg:text-3xl font-extrabold text-emerald-400">Séneca</div>
-                    <div class="text-xs text-slate-400 mt-1">Evaluación Competencial</div>
-                </div>
-                <div class="p-3 glass-card rounded-2xl">
-                    <div class="text-2xl lg:text-3xl font-extrabold text-amber-400">REA/SDA</div>
-                    <div class="text-xs text-slate-400 mt-1">Banco de Recursos</div>
-                </div>
-            </div>
-        </header>
-
-        <!-- PILARES DEL PROYECTO -->
-        <section class="space-y-6">
-            <div class="text-center space-y-2">
-                <h2 class="text-xs font-bold uppercase tracking-widest text-cyan-400">Nuestras Metas</h2>
-                <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-100">¿Qué abordamos en el Grupo de Trabajo?</h3>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Card 1 -->
-                <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-4">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </div>
-                    <h4 class="text-lg font-bold text-slate-100">Burocracia 4.0</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Automatización inteligente de borradores de informes, comunicados no confidenciales y tareas repetitivas para recuperar tiempo lectivo.
-                    </p>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-book-bookmark"></i>
-                    </div>
-                    <h4 class="text-lg font-bold text-slate-100">Cuaderno de Séneca</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Dominio práctico de la evaluación competencial, diseño de criterios, ponderaciones e integración de calificaciones en la plataforma oficial.
-                    </p>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-4">
-                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                    <h4 class="text-lg font-bold text-slate-100">SDA & Prompts</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Creación asistida de Situaciones de Aprendizaje, rúbricas y actividades adaptadas utilizando una ingeniería de 'prompts' profesional.
-                    </p>
-                </div>
-
-                <!-- Card 4 -->
-                <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-4">
-                    <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <h4 class="text-lg font-bold text-slate-100">Ética y Normativa</h4>
-                    <p class="text-sm text-slate-400 leading-relaxed">
-                        Garantía de privacidad del menor: uso estricto de herramientas autorizadas y prohibición total de datos personales en plataformas de IA.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN INTERACTIVA: EXPLORA EL SITE -->
-        <section id="explora" class="glass-card p-6 sm:p-10 rounded-3xl space-y-8 border border-slate-800">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-widest text-purple-400">Estructura del Espacio</span>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-1">¿Qué podrás encontrar en este Site?</h2>
-                </div>
-                <p class="text-xs sm:text-sm text-slate-400 max-w-md">
-                    Este portal actúa como el repositorio centralizado donde se compilan las creaciones del grupo y se enlaza el trabajo de cada participante.
-                </p>
-            </div>
-
-            <!-- Tab Buttons -->
-            <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4" id="tabContainer">
-                <button onclick="switchTab('sites')" id="tab-sites" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-cyan-500 text-slate-950 flex items-center gap-2">
-                    <i class="fa-solid fa-address-card"></i> Sites de Integrantes
-                </button>
-                <button onclick="switchTab('prompts')" id="tab-prompts" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-terminal"></i> Banco de Prompts Seguros
-                </button>
-                <button onclick="switchTab('seneca')" id="tab-seneca" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice"></i> Guías Cuaderno Séneca
-                </button>
-                <button onclick="switchTab('rea')" id="tab-rea" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-folder-open"></i> Repositorio SDA & REA
-                </button>
-            </div>
-
-            <!-- Tab Content Dynamic Area -->
-            <div class="min-h-[220px]">
-                <!-- Tab 1: Sites Personal -->
-                <div id="content-sites" class="tab-content grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono text-cyan-400">Personal Site #01</span>
-                            <i class="fa-solid fa-link text-slate-500"></i>
-                        </div>
-                        <h4 class="font-bold text-slate-200">Portafolios Individuales</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Cada integrante del GT cuenta con un Google Site personal vinculado desde esta plataforma donde aloja sus evidencias y materiales desarrollados.
-                        </p>
-                    </div>
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono text-cyan-400">Trabajo Colaborativo</span>
-                            <i class="fa-solid fa-network-wired text-slate-500"></i>
-                        </div>
-                        <h4 class="font-bold text-slate-200">Red de Aprendizaje</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Acceso directo a las adaptaciones por especialidades (Lengua, Mates, Ciencias, Idiomas, STEAM, etc.) realizadas por los compañeros.
-                        </p>
-                    </div>
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono text-cyan-400">Evidencias CDD</span>
-                            <i class="fa-solid fa-certificate text-slate-500"></i>
-                        </div>
-                        <h4 class="font-bold text-slate-200">Acreditación CDD</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Muestra pública de producciones que respaldan las horas de formación e innovación docente frente a la Consejería y el CEP.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Banco de Prompts -->
-                <div id="content-prompts" class="tab-content hidden space-y-4">
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
-                        <div class="space-y-2">
-                            <span class="px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 text-xs font-mono">Plantillas Estructuradas</span>
-                            <h4 class="font-bold text-slate-100">Biblioteca de Instrucciones para IAG</h4>
-                            <p class="text-xs text-slate-400">
-                                Colección de 'prompts' validados para diseñar rubricas, textos adaptados a DUA, actividades gamificadas y esquemas de trabajo sin riesgo normativo.
-                            </p>
-                        </div>
-                        <button onclick="openPromptModal()" class="whitespace-nowrap px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all">
-                            <i class="fa-solid fa-play mr-1"></i> Probar Simulador
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tab 3: Cuaderno de Séneca -->
-                <div id="content-seneca" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                        <h4 class="font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-check-double text-emerald-400"></i> Ponderación de Criterios</h4>
-                        <p class="text-xs text-slate-400">Tutoriales paso a paso para configurar los criterios de evaluación, competencias clave y actividades evaluables en Séneca.</p>
-                    </div>
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                        <h4 class="font-bold text-slate-200 flex items-center gap-2"><i class="fa-solid fa-sliders text-cyan-400"></i> Flujos Eficientes de Evaluación</h4>
-                        <p class="text-xs text-slate-400">Modelos para importar/exportar observaciones, generar cualitativas y dinamizar la evaluación trimestral.</p>
-                    </div>
-                </div>
-
-                <!-- Tab 4: REA / SDA -->
-                <div id="content-rea" class="tab-content hidden space-y-4">
-                    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                        <h4 class="font-bold text-slate-200">Recursos Educativos Abiertos y Situaciones de Aprendizaje</h4>
-                        <p class="text-xs text-slate-400">Un banco de materiales descargables y modificables bajo licencias abiertas, diseñados bajo el marco LOMLOE y adaptados al currículo andaluz.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CRONOGRAMA INTERACTIVO DE FASES -->
-        <section id="cronograma" class="space-y-6">
-            <div class="text-center space-y-2">
-                <span class="text-xs font-bold uppercase tracking-widest text-cyan-400">Hoja de Ruta</span>
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-100">Calendario de Actuaciones (Curso 2024–2025)</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Fase 1 -->
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-cyan-500 relative overflow-hidden group">
-                    <span class="text-xs font-mono text-cyan-400 font-bold block mb-1">NOVIEMBRE</span>
-                    <h4 class="text-base font-bold text-slate-100 mb-2">Fase 1: Constitución y Ética</h4>
-                    <ul class="text-xs text-slate-400 space-y-2">
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-cyan-400 mt-0.5"></i> Constitución formal del GT.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-cyan-400 mt-0.5"></i> Análisis del marco normativo e IA.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-cyan-400 mt-0.5"></i> Compromisos en Séneca.</li>
-                    </ul>
-                </div>
-
-                <!-- Fase 2 -->
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500 relative overflow-hidden group">
-                    <span class="text-xs font-mono text-emerald-400 font-bold block mb-1">DIC – ENE</span>
-                    <h4 class="text-base font-bold text-slate-100 mb-2">Fase 2: Séneca y Burocracia</h4>
-                    <ul class="text-xs text-slate-400 space-y-2">
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-emerald-400 mt-0.5"></i> Taller del Cuaderno de Séneca.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-emerald-400 mt-0.5"></i> Automatización de informes.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-emerald-400 mt-0.5"></i> Registro en Sites personales.</li>
-                    </ul>
-                </div>
-
-                <!-- Fase 3 -->
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-purple-500 relative overflow-hidden group">
-                    <span class="text-xs font-mono text-purple-400 font-bold block mb-1">FEB – MAR</span>
-                    <h4 class="text-base font-bold text-slate-100 mb-2">Fase 3: IA, SDA y Contenidos</h4>
-                    <ul class="text-xs text-slate-400 space-y-2">
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-purple-400 mt-0.5"></i> Generación de SDA con IAG.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-purple-400 mt-0.5"></i> Rúbricas y adaptaciones DUA.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-purple-400 mt-0.5"></i> Experimentación de aula.</li>
-                    </ul>
-                </div>
-
-                <!-- Fase 4 -->
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-amber-500 relative overflow-hidden group">
-                    <span class="text-xs font-mono text-amber-400 font-bold block mb-1">ABR – MAY</span>
-                    <h4 class="text-base font-bold text-slate-100 mb-2">Fase 4: Repositorio y Cierre</h4>
-                    <ul class="text-xs text-slate-400 space-y-2">
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-amber-400 mt-0.5"></i> Consolidación del Site del GT.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-amber-400 mt-0.5"></i> Redacción de la Memoria Final.</li>
-                        <li class="flex items-start gap-1.5"><i class="fa-solid fa-angle-right text-amber-400 mt-0.5"></i> Certificación en Séneca/CEP.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- BANNER DE COMPROMISO NORMATIVO Y PROTECCIÓN DE DATOS -->
-        <section class="glass-card p-6 sm:p-8 rounded-3xl border border-red-500/20 bg-gradient-to-r from-red-950/30 via-slate-900/80 to-slate-900/80 space-y-4">
-            <div class="flex items-center gap-3 text-red-400">
-                <i class="fa-solid fa-shield-cat text-2xl"></i>
-                <h3 class="text-lg font-bold">Protocolo de Privacidad y Marco Ético Institucional</h3>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                En cumplimiento estricto con las instrucciones de la Consejería de Desarrollo Educativo y Formación Profesional, todas las actividades de experimentación con Inteligencia Artificial dentro de este grupo respetarán dos principios insoslayables:
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5">
-                    <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5 text-sm"></i>
-                    <div>
-                        <strong class="text-slate-100 block mb-0.5">Herramientas Autorizadas:</strong> Uso exclusivo de aplicaciones corporativas o validadas para el ámbito educativo.
-                    </div>
-                </div>
-                <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5">
-                    <i class="fa-solid fa-user-shield text-amber-400 mt-0.5 text-sm"></i>
-                    <div>
-                        <strong class="text-slate-100 block mb-0.5">Protección Absoluta del Menor:</strong> Queda totalmente prohibido introducir datos identificativos, nombres, voz, imágenes o trabajos del alumnado en sistemas de IA.
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FOOTER -->
-        <footer class="pt-8 border-t border-slate-800 text-center space-y-4 text-xs text-slate-500">
-            <div class="flex flex-wrap justify-center items-center gap-4 text-slate-400 font-medium">
-                <span><i class="fa-solid fa-school text-cyan-400 mr-1"></i> Grupo de Trabajo GT</span>
-                <span>•</span>
-                <span><i class="fa-solid fa-laptop-code text-purple-400 mr-1"></i> Consejería de Desarrollo Educativo</span>
-                <span>•</span>
-                <span><i class="fa-solid fa-award text-amber-400 mr-1"></i> Acreditación TDE / STEAM 4.0</span>
-            </div>
-            <p>© Docentes 4.0 — Proyecto de Autoformación y Coordinación Interdisciplinar.</p>
-        </footer>
-
+<body>
+<div class="envoltura">
+  <div class="barra-sup"><button class="tema" data-gt-tema></button></div>
+  <div class="portada">
+    <div class="titular">
+      <span class="antetitulo">Grupo de trabajo · IES Vega de Mar · Curso 2026-27</span>
+      <h1>Docentes <span>4.0</span><br>Inteligencia colectiva e IA</h1>
+      <p class="entradilla">Diez docentes aprendiendo juntos a usar la IA en el día a día del aula: una tarde al mes, una herramienta nueva cada vez y un proyecto propio que crece durante el curso.</p>
     </div>
+    <aside class="proxima" aria-label="Próxima sesión">
+      <span class="etq">Próxima sesión</span>
+      <span class="fecha" id="proxFecha"></span>
+      <span id="proxCuenta"></span>
+      <ul id="proxLista"></ul>
+    </aside>
+  </div>
 
-    <!-- MODAL SIMULADOR DE PROMPT SEGURO -->
-    <div id="promptModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-lg w-full p-6 rounded-3xl space-y-4 border border-cyan-500/30 shadow-2xl">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-terminal text-cyan-400"></i> Simulador de Prompt Seguro
-                </h3>
-                <button onclick="closePromptModal()" class="text-slate-400 hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <p class="text-xs text-slate-300">
-                Observa cómo se estructura una petición profesional a una IA sin revelar información privada:
-            </p>
+  <div class="regla">
+    <span class="icono" aria-hidden="true">!</span>
+    <strong>La regla de oro</strong>
+    <p>Nunca metemos en la IA datos, fotos, voz ni trabajos del alumnado. Solo usamos herramientas autorizadas por la Consejería: Gemini con la cuenta @g.educaand.es.</p>
+  </div>
 
-            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300 space-y-2">
-                <p><span class="text-purple-400">[ROL]:</span> Actúa como un experto en pedagogía LOMLOE en Andalucía.</p>
-                <p><span class="text-purple-400">[CONTEXTO]:</span> Diseño de una Situación de Aprendizaje para 3º ESO.</p>
-                <p><span class="text-purple-400">[TAREA]:</span> Genera 3 criterios de evaluación con sus correspondientes rúbricas graduadas (1 a 4) enfocadas en la competencia digital y trabajo en equipo.</p>
-                <p><span class="text-amber-400">[RESTRICCIÓN]:</span> No utilices datos de alumnos reales ni nombres de centros.</p>
-            </div>
-
-            <div class="pt-2 text-right">
-                <button onclick="closePromptModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-bold rounded-xl transition-all">
-                    Entendido
-                </button>
-            </div>
-        </div>
+  <div class="seccion">
+    <div class="cab"><h2>El curso en cuatro fases</h2></div>
+    <div class="fases" id="fases">
+      <div class="fase" data-desde="2026-11" data-hasta="2026-11"><span class="meses">Noviembre</span><h3>Marco ético y primeras apps</h3><p>Qué se puede y qué no, Gemini en la cuenta educaand, la agenda del profe y el site personal.</p></div>
+      <div class="fase" data-desde="2026-12" data-hasta="2027-01"><span class="meses">Diciembre – enero</span><h3>Cuaderno de Séneca</h3><p>La IA para preparar rúbricas, criterios y comunicaciones sin datos del alumnado.</p></div>
+      <div class="fase" data-desde="2027-02" data-hasta="2027-03"><span class="meses">Febrero – marzo</span><h3>Situaciones de aprendizaje</h3><p>Diseñar SdA con IA y convertirlas en recursos que funcionan en el aula.</p></div>
+      <div class="fase" data-desde="2027-04" data-hasta="2027-06"><span class="meses">Abril – mayo</span><h3>Repositorio y memoria</h3><p>Lo mejor del curso, ordenado y abierto a todo el claustro. Cierre del reto.</p></div>
     </div>
+  </div>
 
-    <!-- JAVASCRIPT: CANVAS ANIMATION & TAB INTERACTION -->
-    <script>
-        // Tab Switcher Functionality
-        function switchTab(tabId) {
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-
-            // Reset tab button styles
-            const buttons = document.querySelectorAll('#tabContainer button');
-            buttons.forEach(btn => {
-                btn.className = "px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-2";
-            });
-
-            // Show current tab content
-            const activeContent = document.getElementById('content-' + tabId);
-            if (activeContent) {
-                activeContent.classList.remove('hidden');
-            }
-
-            // Highlight current button
-            const activeTabBtn = document.getElementById('tab-' + tabId);
-            if (activeTabBtn) {
-                activeTabBtn.className = "px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-cyan-500 text-slate-950 flex items-center gap-2 shadow-lg shadow-cyan-500/20";
-            }
-        }
-
-        // Modal Functions
-        function openPromptModal() {
-            document.getElementById('promptModal').classList.remove('hidden');
-        }
-        function closePromptModal() {
-            document.getElementById('promptModal').classList.add('hidden');
-        }
-
-        // Background Neural Canvas Animation
-        const canvas = document.getElementById('neuralCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-
-        // Particle System
-        const numParticles = Math.min(Math.floor(width / 20), 65);
-        const particles = [];
-
-        for (let i = 0; i < numParticles; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.6,
-                vy: (Math.random() - 0.5) * 0.6,
-                radius: Math.random() * 2 + 1,
-            });
-        }
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, width, height);
-
-            // Draw particles & connections
-            for (let i = 0; i < particles.length; i++) {
-                let p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                if (p.x < 0 || p.x > width) p.vx *= -1;
-                if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#06b6d4';
-                ctx.fill();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    let p2 = particles[j];
-                    let dx = p.x - p2.x;
-                    let dy = p.y - p2.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 130) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(168, 85, 247, ${1 - dist / 130})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            requestAnimationFrame(animateCanvas);
-        }
-
-        window.onload = function() {
-            animateCanvas();
-        };
-    </script>
+  <div class="seccion">
+    <div class="cab"><h2>Sesiones</h2><p>Primer lunes de cada mes, de 16:00 a 19:00</p></div>
+    <div class="sesiones" id="sesiones"></div>
+    <p class="pie">Las fechas de enero en adelante están por confirmar.</p>
+  </div>
+</div>
+<script>
+(function () {
+  GT.tema();
+  var SITE = 'https:' + '/' + '/sites.google.com/g.educaand.es/docentes40';
+  /* Para añadir una sesión: una línea más. pagina = ruta de su página en el site (vacía si aún no hay). */
+  var SESIONES = [
+    { n: 1, fecha: '2026-11-09', pagina: '/sesiones/sesion-01', lista: [] },
+    { n: 2, fecha: '2026-11-30', pagina: '', lista: ['Aula de informática', 'Trae tu agenda del profe funcionando', 'Empezamos con el Cuaderno de Séneca'] },
+    { n: 3, fecha: '2027-01-11', pagina: '', lista: [] },
+    { n: 4, fecha: '2027-02-01', pagina: '', lista: [] },
+    { n: 5, fecha: '2027-03-01', pagina: '', lista: [] }
+  ];
+  var hoy = new Date(), hoyIso = hoy.toISOString().slice(0, 10);
+  function larga(f) { return new Date(f + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }); }
+  function corta(f) { return new Date(f + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  var caja = document.getElementById('sesiones');
+  SESIONES.forEach(function (s) {
+    var hecha = s.fecha < hoyIso, t = GT.el(s.pagina ? 'a' : 'div', 'sesion' + (s.pagina ? '' : ' futura'));
+    if (s.pagina) GT.enlace(t, SITE + s.pagina);
+    t.appendChild(GT.el('span', 'n', 'Sesión ' + s.n)); t.appendChild(GT.el('span', 'f', corta(s.fecha)));
+    if (s.pagina) t.appendChild(GT.el('span', 'chip', 'Ver la sesión ↗'));
+    caja.appendChild(t);
+  });
+  var prox = SESIONES.filter(function (s) { return s.fecha >= hoyIso; })[0];
+  var aside = document.querySelector('.proxima');
+  if (prox) {
+    var f = larga(prox.fecha);
+    document.getElementById('proxFecha').textContent = f.charAt(0).toUpperCase() + f.slice(1);
+    var dias = Math.round((new Date(prox.fecha + 'T16:00:00') - hoy) / 864e5);
+    document.getElementById('proxCuenta').textContent = dias > 1 ? 'Faltan ' + dias + ' días' : dias === 1 ? 'Es mañana' : 'Es hoy';
+    var ul = document.getElementById('proxLista');
+    ['16:00 a 19:00'].concat(prox.lista).forEach(function (x) { ul.appendChild(GT.el('li', null, x)); });
+  } else aside.hidden = true;
+  var mes = hoyIso.slice(0, 7);
+  document.querySelectorAll('.fase').forEach(function (x) { if (mes >= x.getAttribute('data-desde') && mes <= x.getAttribute('data-hasta')) x.classList.add('actual'); });
+})();
+</script>
 </body>
 </html>

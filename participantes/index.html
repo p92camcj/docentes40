@@ -1,57 +1,64 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Participantes · Docentes 4.0</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700&display=swap">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="../comun/gt.css">
+<script src="../comun/api.js"></script>
+<script src="../comun/gt.js"></script>
 <style>
-  /* Para pegar en el site del GT: Insertar › Incrustar › Código. Para añadir a alguien, copia una línea de PARTICIPANTES. */
-  :root { --fondo: #f6f7f2; --papel: #ffffff; --tinta: #14262b; --suave: #4d6166; --linea: #d5dcd6; --acento: #1d6b55; --acento-claro: #e2efe8; }
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 16px; background: var(--fondo); color: var(--tinta); font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif; font-size: 16px; }
-  h2 { font-family: "Bricolage Grotesque", "Segoe UI", sans-serif; font-size: 1.15em; margin: 0 0 .6em; color: var(--suave); font-weight: 700; }
-  .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; margin-bottom: 1.4em; }
-  a.tarjeta { display: flex; flex-direction: column; gap: .25em; text-decoration: none; color: var(--tinta); background: var(--papel); border: 1px solid var(--linea); border-radius: 10px; padding: 14px 16px; transition: border-color .15s, background .15s; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; }
+  .tarjeta { display: flex; gap: 14px; align-items: center; text-decoration: none; color: var(--tinta); background: var(--papel); border: 1px solid var(--linea); border-radius: 12px; padding: 14px 16px; }
   a.tarjeta:hover, a.tarjeta:focus-visible { border-color: var(--acento); background: var(--acento-claro); outline: none; }
-  .nombre { font-family: "Bricolage Grotesque", "Segoe UI", sans-serif; font-weight: 700; font-size: 1.25em; }
-  .papel { font-size: .85em; color: var(--suave); }
-  .ir { margin-top: .4em; font-weight: 700; color: var(--acento); font-size: .9em; }
-  .pendiente { display: flex; flex-direction: column; gap: .25em; background: transparent; border: 1px dashed var(--linea); border-radius: 10px; padding: 14px 16px; color: var(--suave); }
-  .pendiente .nombre, .pendiente .ir { color: var(--suave); }
+  .tarjeta.pendiente { background: transparent; border-style: dashed; color: var(--suave); }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none; background: var(--acento-claro); color: var(--acento); display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 1.6rem; }
+  .datos { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .nombre { font-family: var(--display); font-weight: 800; font-size: 1.2rem; }
+  .papel { font-size: .85rem; color: var(--suave); }
+  .ir { font-weight: 700; color: var(--acento); font-size: .9rem; }
+  .pendiente .ir { color: var(--suave); font-weight: 400; }
+  h2 { font-size: 1.2rem; color: var(--suave); }
+  .bloque { display: flex; flex-direction: column; gap: 10px; }
 </style>
 </head>
 <body>
-<h2>Sites del grupo</h2>
-<div class="rejilla" id="miembros"></div>
-<h2>Invitadas</h2>
-<div class="rejilla" id="invitados"></div>
-
+<div class="envoltura">
+  <div class="barra-sup"><button class="tema" data-gt-tema></button></div>
+  <div class="bloque"><h2>Sites del grupo</h2><div class="rejilla" id="miembros"></div></div>
+  <div class="bloque" id="bloqueInv"><h2>Invitadas</h2><div class="rejilla" id="invitados"></div></div>
+</div>
 <script>
-  /* Una línea por persona: [nombre, dirección del site (vacía si aún no la tenemos), papel] */
-  var PARTICIPANTES = [
-    ['Julio', 'https://sites.google.com/g.educaand.es/docente40julio', 'coordinador'],
-    ['Raquel', 'https://sites.google.com/g.educaand.es/docente40raquel', 'miembro'],
-    ['Adrián', 'https://sites.google.com/g.educaand.es/docente40adrian', 'miembro'],
-    ['Carmen', 'https://sites.google.com/g.educaand.es/docente40carmen', 'miembro'],
-    ['JF', 'https://sites.google.com/g.educaand.es/docente40jf', 'miembro'],
-    ['José', '', 'miembro'],
-    ['Abel', 'https://sites.google.com/g.educaand.es/docente40abel-lpez', 'miembro'],
-    ['Fabiola', 'https://sites.google.com/g.educaand.es/docente40fabiola', 'invitada'],
-    ['Alejandra', '', 'invitada']
-  ];
-  PARTICIPANTES.forEach(function (p) {
-    var caja = document.getElementById(p[2] === 'invitada' ? 'invitados' : 'miembros');
-    var el = document.createElement(p[1] ? 'a' : 'div');
-    el.className = p[1] ? 'tarjeta' : 'pendiente';
-    if (p[1]) { el.href = p[1]; el.target = '_blank'; el.rel = 'noopener'; }
-    var n = document.createElement('span'); n.className = 'nombre'; n.textContent = p[0];
-    var r = document.createElement('span'); r.className = 'papel';
-    r.textContent = p[2] === 'coordinador' ? 'Coordinador' : p[2] === 'invitada' ? 'Invitada' : 'Miembro del GT';
-    var i = document.createElement('span'); i.className = 'ir'; i.textContent = p[1] ? 'Ver su site ↗' : 'Site en preparación';
-    el.appendChild(n); el.appendChild(r); el.appendChild(i);
-    caja.appendChild(el);
-  });
+(function () {
+  GT.tema();
+  /* Lista de respaldo por si la app no responde. La de verdad se edita en Administración › Participantes. */
+  var s = 'https:' + '/' + '/sites.google.com/g.educaand.es/';
+  var RESPALDO = [['Julio', 'coordinador', s + 'docente40julio'], ['Raquel', 'miembro', s + 'docente40raquel'], ['Adrián', 'miembro', s + 'docente40adrian'],
+    ['Carmen', 'miembro', s + 'docente40carmen'], ['JF', 'miembro', s + 'docente40jf'], ['José', 'miembro', ''], ['Abel', 'miembro', s + 'docente40abel-lpez'],
+    ['Fabiola', 'invitada', s + 'docente40fabiola'], ['Alejandra', 'invitada', '']].map(function (x) { return { nombre: x[0], papel: x[1], site: x[2], avatar: '' }; });
+  function pintar(lista) {
+    var m = document.getElementById('miembros'), inv = document.getElementById('invitados');
+    m.textContent = ''; inv.textContent = '';
+    lista.forEach(function (p) {
+      var t = GT.el(p.site ? 'a' : 'div', 'tarjeta' + (p.site ? '' : ' pendiente'));
+      if (p.site) GT.enlace(t, p.site);
+      var av;
+      if (p.avatar && /^data:image\/(png|jpeg|webp);base64,/.test(p.avatar)) { av = GT.el('img', 'avatar'); av.src = p.avatar; av.alt = ''; }
+      else av = GT.el('span', 'avatar', (p.nombre || '?').charAt(0).toUpperCase());
+      av.setAttribute('aria-hidden', 'true');
+      var d = GT.el('span', 'datos');
+      d.appendChild(GT.el('span', 'nombre', p.nombre));
+      d.appendChild(GT.el('span', 'papel', p.papel === 'coordinador' ? 'Coordinador' : p.papel === 'invitada' ? 'Invitada' : 'Miembro del GT'));
+      d.appendChild(GT.el('span', 'ir', p.site ? 'Ver su site ↗' : 'Site en preparación'));
+      t.appendChild(av); t.appendChild(d);
+      (p.papel === 'invitada' ? inv : m).appendChild(t);
+    });
+    document.getElementById('bloqueInv').hidden = !inv.children.length;
+  }
+  pintar(RESPALDO);
+  GT.leer('participantes').then(function (d) { if (d.participantes.length) pintar(d.participantes); }).catch(function () {});
+})();
 </script>
 </body>
 </html>

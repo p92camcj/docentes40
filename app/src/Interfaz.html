@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+/* Docentes 4.0 · app del GT. Mismo diseño que las páginas públicas: verde pizarra y papel. */
+:root {
+  --fondo: #f6f7f2; --papel: #ffffff; --tinta: #14262b; --suave: #4d6166; --linea: #d5dcd6;
+  --acento: #1d6b55; --acento-claro: #e2efe8; --aviso: #8a5a00; --aviso-claro: #fbf0d9; --error: #a3321f;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --texto: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --fondo: #10191b; --papel: #172327; --tinta: #e5ece9; --suave: #9fb2b0; --linea: #2c3d40;
+  --acento: #5fc3a1; --acento-claro: #1b3830; --aviso: #f0c46a; --aviso-claro: #3a2f17; --error: #f08a74; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --fondo: #10191b; --papel: #172327; --tinta: #e5ece9; --suave: #9fb2b0; --linea: #2c3d40;
+  --acento: #5fc3a1; --acento-claro: #1b3830; --aviso: #f0c46a; --aviso-claro: #3a2f17; --error: #f08a74; color-scheme: dark }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--fondo); color: var(--tinta); font-family: var(--texto); font-size: 16px; line-height: 1.5; }
+.envoltura { max-width: 1080px; margin: 0 auto; padding: 0 16px 48px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-size: 1.5rem; font-weight: 800; }
+h2 { font-size: 1.3rem; font-weight: 800; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--acento); }
+:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+header.cab { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 14px 0; }
+header.cab .quien { color: var(--suave); font-size: .9rem; }
+nav.pestanas { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--linea); margin-bottom: 20px; }
+nav.pestanas button, .subnav button { font: inherit; font-weight: 700; font-size: .95rem; padding: 8px 14px; border-radius: 999px; border: 0; background: transparent; color: var(--suave); cursor: pointer; }
+nav.pestanas button[aria-current="page"], .subnav button[aria-current="page"] { background: var(--acento); color: var(--papel); }
+.subnav { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
+.subnav button { font-size: .88rem; padding: 6px 12px; border: 1px solid var(--linea); }
+.tema { margin-left: auto; font: inherit; font-weight: 700; font-size: .85rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
+.vista { display: flex; flex-direction: column; gap: 18px; }
+.panel { background: var(--papel); border: 1px solid var(--linea); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.pie { font-size: .85rem; color: var(--suave); }
+.boton { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-weight: 700; font-size: .9rem; border: 1px solid var(--acento); background: var(--acento); color: var(--papel); border-radius: 8px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
+.boton.claro { background: transparent; color: var(--acento); }
+.boton.peligro { background: transparent; color: var(--error); border-color: var(--error); }
+.boton.peq { padding: 5px 10px; font-size: .82rem; }
+.boton:disabled { opacity: .5; cursor: default; }
+.formulario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.formulario .ancho { grid-column: 1 / -1; }
+label.et { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+input[type="text"], input[type="url"], input[type="email"], input[type="number"], input[type="date"], select, textarea {
+  font: inherit; width: 100%; padding: 8px 10px; border: 1px solid var(--linea); border-radius: 8px; background: var(--fondo); color: var(--tinta); }
+textarea { resize: vertical; }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--linea); }
+.fila .sub { font-size: .85rem; color: var(--suave); overflow-wrap: anywhere; }
+.fila .botones { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.chip { display: inline-block; font-size: .78rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; background: var(--acento-claro); color: var(--acento); margin-left: 6px; }
+.chip.pend { background: var(--aviso-claro); color: var(--aviso); }
+.vacio { color: var(--suave); font-size: .92rem; padding: 6px 0; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--acento-claro); flex: none; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--acento); }
+.persona { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.rejilla2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; background: var(--tinta); color: var(--fondo); padding: 10px 16px; border-radius: 8px; font-weight: 700; z-index: 20; max-width: 90vw; }
+.toast.mal { background: var(--error); color: #fff; }
+.contador { font-size: .8rem; color: var(--suave); }
+.contador.pasa { color: var(--error); font-weight: 700; }
+.pasos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.paso p { font-size: .9rem; color: var(--suave); margin: 2px 0 8px; }
+.marcador { background: var(--aviso); border-color: var(--aviso); color: var(--papel); cursor: grab; }
+.asist label { display: flex; gap: 8px; align-items: baseline; }
+.cargando { color: var(--suave); padding: 24px 0; }
+@media (max-width: 760px) { .formulario, .rejilla2, .pasos { grid-template-columns: minmax(0, 1fr); } .fila { grid-template-columns: minmax(0, 1fr); } .fila .botones { justify-content: flex-start; } }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <header class="cab">
+    <h1>Docentes 4.0</h1>
+    <span class="quien" id="quien"></span>
+    <button type="button" class="tema" id="tema">Modo oscuro</button>
+  </header>
+  <nav class="pestanas" id="pestanas" aria-label="Secciones">
+    <button type="button" data-v="cielo">Mi proyecto</button>
+    <button type="button" data-v="recursos">Compartir recursos</button>
+    <button type="button" data-v="admin" data-admin="1">Administración</button>
+  </nav>
+
+  <!-- MI PROYECTO -->
+  <section class="vista" id="v-cielo" hidden>
+    <div class="panel">
+      <h2>Apunta al cielo</h2>
+      <p>Tu proyecto del curso y en qué peldaño está. Lo que guardes sale al momento en la página «Apunta al cielo» del site.</p>
+    </div>
+    <div class="panel">
+      <h3 id="tituloFormP">Añadir un proyecto</h3>
+      <form class="formulario" id="formP">
+        <input type="hidden" id="pId">
+        <div class="ancho"><label class="et" for="pTitulo">Nombre del proyecto</label><input type="text" id="pTitulo" maxlength="80" required></div>
+        <div class="ancho"><label class="et" for="pDesc">En dos líneas, ¿qué es?</label><textarea id="pDesc" rows="3" maxlength="400" required></textarea></div>
+        <div><label class="et" for="pPeldano">Peldaño</label><select id="pPeldano"></select></div>
+        <div><label class="et" for="pEnlace">Enlace (opcional)</label><input type="url" id="pEnlace" placeholder="Tu site o la app"></div>
+        <div class="acciones ancho"><button class="boton" type="submit" id="pGuardar">Guardar y publicar</button><button class="boton claro" type="button" id="pNuevo" hidden>Añadir otro en vez de editar</button></div>
+      </form>
+    </div>
+    <div class="panel"><h3>Mis proyectos</h3><div id="misProyectos"><p class="cargando">Cargando…</p></div></div>
+  </section>
+
+  <!-- RECURSOS -->
+  <section class="vista" id="v-recursos" hidden>
+    <div class="panel">
+      <h2>Compartir un recurso</h2>
+      <p>Un prompt, una web, una app o una carpeta que te haya servido. Julio lo revisa y, cuando lo aprueba, sale en la página «Recursos» del site.</p>
+      <form class="formulario" id="formR">
+        <div class="ancho"><label class="et" for="rTitulo">Título</label><input type="text" id="rTitulo" maxlength="100" required></div>
+        <div class="ancho"><label class="et" for="rDesc">Para qué sirve</label><textarea id="rDesc" rows="2" maxlength="300" required></textarea></div>
+        <div><label class="et" for="rTipo">Tipo</label><select id="rTipo"></select></div>
+        <div><label class="et" for="rEnlace">Enlace</label><input type="url" id="rEnlace" required placeholder="Un site, una carpeta de Drive…"></div>
+        <div class="acciones ancho"><button class="boton" type="submit">Enviar</button></div>
+      </form>
+    </div>
+    <div class="panel"><h3>Lo que he compartido</h3><div id="misRecursos"><p class="cargando">Cargando…</p></div></div>
+  </section>
+
+  <!-- ADMINISTRACIÓN -->
+  <section class="vista" id="v-admin" hidden>
+    <div class="subnav" id="subnav">
+      <button type="button" data-s="personas">Personas<span class="chip pend" id="nSol" hidden></span></button>
+      <button type="button" data-s="aproyectos">Proyectos</button>
+      <button type="button" data-s="arecursos">Recursos<span class="chip pend" id="nPend" hidden></span></button>
+      <button type="button" data-s="participantes">Participantes</button>
+      <button type="button" data-s="acta">Acta de sesión</button>
+    </div>
+
+    <div class="vista" id="s-personas">
+      <div class="rejilla2">
+        <div class="panel"><h3>Solicitudes de acceso</h3><div id="solicitudes"></div></div>
+        <div class="panel"><h3>Autorizar a alguien</h3>
+          <form class="formulario" id="formAut">
+            <div class="ancho"><label class="et" for="aCorreo">Correo</label><input type="email" id="aCorreo" required placeholder="nombre@g.educaand.es"></div>
+            <div><label class="et" for="aNombre">Nombre con el que firma</label><input type="text" id="aNombre" maxlength="60"></div>
+            <div><label class="et" for="aPapel">Papel</label><select id="aPapel"><option value="miembro">Miembro del GT</option><option value="invitada">Invitada o invitado</option></select></div>
+            <div class="acciones ancho"><button class="boton" type="submit">Autorizar</button></div>
+          </form>
+        </div>
+      </div>
+      <div class="panel"><h3>Personas autorizadas</h3><p class="pie">Pueden publicar su proyecto y proponer recursos. Tú no hace falta que estés: eres el administrador.</p><div id="personas"></div></div>
+    </div>
+
+    <div class="vista" id="s-aproyectos" hidden>
+      <div class="panel"><h3>Proyectos «Apunta al cielo»</h3><p class="pie">Ocultar lo quita de la web sin borrarlo. Eliminar lo borra para siempre.</p><div id="aProyectos"></div></div>
+    </div>
+
+    <div class="vista" id="s-arecursos" hidden>
+      <div class="panel"><h3>Por aprobar</h3><div id="aPendientes"></div></div>
+      <div class="panel"><h3>Publicados y ocultos</h3><div id="aRecursos"></div></div>
+      <div class="panel"><h3>Añadir un recurso directamente</h3>
+        <form class="formulario" id="formRA">
+          <div class="ancho"><label class="et" for="raTitulo">Título</label><input type="text" id="raTitulo" maxlength="100" required></div>
+          <div class="ancho"><label class="et" for="raDesc">Para qué sirve</label><textarea id="raDesc" rows="2" maxlength="300" required></textarea></div>
+          <div><label class="et" for="raTipo">Tipo</label><select id="raTipo"></select></div>
+          <div><label class="et" for="raEnlace">Enlace</label><input type="url" id="raEnlace" required></div>
+          <div><label class="et" for="raAutor">Autor que se muestra</label><input type="text" id="raAutor" maxlength="60" placeholder="Julio, Sesión 2…"></div>
+          <div class="acciones ancho"><button class="boton" type="submit">Publicar</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="vista" id="s-participantes" hidden>
+      <div class="panel"><h3>Participantes</h3><p class="pie">Las tarjetas de la página «Participantes». Sube una foto o un avatar en PNG o JPG: se recorta en círculo y se reduce sola. Pide permiso a cada persona antes de subir su foto, porque la página es pública.</p><div id="aParticipantes"></div></div>
+      <div class="panel"><h3 id="tituloFormA">Añadir a alguien</h3>
+        <form class="formulario" id="formA">
+          <input type="hidden" id="paId">
+          <div><label class="et" for="paNombre">Nombre</label><input type="text" id="paNombre" maxlength="40" required></div>
+          <div><label class="et" for="paPapel">Papel</label><select id="paPapel"><option value="miembro">Miembro del GT</option><option value="invitada">Invitada o invitado</option><option value="coordinador">Coordinador</option></select></div>
+          <div class="ancho"><label class="et" for="paSite">Dirección de su site (vacía si aún no lo tiene)</label><input type="url" id="paSite"></div>
+          <div><label class="et" for="paOrden">Orden</label><input type="number" id="paOrden" min="0" max="999" value="50"></div>
+          <div><label class="et" for="paFoto">Foto o avatar</label><input type="file" id="paFoto" accept="image/png,image/jpeg,image/webp"></div>
+          <div class="ancho persona" id="paVista" hidden><img class="avatar" id="paImg" alt="Vista previa" style="width:72px;height:72px"><button class="boton peligro peq" type="button" id="paQuitar">Quitar la imagen</button></div>
+          <div class="acciones ancho"><button class="boton" type="submit">Guardar</button><button class="boton claro" type="button" id="paCancelar">Cancelar</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="vista" id="s-acta" hidden>
+      <div class="panel">
+        <h3>Acta de sesión para Séneca</h3>
+        <p>Sube el HTML de la presentación de la sesión: el acta sale escrita sola. El horario va siempre de 16:00 a 19:00. Marca quién vino, retoca lo que quieras y pásalo a Séneca con el marcador.</p>
+        <div class="formulario">
+          <div><label class="et" for="actaArchivo">Presentación de la sesión</label><input type="file" id="actaArchivo" accept=".html,.htm,text/html"><p class="pie" id="actaOrigen">Aún no has subido ninguna.</p></div>
+          <div><label class="et" for="actaFecha">Fecha de la sesión</label><input type="date" id="actaFecha"></div>
+          <div class="ancho"><span class="et">¿Quién vino?</span><div class="asist" id="actaAsist"></div></div>
+        </div>
+      </div>
+      <div class="panel" id="actaCampos"></div>
+      <div class="panel">
+        <h3>Pasarlo a Séneca</h3>
+        <div class="pasos">
+          <div class="paso"><strong>1 · Copia el acta</strong><p>Con los retoques incluidos.</p><button class="boton" type="button" id="actaCopiar">Copiar para Séneca</button></div>
+          <div class="paso"><strong>2 · Abre el acta nueva</strong><p>En Séneca: tu grupo de trabajo › Actas › Nueva.</p></div>
+          <div class="paso"><strong>3 · Pulsa el marcador</strong><p>Rellena fecha, textos y asistentes, y lo deja en naranja. Si el navegador pregunta, deja leer el portapapeles o pega con Ctrl+V.</p></div>
+          <div class="paso"><strong>4 · Revisa y pulsa Aceptar</strong><p>El marcador nunca guarda solo.</p></div>
+        </div>
+        <div class="acciones" style="align-items:center">
+          <span>Instálalo una vez: arrastra este botón a la barra de marcadores</span>
+          <a class="boton marcador" id="marcador" href="javascript:(function%20()%20%7B%0Avar%20NARANJA%20%3D%20%273px%20solid%20%23e8850c%27%3B%0Afunction%20buscarForm(w)%20%7B%0Atry%20%7B%0Avar%20d%20%3D%20w.document%3B%0Aif%20(d.forms.FORMULARIO%20%26%26%20d.forms.FORMULARIO.F_ACTA)%20return%20%7B%20w%3A%20w%2C%20f%3A%20d.forms.FORMULARIO%20%7D%3B%0A%7D%20catch%20(e)%20%7B%20return%20null%3B%20%7D%0Afor%20(var%20i%20%3D%200%3B%20i%20%3C%20w.frames.length%3B%20i%2B%2B)%20%7B%20var%20r%20%3D%20buscarForm(w.frames%5Bi%5D)%3B%20if%20(r)%20return%20r%3B%20%7D%0Areturn%20null%3B%0A%7D%0Avar%20donde%20%3D%20buscarForm(window.top)%20%7C%7C%20buscarForm(window)%3B%0Aif%20(!donde)%20%7B%20alert(%27Rellenar%20acta%20GT%3A%20abre%20primero%20en%20S%C3%A9neca%20la%20pantalla%20del%20acta%20(Actas%20de%20grupo%20de%20trabajo%20%E2%80%BA%20Nueva).%27)%3B%20return%3B%20%7D%0Avar%20f%20%3D%20donde.f%3B%0Afunction%20latin1(s)%20%7B%0Avar%20t%20%3D%20String(s%20%7C%7C%20%27%27).replace(%2F%5B%E2%80%9C%E2%80%9D%E2%80%9E%5D%2Fg%2C%20%27%22%27).replace(%2F%5B%E2%80%98%E2%80%99%E2%80%9A%5D%2Fg%2C%20%22%27%22).replace(%2F%5B%E2%80%93%E2%80%94%5D%2Fg%2C%20%27-%27).replace(%2F%E2%80%A6%2Fg%2C%20%27...%27).replace(%2F%E2%82%AC%2Fg%2C%20%27EUR%27).replace(%2F%E2%80%A2%2Fg%2C%20%27-%27).replace(%2F%5Cr%5Cn%3F%2Fg%2C%20%27%5Cn%27).replace(%2F%5B%C2%A0%E2%80%AF%5D%2Fg%2C%20%27%20%27)%3B%0Areturn%20t.replace(%2F%5B%5E%5Cn%20-~%C2%A1-%C3%BF%5D%2Fg%2C%20%27%27)%3B%0A%7D%0Afunction%20largo(s)%20%7B%20return%20s.length%20%2B%20(s.match(%2F%5Cn%2Fg)%20%7C%7C%20%5B%5D).length%3B%20%7D%0Afunction%20recortar(s%2C%20max)%20%7B%0Aif%20(largo(s)%20%3C%3D%20max)%20return%20s%3B%0Awhile%20(largo(s)%20%3E%20max%20-%203)%20%7B%20var%20c%20%3D%20s.lastIndexOf(%27%20%27%2C%20s.length%20-%202)%3B%20s%20%3D%20c%20%3E%200%20%3F%20s.slice(0%2C%20c)%20%3A%20s.slice(0%2C%20-1)%3B%20%7D%0Areturn%20s%20%2B%20%27...%27%3B%0A%7D%0Afunction%20poner(el%2C%20v)%20%7B%0Ael.value%20%3D%20v%3B%0A%5B%27input%27%2C%20%27change%27%5D.forEach(function%20(t)%20%7B%20el.dispatchEvent(new%20donde.w.Event(t%2C%20%7B%20bubbles%3A%20true%20%7D))%3B%20%7D)%3B%0Ael.style.outline%20%3D%20NARANJA%3B%0A%7D%0Afunction%20norm(s)%20%7B%20return%20String(s%20%7C%7C%20%27%27).toLowerCase().normalize(%27NFD%27).replace(%2F%5B%CC%80-%CD%AF%5D%2Fg%2C%20%27%27).replace(%2F%5B%5Ea-z0-9%20%5D%2Fg%2C%20%27%20%27).replace(%2F%5Cs%2B%2Fg%2C%20%27%20%27).trim()%3B%20%7D%0Afunction%20coincide(nombreSeneca%2C%20buscado)%20%7B%0Avar%20palabras%20%3D%20norm(nombreSeneca).split(%27%20%27)%2C%20b%20%3D%20norm(buscado).split(%27%20%27)%3B%0Areturn%20b.length%20%3E%200%20%26%26%20b%5B0%5D%20!%3D%3D%20%27%27%20%26%26%20b.every(function%20(x)%20%7B%20return%20palabras.indexOf(x)%20%3E%3D%200%3B%20%7D)%3B%0A%7D%0Afunction%20aplicar(texto)%20%7B%0Avar%20d%3B%0Atry%20%7B%20d%20%3D%20JSON.parse(texto)%3B%20%7D%20catch%20(e)%20%7B%20alert(%27Rellenar%20acta%20GT%3A%20lo%20pegado%20no%20son%20los%20datos%20del%20acta.%20Vuelve%20a%20pulsar%20%C2%ABCopiar%20para%20S%C3%A9neca%C2%BB%20en%20la%20p%C3%A1gina%20del%20GT.%27)%3B%20return%3B%20%7D%0Aif%20(!d%20%7C%7C%20d.tipo%20!%3D%3D%20%27acta-gt%27)%20%7B%20alert(%27Rellenar%20acta%20GT%3A%20lo%20pegado%20no%20son%20los%20datos%20del%20acta.%27)%3B%20return%3B%20%7D%0Avar%20avisos%20%3D%20%5B%5D%3B%0Aif%20(!%2F%5E%5Cd%7B2%7D%5C%2F%5Cd%7B2%7D%5C%2F%5Cd%7B4%7D%24%2F.test(d.fecha%20%7C%7C%20%27%27))%20avisos.push(%27La%20fecha%20no%20tiene%20el%20formato%20dd%2Fmm%2Faaaa.%27)%3B%0Aponer(f.F_ACTA%2C%20d.fecha%20%7C%7C%20%27%27)%3B%0A%5B%5B%27C_REVISION%27%2C%20d.revision%2C%20%27Revisi%C3%B3n%27%5D%2C%20%5B%27C_ACUERDOS%27%2C%20d.acuerdos%2C%20%27Acuerdos%27%5D%2C%20%5B%27C_ENLACES%27%2C%20d.enlaces%2C%20%27Enlaces%27%5D%5D.forEach(function%20(c)%20%7B%0Avar%20el%20%3D%20f%5Bc%5B0%5D%5D%3B%20if%20(!el)%20%7B%20avisos.push(%27No%20encuentro%20el%20campo%20%27%20%2B%20c%5B2%5D%20%2B%20%27.%27)%3B%20return%3B%20%7D%0Avar%20v%20%3D%20latin1(c%5B1%5D)%3B%20var%20r%20%3D%20recortar(v%2C%202000)%3B%0Aif%20(r%20!%3D%3D%20v)%20avisos.push(c%5B2%5D%20%2B%20%27%3A%20pasaba%20de%202000%20caracteres%20y%20lo%20he%20recortado.%27)%3B%0Aponer(el%2C%20r)%3B%0A%7D)%3B%0Avar%20asistentes%20%3D%20d.asistentes%20%7C%7C%20%5B%5D%2C%20marcados%20%3D%20%5B%5D%2C%20usados%20%3D%20%7B%7D%3B%0Afor%20(var%20i%20%3D%201%3B%20f%5B%27SELECCION_%27%20%2B%20i%5D%3B%20i%2B%2B)%20%7B%0Avar%20cb%20%3D%20f%5B%27SELECCION_%27%20%2B%20i%5D%2C%20nom%20%3D%20f%5B%27NOMBRE_%27%20%2B%20i%5D%20%3F%20f%5B%27NOMBRE_%27%20%2B%20i%5D.value%20%3A%20%27%27%3B%0Avar%20quien%20%3D%20null%3B%0Aasistentes.forEach(function%20(a)%20%7B%20if%20(!quien%20%26%26%20coincide(nom%2C%20a))%20quien%20%3D%20a%3B%20%7D)%3B%0Avar%20debe%20%3D%20!!quien%3B%0Aif%20(quien)%20%7B%20usados%5Bquien%5D%20%3D%201%3B%20marcados.push(nom)%3B%20%7D%0Aif%20(cb.disabled)%20continue%3B%0Aif%20(cb.checked%20!%3D%3D%20debe)%20cb.click()%3B%0Acb.value%20%3D%20cb.checked%20%3F%20%27S%27%20%3A%20%27N%27%3B%0Avar%20celda%20%3D%20cb.closest%20%3F%20cb.closest(%27tr%27)%20%3A%20null%3B%20if%20(celda)%20celda.style.outline%20%3D%20debe%20%3F%20NARANJA%20%3A%20%27%27%3B%0A%7D%0Avar%20sin%20%3D%20asistentes.filter(function%20(a)%20%7B%20return%20!usados%5Ba%5D%3B%20%7D)%3B%0Aif%20(sin.length)%20avisos.push(%27No%20encuentro%20en%20Integrantes%20a%3A%20%27%20%2B%20sin.join(%27%2C%20%27)%20%2B%20%27.%20M%C3%A1rcalos%20a%20mano.%27)%3B%0Aalert(%27Acta%20rellenada%20(en%20naranja).%20Asisten%20%27%20%2B%20marcados.length%20%2B%20%27.%5Cn%27%20%2B%20(avisos.length%20%3F%20%27%5CnRevisa%3A%5Cn-%20%27%20%2B%20avisos.join(%27%5Cn-%20%27)%20%2B%20%27%5Cn%27%20%3A%20%27%27)%20%2B%20%27%5CnRevisa%20y%20pulsa%20Aceptar%20en%20S%C3%A9neca.%27)%3B%0A%7D%0Afunction%20pedir()%20%7B%0Avar%20t%20%3D%20prompt(%27Rellenar%20acta%20GT%5Cn%5CnPega%20aqu%C3%AD%20(Ctrl%2BV)%20los%20datos%20copiados%20de%20la%20p%C3%A1gina%20del%20GT%20y%20pulsa%20Aceptar%3A%27)%3B%0Aif%20(t)%20aplicar(t)%3B%0A%7D%0Aif%20(navigator.clipboard%20%26%26%20navigator.clipboard.readText)%20%7B%0Anavigator.clipboard.readText().then(function%20(t)%20%7B%20if%20(t%20%26%26%20t.indexOf(%27%22acta-gt%22%27)%20%3E%3D%200)%20aplicar(t)%3B%20else%20pedir()%3B%20%7D%2C%20pedir)%3B%0A%7D%20else%20pedir()%3B%0A%7D)()%3B">Rellenar acta GT</a>
+          <button class="boton claro" type="button" id="copiarMarcador">Copiar el código del marcador</button>
+        </div>
+        <p class="pie">Si no se deja arrastrar: crea un marcador nuevo, llámalo «Rellenar acta GT» y pega el código como URL.</p>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  var D = <?!= datosIniciales ?>;
+  var ES_ADMIN = D.rol === 'admin';
+  var datosAdmin = null, mios = null;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function aviso(t, mal) { var a = $('toast'); a.textContent = t; a.className = 'toast' + (mal ? ' mal' : ''); a.hidden = false; clearTimeout(aviso.t); aviso.t = setTimeout(function () { a.hidden = true; }, mal ? 6000 : 3500); }
+  function opciones(sel, lista, valores) { sel.textContent = ''; lista.forEach(function (t, i) { var o = el('option', null, t); o.value = valores ? valores[i] : t; sel.appendChild(o); }); }
+  function enlaceA(url, txt) { var a = el('a', null, txt || url); a.href = url; a.target = '_blank'; a.rel = 'noopener'; return a; }
+
+  /* Llamada al servidor: fn(resultado) si va bien; los errores para el usuario salen en el aviso */
+  function llamar(nombre, args, hecho, boton) {
+    if (boton) boton.disabled = true;
+    var r = google.script.run.withSuccessHandler(function (res) {
+      if (boton) boton.disabled = false;
+      if (res && res.ok === false) { aviso(res.error, true); return; }
+      hecho(res && res.ok === true ? res.resultado : res);
+    }).withFailureHandler(function (e) {
+      if (boton) boton.disabled = false;
+      aviso(String(e && e.message || e).indexOf('No autorizado') >= 0 ? 'No tienes permiso para eso.' : 'No se ha podido completar. Recarga la página e inténtalo otra vez.', true);
+    });
+    r[nombre].apply(r, args);
+  }
+
+  /* ---------- tema claro / oscuro ---------- */
+  var raiz = document.documentElement;
+  function oscuro() { var t = raiz.getAttribute('data-theme'); return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function pintarTema() { $('tema').textContent = oscuro() ? 'Modo claro' : 'Modo oscuro'; }
+  try { var tg = localStorage.getItem('gt-tema'); if (tg) raiz.setAttribute('data-theme', tg); } catch (e) {}
+  $('tema').addEventListener('click', function () { var n = oscuro() ? 'light' : 'dark'; raiz.setAttribute('data-theme', n); try { localStorage.setItem('gt-tema', n); } catch (e) {} pintarTema(); });
+  pintarTema();
+
+  /* ---------- pestañas ---------- */
+  $('quien').textContent = D.nombre + ' · ' + D.correo;
+  document.querySelectorAll('[data-admin]').forEach(function (b) { b.hidden = !ES_ADMIN; });
+  function ir(v) {
+    if (v === 'admin' && !ES_ADMIN) v = 'cielo';
+    ['cielo', 'recursos', 'admin'].forEach(function (n) { $('v-' + n).hidden = n !== v; });
+    document.querySelectorAll('#pestanas button').forEach(function (b) { if (b.getAttribute('data-v') === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    if (v === 'admin' && !datosAdmin) cargarAdmin();
+  }
+  document.querySelectorAll('#pestanas button').forEach(function (b) { b.addEventListener('click', function () { ir(b.getAttribute('data-v')); }); });
+  function sub(s) {
+    ['personas', 'aproyectos', 'arecursos', 'participantes', 'acta'].forEach(function (n) { $('s-' + n).hidden = n !== s; });
+    document.querySelectorAll('#subnav button').forEach(function (b) { if (b.getAttribute('data-s') === s) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  }
+  document.querySelectorAll('#subnav button').forEach(function (b) { b.addEventListener('click', function () { sub(b.getAttribute('data-s')); }); });
+
+  var NOMBRES_PELDANO = D.peldanos.map(function (p, i) { return (i + 1) + ' · ' + p; });
+  opciones($('pPeldano'), NOMBRES_PELDANO, [1, 2, 3, 4]);
+  opciones($('rTipo'), D.tipos); opciones($('raTipo'), D.tipos);
+
+  function fila(caja, titulo, subtxt, botones, izqExtra) {
+    var f = el('div', 'fila'), izq = el('div'); izq.style.minWidth = '0';
+    var cont = izqExtra ? el('div', 'persona') : izq;
+    if (izqExtra) { cont.appendChild(izqExtra); cont.appendChild(izq); }
+    izq.appendChild(el('div', null, titulo)); if (subtxt) izq.appendChild(el('div', 'sub', subtxt));
+    var bb = el('div', 'botones');
+    botones.forEach(function (x) { var b = el('button', 'boton peq ' + (x[2] || ''), x[0]); b.type = 'button'; b.addEventListener('click', function () { x[1](b); }); bb.appendChild(b); });
+    f.appendChild(cont); f.appendChild(bb); caja.appendChild(f);
+    return f;
+  }
+  function vacio(caja, t) { caja.appendChild(el('p', 'vacio', t)); }
+  /* Eliminar con confirmación en la misma fila */
+  function confirmarEn(f, texto, accion) {
+    f.textContent = '';
+    var izq = el('div'); izq.appendChild(el('div', null, texto)); izq.appendChild(el('div', 'sub', 'Se borra para siempre.'));
+    var bb = el('div', 'botones'), si = el('button', 'boton peq peligro', 'Sí, eliminar'), no = el('button', 'boton peq claro', 'No');
+    si.type = no.type = 'button';
+    si.addEventListener('click', function () { accion(si); }); no.addEventListener('click', pintarAdmin);
+    bb.appendChild(si); bb.appendChild(no); f.appendChild(izq); f.appendChild(bb);
+  }
+
+  /* ---------- MI PROYECTO ---------- */
+  function cargarMios() { llamar('appInicio', [], function (r) { mios = r; pintarMios(); }); }
+  function pintarMios() {
+    var c = $('misProyectos'); c.textContent = '';
+    mios.proyectos.forEach(function (p) {
+      fila(c, p.titulo, 'Peldaño ' + NOMBRES_PELDANO[p.peldano - 1] + (p.visible ? '' : ' · oculto por el coordinador'), [['Editar', function () { editarMio(p); }, 'claro']]);
+    });
+    if (!mios.proyectos.length) vacio(c, 'Todavía no has añadido ningún proyecto.');
+    var r = $('misRecursos'); r.textContent = '';
+    mios.recursos.forEach(function (x) { fila(r, x.titulo, x.tipo + ' · ' + (x.estado === 'pendiente' ? 'esperando a que Julio lo revise' : x.estado === 'publicado' ? 'publicado' : 'oculto'), []); });
+    if (!mios.recursos.length) vacio(r, 'Aún no has compartido nada.');
+  }
+  function editarMio(p) {
+    $('pId').value = p.id; $('pTitulo').value = p.titulo; $('pDesc').value = p.descripcion; $('pPeldano').value = p.peldano; $('pEnlace').value = p.enlace;
+    $('tituloFormP').textContent = 'Editar «' + p.titulo + '»'; $('pNuevo').hidden = false; $('pTitulo').focus();
+  }
+  function limpiarFormP() { $('formP').reset(); $('pId').value = ''; $('tituloFormP').textContent = 'Añadir un proyecto'; $('pNuevo').hidden = true; }
+  $('pNuevo').addEventListener('click', limpiarFormP);
+  $('formP').addEventListener('submit', function (e) {
+    e.preventDefault();
+    llamar('appGuardarProyecto', [{ id: $('pId').value, titulo: $('pTitulo').value, descripcion: $('pDesc').value, peldano: +$('pPeldano').value, enlace: $('pEnlace').value.trim() }], function () {
+      limpiarFormP(); aviso('Guardado. Ya sale en «Apunta al cielo».'); cargarMios(); if (ES_ADMIN) cargarAdmin();
+    }, $('pGuardar'));
+  });
+  $('formR').addEventListener('submit', function (e) {
+    e.preventDefault();
+    llamar('appProponerRecurso', [{ titulo: $('rTitulo').value, descripcion: $('rDesc').value, tipo: $('rTipo').value, enlace: $('rEnlace').value.trim() }], function (r) {
+      $('formR').reset(); aviso(r.estado === 'publicado' ? 'Publicado.' : 'Enviado. Saldrá en «Recursos» cuando Julio lo apruebe.'); cargarMios(); if (ES_ADMIN) cargarAdmin();
+    }, e.submitter);
+  });
+
+  /* ---------- ADMINISTRACIÓN ---------- */
+  function cargarAdmin() { llamar('adminDatos', [], function (r) { datosAdmin = r; pintarAdmin(); }); }
+  function pintarAdmin() {
+    if (!datosAdmin) return;
+    var d = datosAdmin;
+    /* Solicitudes */
+    var s = $('solicitudes'); s.textContent = '';
+    d.solicitudes.forEach(function (x) {
+      var nom = el('input'); nom.type = 'text'; nom.value = x.nombre; nom.setAttribute('aria-label', 'Nombre de ' + x.correo); nom.style.maxWidth = '180px';
+      var f = fila(s, x.correo, 'Pedido el ' + new Date(x.pedida_utc).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }), [
+        ['Autorizar como miembro', function (b) { autorizar(x.correo, nom.value, 'miembro', b); }],
+        ['Como invitada', function (b) { autorizar(x.correo, nom.value, 'invitada', b); }, 'claro'],
+        ['Rechazar', function (b) { llamar('adminRechazar', [x.correo], function () { aviso('Solicitud rechazada'); cargarAdmin(); }, b); }, 'peligro']
+      ]);
+      f.firstChild.appendChild(nom);
+    });
+    if (!d.solicitudes.length) vacio(s, 'No hay solicitudes pendientes.');
+    $('nSol').hidden = !d.solicitudes.length; $('nSol').textContent = d.solicitudes.length;
+    /* Personas */
+    var p = $('personas'); p.textContent = '';
+    d.personas.forEach(function (x) {
+      var f = fila(p, x.nombre + ' · ' + (x.papel === 'invitada' ? 'Invitada' : 'Miembro'), x.correo, [['Quitar', function () { confirmarEn(f, '¿Quitar el permiso a ' + x.nombre + '?', function (b) { llamar('adminQuitarPersona', [x.correo], function () { aviso('Permiso retirado'); cargarAdmin(); }, b); }); }, 'peligro']]);
+    });
+    if (!d.personas.length) vacio(p, 'Nadie todavía. Autoriza a los miembros del GT con su correo.');
+    /* Proyectos */
+    var ap = $('aProyectos'); ap.textContent = '';
+    d.proyectos.forEach(function (x) { filaProyecto(ap, x); });
+    if (!d.proyectos.length) vacio(ap, 'No hay proyectos.');
+    /* Recursos */
+    var pend = d.recursos.filter(function (r) { return r.estado === 'pendiente'; });
+    var ar = $('aPendientes'); ar.textContent = '';
+    pend.forEach(function (x) { filaRecurso(ar, x, true); });
+    if (!pend.length) vacio(ar, 'No hay recursos esperando.');
+    $('nPend').hidden = !pend.length; $('nPend').textContent = pend.length;
+    var ao = $('aRecursos'); ao.textContent = '';
+    d.recursos.filter(function (r) { return r.estado !== 'pendiente'; }).forEach(function (x) { filaRecurso(ao, x, false); });
+    pintarParticipantes();
+  }
+  function autorizar(correo, nombre, papel, b) {
+    llamar('adminAutorizar', [{ correo: correo, nombre: nombre, papel: papel }], function () { aviso(nombre + ' ya puede publicar'); cargarAdmin(); }, b);
+  }
+  $('formAut').addEventListener('submit', function (e) {
+    e.preventDefault();
+    autorizar($('aCorreo').value.trim(), $('aNombre').value.trim(), $('aPapel').value, e.submitter);
+    $('formAut').reset();
+  });
+
+  /* Editor en línea para proyectos y recursos */
+  function editorEn(f, campos, obj, guardar) {
+    f.textContent = ''; f.className = 'formulario'; f.style.padding = '12px 0'; f.style.borderTop = '1px solid var(--linea)';
+    var ent = {};
+    campos.forEach(function (c) {
+      var d = el('div', c[2] === 'area' || c[2] === 'url' ? 'ancho' : ''), id = 'ed-' + c[0];
+      var l = el('label', 'et', c[1]); l.htmlFor = id; d.appendChild(l);
+      var i;
+      if (c[2] === 'area') { i = el('textarea'); i.rows = 3; }
+      else if (c[2] === 'peldano') { i = el('select'); opciones(i, NOMBRES_PELDANO, [1, 2, 3, 4]); }
+      else if (c[2] === 'tipo') { i = el('select'); opciones(i, D.tipos); }
+      else { i = el('input'); i.type = c[2] === 'url' ? 'url' : 'text'; }
+      i.id = id; i.value = obj[c[0]] == null ? '' : obj[c[0]]; d.appendChild(i); f.appendChild(d); ent[c[0]] = i;
+    });
+    var ac = el('div', 'acciones ancho'), g = el('button', 'boton', 'Guardar cambios'), x = el('button', 'boton claro', 'Cancelar');
+    g.type = x.type = 'button'; ac.appendChild(g); ac.appendChild(x); f.appendChild(ac);
+    g.addEventListener('click', function () { var v = {}; Object.keys(ent).forEach(function (k) { v[k] = ent[k].value.trim(); }); guardar(v, g); });
+    x.addEventListener('click', pintarAdmin);
+  }
+  function filaProyecto(caja, x) {
+    var f = fila(caja, x.titulo, x.autor + ' · peldaño ' + x.peldano + (x.visible ? '' : ' · OCULTO'), [
+      ['Editar', function () {
+        editorEn(f, [['titulo', 'Nombre', 'text'], ['descripcion', 'Descripción', 'area'], ['peldano', 'Peldaño', 'peldano'], ['autor', 'Autor que se muestra', 'text'], ['enlace', 'Enlace', 'url']], x, function (v, b) {
+          llamar('adminGuardarProyecto', [{ id: x.id, titulo: v.titulo, descripcion: v.descripcion, peldano: +v.peldano, enlace: v.enlace, autor_nombre: v.autor }], function () { aviso('Proyecto guardado'); cargarAdmin(); }, b);
+        });
+      }, 'claro'],
+      [x.visible ? 'Ocultar' : 'Mostrar', function (b) {
+        llamar('adminGuardarProyecto', [{ id: x.id, titulo: x.titulo, descripcion: x.descripcion, peldano: x.peldano, enlace: x.enlace, visible: x.visible ? 'no' : 'si' }], function () { aviso(x.visible ? 'Oculto: ya no se ve en la web' : 'Visible otra vez'); cargarAdmin(); }, b);
+      }, 'claro'],
+      ['Eliminar', function () { confirmarEn(f, '¿Eliminar «' + x.titulo + '»?', function (b) { llamar('adminBorrarProyecto', [x.id], function () { aviso('Proyecto eliminado'); cargarAdmin(); }, b); }); }, 'peligro']
+    ]);
+  }
+  function filaRecurso(caja, x, pendiente) {
+    function guardar(cambios, b, msg) {
+      var p = { id: x.id, titulo: x.titulo, descripcion: x.descripcion, tipo: x.tipo, enlace: x.enlace, estado: x.estado, autor_nombre: x.autor };
+      Object.keys(cambios).forEach(function (k) { p[k] = cambios[k]; });
+      llamar('adminGuardarRecurso', [p], function () { aviso(msg); cargarAdmin(); }, b);
+    }
+    var bot = [];
+    if (pendiente) bot.push(['Aprobar', function (b) { guardar({ estado: 'publicado' }, b, 'Recurso publicado'); }]);
+    bot.push(['Editar', function () {
+      editorEn(f, [['titulo', 'Título', 'text'], ['descripcion', 'Para qué sirve', 'area'], ['tipo', 'Tipo', 'tipo'], ['autor', 'Autor que se muestra', 'text'], ['enlace', 'Enlace', 'url']], x, function (v, b) {
+        guardar({ titulo: v.titulo, descripcion: v.descripcion, tipo: v.tipo, enlace: v.enlace, autor_nombre: v.autor }, b, 'Recurso guardado');
+      });
+    }, 'claro']);
+    if (!pendiente) bot.push([x.estado === 'oculto' ? 'Mostrar' : 'Ocultar', function (b) { guardar({ estado: x.estado === 'oculto' ? 'publicado' : 'oculto' }, b, x.estado === 'oculto' ? 'Visible otra vez' : 'Oculto: ya no se ve en la web'); }, 'claro']);
+    bot.push([pendiente ? 'Descartar' : 'Eliminar', function () { confirmarEn(f, '¿Eliminar «' + x.titulo + '»?', function (b) { llamar('adminBorrarRecurso', [x.id], function () { aviso('Recurso eliminado'); cargarAdmin(); }, b); }); }, 'peligro']);
+    var f = fila(caja, x.titulo, x.tipo + ' · ' + x.autor + (x.estado === 'oculto' ? ' · OCULTO' : '') + ' · ' + x.enlace, bot);
+  }
+  $('formRA').addEventListener('submit', function (e) {
+    e.preventDefault();
+    llamar('appProponerRecurso', [{ titulo: $('raTitulo').value, descripcion: $('raDesc').value, tipo: $('raTipo').value, enlace: $('raEnlace').value.trim(), autor_nombre: $('raAutor').value.trim() }], function () {
+      $('formRA').reset(); aviso('Publicado'); cargarAdmin();
+    }, e.submitter);
+  });
+
+  /* ---------- PARTICIPANTES ---------- */
+  var avatarNuevo = '';
+  function circulo(x) {
+    if (x.avatar) { var i = el('img', 'avatar'); i.src = x.avatar; i.alt = ''; return i; }
+    return el('span', 'avatar', (x.nombre || '?').charAt(0).toUpperCase());
+  }
+  function pintarParticipantes() {
+    var c = $('aParticipantes'); c.textContent = '';
+    datosAdmin.participantes.forEach(function (x) {
+      var f = fila(c, x.nombre + ' · ' + (x.papel === 'coordinador' ? 'Coordinador' : x.papel === 'invitada' ? 'Invitada' : 'Miembro'), x.site || 'Sin site todavía', [
+        ['Editar', function () { editarParticipante(x); }, 'claro'],
+        ['Eliminar', function () { confirmarEn(f, '¿Quitar a ' + x.nombre + ' de Participantes?', function (b) { llamar('adminBorrarParticipante', [x.id], function () { aviso('Quitado'); cargarAdmin(); }, b); }); }, 'peligro']
+      ], circulo(x));
+    });
+  }
+  function editarParticipante(x) {
+    $('paId').value = x.id; $('paNombre').value = x.nombre; $('paPapel').value = x.papel; $('paSite').value = x.site; $('paOrden').value = x.orden || 50;
+    avatarNuevo = ''; $('paFoto').value = '';
+    $('paVista').hidden = !x.avatar; if (x.avatar) $('paImg').src = x.avatar;
+    $('tituloFormA').textContent = 'Editar a ' + x.nombre; $('paNombre').focus();
+  }
+  function limpiarFormA() { $('formA').reset(); $('paId').value = ''; avatarNuevo = ''; $('paVista').hidden = true; $('tituloFormA').textContent = 'Añadir a alguien'; }
+  $('paCancelar').addEventListener('click', limpiarFormA);
+  $('paQuitar').addEventListener('click', function () { avatarNuevo = 'QUITAR'; $('paVista').hidden = true; $('paFoto').value = ''; aviso('Se quitará al guardar'); });
+  /* Recorta en cuadrado y reduce a 160 px: PNG si cabe (conserva la transparencia), si no WebP y, en último caso, JPG */
+  $('paFoto').addEventListener('change', function () {
+    var file = this.files[0]; if (!file) return;
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function () {
+      var lado = Math.min(img.width, img.height), cv = document.createElement('canvas'); cv.width = cv.height = 160;
+      cv.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 160, 160);
+      URL.revokeObjectURL(url);
+      var d = cv.toDataURL('image/png');
+      if (d.length > 46000) d = cv.toDataURL('image/webp', 0.9);
+      if (d.length > 46000 || d.indexOf('data:image/webp') !== 0 && d.indexOf('data:image/png') !== 0) d = cv.toDataURL('image/jpeg', 0.85);
+      if (d.length > 46000) { aviso('La imagen sigue siendo muy grande. Prueba con otra.', true); return; }
+      avatarNuevo = d; $('paImg').src = d; $('paVista').hidden = false;
+    };
+    img.onerror = function () { aviso('No se puede leer esa imagen.', true); };
+    img.src = url;
+  });
+  $('formA').addEventListener('submit', function (e) {
+    e.preventDefault();
+    llamar('adminGuardarParticipante', [{ id: $('paId').value, nombre: $('paNombre').value, papel: $('paPapel').value, site: $('paSite').value.trim(), orden: +$('paOrden').value, avatar: avatarNuevo }], function () {
+      limpiarFormA(); aviso('Guardado. Ya sale en «Participantes».'); cargarAdmin();
+    }, e.submitter);
+  });
+
+  /* ---------- ACTA ---------- */
+  var INTEGRANTES = D.integrantes || [];
+  var presentes = {};
+  var CAMPOS_ACTA = [['revision', 'Revisión del trabajo realizado', 'obligatorio'], ['acuerdos', 'Acuerdos tratados', 'obligatorio'], ['enlaces', 'Enlaces y accesos a materiales creados', 'opcional']];
+  var areas = {};
+  (function () {
+    var c = $('actaAsist');
+    INTEGRANTES.forEach(function (m, i) {
+      var l = el('label'), b = el('input'); b.type = 'checkbox'; b.id = 'as' + i;
+      b.addEventListener('change', function () { if (b.checked) presentes[m[1]] = 1; else delete presentes[m[1]]; });
+      l.appendChild(b); l.appendChild(el('span', null, m[0])); l.appendChild(el('span', 'pie', m[1])); c.appendChild(l);
+    });
+    if (!INTEGRANTES.length) c.appendChild(el('p', 'vacio', 'Falta la lista de integrantes de Séneca (Integrantes.gs).'));
+    var caja = $('actaCampos');
+    CAMPOS_ACTA.forEach(function (k) {
+      var w = el('div'), l = el('label', 'et', k[1] + ' (' + k[2] + ')'); l.htmlFor = 'acta-' + k[0];
+      var t = el('textarea'); t.id = 'acta-' + k[0]; t.rows = 6;
+      var n = el('div', 'contador');
+      t.addEventListener('input', function () { contar(t, n); });
+      w.appendChild(l); w.appendChild(t); w.appendChild(n); caja.appendChild(w);
+      areas[k[0]] = { t: t, n: n }; contar(t, n);
+    });
+  })();
+  function contar(t, n) { var c = t.value.length + (t.value.match(/\n/g) || []).length; n.textContent = c + ' de 2000 caracteres (Séneca cuenta cada salto de línea como 2)'; n.className = 'contador' + (c > 2000 ? ' pasa' : ''); }
+  function cargarActa(a, nombre) {
+    if (a.fecha) $('actaFecha').value = a.fecha;
+    var cab = (a.sesion ? 'Sesión ' + a.sesion + '. ' : '') + 'De 16:00 a 19:00 (3 h)' + (a.lugar ? ', en el ' + a.lugar : '') + '.';
+    areas.revision.t.value = cab + '\n' + (a.revision || '');
+    areas.acuerdos.t.value = a.acuerdos || '';
+    areas.enlaces.t.value = a.enlaces || '';
+    Object.keys(areas).forEach(function (k) { contar(areas[k].t, areas[k].n); });
+    $('actaOrigen').textContent = 'Cargada: ' + nombre;
+  }
+  $('actaArchivo').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var doc = new DOMParser().parseFromString(String(r.result), 'text/html'), j = doc.getElementById('datos-acta'), a = null;
+      if (j) { try { a = JSON.parse(j.textContent); } catch (e) { a = null; } }
+      if (!a) {
+        var bloques = [], titulos = [];
+        doc.querySelectorAll('[data-bloque]').forEach(function (s) { var b = s.getAttribute('data-bloque'); if (b && b !== 'Descanso' && bloques.indexOf(b) < 0) bloques.push(b); });
+        doc.querySelectorAll('h2').forEach(function (h) { var t = h.textContent.replace(/\s+/g, ' ').trim(); if (t && titulos.indexOf(t) < 0) titulos.push(t); });
+        if (!bloques.length && !titulos.length) { aviso('Ese HTML no parece una presentación del GT.', true); return; }
+        a = { revision: 'Orden del día: ' + (bloques.length ? bloques : titulos).join('; ') + '.\nSe trabaja: ' + titulos.join('; ') + '.', acuerdos: '', enlaces: '' };
+        aviso('Esta presentación no trae acta: la he resumido. Completa los acuerdos.');
+      } else aviso('Acta leída de la presentación');
+      cargarActa(a, f.name);
+    };
+    r.readAsText(f);
+  });
+  function copiar(t, ok) {
+    function reserva() { var x = el('textarea'); x.value = t; document.body.appendChild(x); x.select(); var hecho = false; try { hecho = document.execCommand('copy'); } catch (e) {} x.remove(); aviso(hecho ? ok : 'No se pudo copiar.', !hecho); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { aviso(ok); }, reserva); else reserva();
+  }
+  $('actaCopiar').addEventListener('click', function () {
+    var p = $('actaFecha').value.split('-'), fecha = p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : '';
+    if (!fecha) { aviso('Pon la fecha de la sesión.', true); return; }
+    if (!areas.revision.t.value.trim() || !areas.acuerdos.t.value.trim()) { aviso('Revisión y acuerdos son obligatorios en Séneca.', true); return; }
+    var asist = Object.keys(presentes);
+    if (!asist.length) { aviso('Marca quién vino.', true); return; }
+    copiar(JSON.stringify({ tipo: 'acta-gt', fecha: fecha, revision: areas.revision.t.value, acuerdos: areas.acuerdos.t.value, enlaces: areas.enlaces.t.value, asistentes: asist }), 'Copiado. Ahora, en Séneca, pulsa el marcador.');
+  });
+  $('copiarMarcador').addEventListener('click', function () { copiar($('marcador').getAttribute('href'), 'Código del marcador copiado'); });
+  $('marcador').addEventListener('click', function (e) { e.preventDefault(); aviso('Arrástralo a la barra de marcadores; aquí no hace nada.'); });
+
+  /* ---------- arranque ---------- */
+  ir(D.vista);
+  if (D.vista === 'admin') sub('personas'); else sub('personas');
+  cargarMios();
+})();
+</script>
+</body>
+</html>

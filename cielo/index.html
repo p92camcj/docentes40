@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<title>Apunta al cielo · Docentes 4.0</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="../comun/gt.css">
+<script src="../comun/api.js"></script>
+<script src="../comun/gt.js"></script>
+<style>
+  .cab { background: var(--cielo-claro); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .cab h2 { color: var(--cielo); }
+  .peldanos { display: flex; flex-wrap: wrap; gap: 6px; font-size: .85rem; }
+  .peldanos span { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--cielo); color: var(--cielo); font-weight: 700; }
+  .proyectos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+  .proyecto { background: var(--papel); border: 1px solid var(--linea); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .proyecto .quien { font-size: .85rem; color: var(--suave); }
+  .proyecto .desc { font-size: .95rem; white-space: pre-line; }
+  .escala { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .escala i { height: 6px; border-radius: 3px; background: var(--linea); }
+  .escala i.ok { background: var(--cielo); }
+  .nivel { font-size: .85rem; font-weight: 700; color: var(--cielo); }
+  .proyecto .boton { align-self: flex-start; margin-top: auto; }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <div class="barra-sup"><button class="tema" data-gt-tema></button></div>
+  <div class="cab">
+    <h2>Apunta al cielo</h2>
+    <p>Cada participante elige un proyecto que hoy le parece demasiado grande y lo construye con IA a lo largo del curso. Aquí se ve cómo avanza cada uno.</p>
+    <div class="peldanos" aria-label="Peldaños"><span>1 · Idea</span><span>2 · Prototipo</span><span>3 · En el aula</span><span>4 · Compartido</span></div>
+  </div>
+  <div class="barra">
+    <p>¿Eres del grupo? Entra con tu cuenta educaand para añadir o actualizar tu proyecto. Si es la primera vez, pide acceso y Julio te lo da.</p>
+    <div class="acciones"><a class="boton" id="anadir">Añadir o actualizar mi proyecto</a><a class="boton claro" id="pedir">Pedir acceso</a></div>
+  </div>
+  <div class="proyectos" id="proyectos"><p class="estado">Cargando los proyectos…</p></div>
+</div>
+<script>
+(function () {
+  GT.tema();
+  var PELDANOS = ['Idea', 'Prototipo', 'En el aula', 'Compartido'];
+  var anadir = document.getElementById('anadir'), pedir = document.getElementById('pedir');
+  if (GT.app('cielo')) { GT.enlace(anadir, GT.app('cielo')); GT.enlace(pedir, GT.app('pedir')); } else { anadir.hidden = pedir.hidden = true; }
+  var caja = document.getElementById('proyectos');
+  GT.leer('cielo').then(function (d) {
+    caja.textContent = '';
+    d.proyectos.forEach(function (p) {
+      var c = GT.el('article', 'proyecto');
+      c.appendChild(GT.el('span', 'quien', p.autor));
+      c.appendChild(GT.el('h3', null, p.titulo));
+      c.appendChild(GT.el('p', 'desc', p.descripcion));
+      var esc = GT.el('div', 'escala'); esc.setAttribute('aria-hidden', 'true');
+      for (var i = 1; i <= 4; i++) esc.appendChild(GT.el('i', i <= p.peldano ? 'ok' : ''));
+      c.appendChild(esc);
+      c.appendChild(GT.el('span', 'nivel', 'Peldaño ' + p.peldano + ' de 4 · ' + PELDANOS[p.peldano - 1]));
+      if (p.enlace) c.appendChild(GT.enlace(GT.el('a', 'boton claro', 'Verlo'), p.enlace));
+      caja.appendChild(c);
+    });
+    if (!d.proyectos.length) caja.appendChild(GT.el('p', 'estado', 'Todavía no hay proyectos. ¡Sé el primero!'));
+  }).catch(function () {
+    caja.textContent = ''; caja.appendChild(GT.el('p', 'estado', 'Ahora mismo no se pueden cargar los proyectos. Vuelve a intentarlo dentro de un rato.'));
+  });
+})();
+</script>
+</body>
+</html>
