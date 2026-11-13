@@ -1385,6 +1385,75 @@
       color: var(--azul-fuerte);
       min-width: 2.6rem;
     }
+    .medalla-pill {
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 1.05rem;
+      border: 3px solid var(--border-color);
+      background: var(--bg-surface);
+      white-space: nowrap;
+    }
+    .medalla-dialog {
+      max-width: 34rem;
+      text-align: center;
+      animation: medalla-entra 0.4s ease-out;
+    }
+    .medalla-icono {
+      font-size: 7rem;
+      line-height: 1.1;
+    }
+    .medalla-titulo {
+      font-size: 2.6rem;
+      font-weight: 900;
+      margin: 0.3rem 0 0.5rem;
+    }
+    @keyframes medalla-entra {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .escalera-btn {
+      font-weight: 900;
+    }
+    .peldanos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      width: 100%;
+    }
+    .peldano-nivel {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .peldano-nivel > span:first-child {
+      margin-right: 0.15rem;
+    }
+    .peldano {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 0.3rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bit-0-bg);
+      color: var(--bit-0-text);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+    .peldano.hecho {
+      background: var(--success-border);
+      color: #fff;
+    }
+    .peldano.actual {
+      background: var(--warning-bg);
+      color: var(--warning-text);
+      box-shadow: 0 0 0 2px var(--warning-border);
+    }
     .reto-c-palabra {
       display: grid;
       grid-template-columns: auto auto;
@@ -1494,7 +1563,7 @@
       .quiz-topbar .filter-btn {
         font-size: 0.9rem;
       }
-      .nivel-pill, .mejor-pill, .sello, .streak-pill {
+      .nivel-pill, .mejor-pill, .sello, .streak-pill, .medalla-pill {
         font-size: 0.9rem;
         padding: 0.2rem 0.6rem;
       }
@@ -2028,8 +2097,9 @@
         <!-- Barra superior de configuración del reto y racha -->
         <div class="quiz-topbar">
           <div style="display:flex; flex-wrap:wrap; gap:0.455rem; align-items:center;">
-            <span style="font-weight:800;">Reto:</span>
-            <button class="filter-btn active" id="qtype-A" onclick="setQuizType('A')">A · Binario → Decimal</button>
+            <button class="filter-btn escalera-btn active" id="btn-escalera" onclick="setModoEscalera()">🏆 Escalera</button>
+            <span style="font-weight:800;" id="etiqueta-practica">Práctica:</span>
+            <button class="filter-btn" id="qtype-A" onclick="setQuizType('A')">A · Binario → Decimal</button>
             <button class="filter-btn" id="qtype-B" onclick="setQuizType('B')">B · Decimal → Binario</button>
             <button class="filter-btn" id="qtype-C" onclick="setQuizType('C')">C · Letra ASCII</button>
           </div>
@@ -2041,8 +2111,10 @@
               <span>Racha:</span>
               <span id="streak-count" class="mono-num">0</span>
             </div>
-            <div class="mejor-pill">Mejor: <span id="mejor-count" class="mono-num">0</span></div>
+            <div class="mejor-pill" id="mejor-pill">Mejor: <span id="mejor-count" class="mono-num">0</span></div>
+            <div class="medalla-pill" id="medalla-pill"></div>
           </div>
+          <div class="peldanos" id="peldanos" aria-label="Escalera: peldaños superados"></div>
         </div>
 
         <!-- Área central del ejercicio activo -->
@@ -2093,6 +2165,16 @@
       <button type="submit" class="btn-large primary">Empezar</button>
     </div>
   </form>
+</div>
+
+<!-- Aviso de medalla al completar un nivel de la escalera -->
+<div id="medalla-modal" class="modal-backdrop" onclick="cerrarMedalla()">
+  <div class="modal-dialog medalla-dialog" onclick="event.stopPropagation()">
+    <div id="medalla-icono" class="medalla-icono"></div>
+    <h2 id="medalla-titulo" class="medalla-titulo"></h2>
+    <p id="medalla-texto" style="margin-bottom:1rem;"></p>
+    <button class="btn-large primary" onclick="cerrarMedalla()">Seguir subiendo ▶</button>
+  </div>
 </div>
 
 <!-- QR para que el alumnado abra la página del site en el móvil -->
@@ -2165,7 +2247,8 @@
 
   // Soporte para flechas del teclado en modo diapositivas
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); cerrarNombre(); }
+    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); cerrarNombre(); cerrarMedalla(); }
+    if (document.getElementById('medalla-modal').classList.contains('open')) { if (e.key === 'Enter') cerrarMedalla(); return; }
     if (document.getElementById('nombre-modal').classList.contains('open')) return;
     const retosActive = document.getElementById('mod-ejercicios').classList.contains('active');
     const escribiendo = e.target && e.target.tagName === 'INPUT';
@@ -2641,7 +2724,94 @@
   function elegir(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
   function pesos(n) { return Array.from({ length: n }, (_, i) => Math.pow(2, n - 1 - i)); }
   function cuantosUnos(v) { return v.toString(2).split('').filter(c => c === '1').length; }
-  function nivelActual() { return Math.min(NIVEL_MAX, 1 + Math.floor(rachas[quizType] / ACIERTOS_POR_NIVEL)); }
+  /* --------------------------------------------------------------------------
+     Escalera (el modo que cuenta): una sola racha que va pasando por A, B y C.
+     Cada peldaño son ACIERTOS_PELDANO aciertos de un tipo; con los tres tipos
+     se sube de nivel. Fallar, ver la solución o saltarse uno: vuelta al
+     principio. En «Práctica» cada tipo va por su cuenta y no hay mejor racha.
+     -------------------------------------------------------------------------- */
+  const ACIERTOS_PELDANO = 2;
+  const TIPOS = ['A', 'B', 'C'];
+  const NOMBRE_TIPO = { A: 'A · Binario → Decimal', B: 'B · Decimal → Binario', C: 'C · Letra ASCII' };
+  const RACHA_COMPLETA = ACIERTOS_PELDANO * TIPOS.length * NIVEL_MAX;
+  /* Medallas: se ganan al completar un nivel entero (A, B y C) */
+  const MEDALLAS = [
+    { nivel: 2, nombre: 'Bronce', icono: '🥉', color: '#B45309' },
+    { nivel: 3, nombre: 'Plata', icono: '🥈', color: '#64748B' },
+    { nivel: 4, nombre: 'Oro', icono: '🥇', color: '#CA8A04' },
+    { nivel: 5, nombre: 'Platino', icono: '💠', color: '#0891B2' },
+    { nivel: 6, nombre: 'Diamante', icono: '💎', color: '#7C3AED' }
+  ];
+  function rachaMedalla(m) { return m.nivel * ACIERTOS_PELDANO * 3; }
+  function medallaDe(r) {
+    let mejor = null;
+    MEDALLAS.forEach(m => { if (r >= rachaMedalla(m)) mejor = m; });
+    return mejor;
+  }
+  function mostrarMedalla(m) {
+    document.getElementById('medalla-icono').textContent = m.icono;
+    const t = document.getElementById('medalla-titulo');
+    t.textContent = '¡Nivel ' + m.nombre + '!';
+    t.style.color = m.color;
+    document.getElementById('medalla-texto').textContent = m.nivel === NIVEL_MAX
+      ? 'Has completado toda la escalera: los 6 niveles de A, B y C. ¡Enhorabuena!'
+      : 'Has completado los niveles 1 a ' + m.nivel + ' de A, B y C sin fallar.';
+    document.getElementById('medalla-modal').classList.add('open');
+  }
+  function cerrarMedalla() {
+    document.getElementById('medalla-modal').classList.remove('open');
+  }
+  let modo = 'escalera';
+  const escalera = { racha: 0, mejor: 0, pregunta: null };
+
+  function peldanoDe(r) { return Math.floor(r / ACIERTOS_PELDANO); }
+  function nivelEscalera(r) { return Math.min(NIVEL_MAX, 1 + Math.floor(peldanoDe(r) / TIPOS.length)); }
+  function tipoEscalera(r) { return TIPOS[peldanoDe(r) % TIPOS.length]; }
+  function rachaActual() { return modo === 'escalera' ? escalera.racha : rachas[quizType]; }
+  function nivelActual() {
+    if (modo === 'escalera') return nivelEscalera(escalera.racha);
+    return Math.min(NIVEL_MAX, 1 + Math.floor(rachas[quizType] / ACIERTOS_POR_NIVEL));
+  }
+
+  function pintarBotonesModo() {
+    document.getElementById('btn-escalera').classList.toggle('active', modo === 'escalera');
+    TIPOS.forEach(t => document.getElementById(`qtype-${t}`).classList.toggle('active', modo === 'practica' && t === quizType));
+  }
+
+  function pintarPeldanos() {
+    const caja = document.getElementById('peldanos');
+    caja.textContent = '';
+    caja.style.display = modo === 'escalera' ? '' : 'none';
+    if (modo !== 'escalera') return;
+    const hechos = peldanoDe(escalera.racha);
+    for (let n = 1; n <= NIVEL_MAX; n++) {
+      const grupo = document.createElement('div');
+      grupo.className = 'peldano-nivel';
+      const et = document.createElement('span');
+      et.textContent = n;
+      grupo.appendChild(et);
+      TIPOS.forEach((t, i) => {
+        const idx = (n - 1) * TIPOS.length + i;
+        const d = document.createElement('span');
+        d.className = 'peldano' + (idx < hechos ? ' hecho' : (idx === hechos ? ' actual' : ''));
+        d.textContent = t;
+        grupo.appendChild(d);
+      });
+      caja.appendChild(grupo);
+    }
+  }
+
+  function setModoEscalera() {
+    modo = 'escalera';
+    const q = escalera.pregunta;
+    if (q && !q.resuelta && q.type === tipoEscalera(escalera.racha) && q.nivel === nivelEscalera(escalera.racha)) {
+      quizType = q.type;
+      mostrarPregunta(q);
+      guardarProgreso();
+    } else {
+      generateNewQuestion();
+    }
+  }
 
   function cargarMejores() {
     try {
@@ -2656,37 +2826,63 @@
   function pintarMarcador() {
     /* El nivel que se ve es el del ejercicio en pantalla */
     const nivel = currentQuestion && currentQuestion.type === quizType ? currentQuestion.nivel : nivelActual();
-    document.getElementById('streak-count').textContent = rachas[quizType];
-    document.getElementById('mejor-count').textContent = mejores[quizType];
+    document.getElementById('streak-count').textContent = rachaActual();
+    document.getElementById('mejor-count').textContent = escalera.mejor;
+    document.getElementById('mejor-pill').style.display = modo === 'escalera' ? '' : 'none';
+    const med = medallaDe(escalera.mejor);
+    const mp = document.getElementById('medalla-pill');
+    mp.textContent = med ? med.icono + ' ' + med.nombre : 'Sin medalla';
+    mp.style.borderColor = med ? med.color : '';
+    mp.style.display = modo === 'escalera' ? '' : 'none';
     const detalle = quizType === 'C' ? NIVELES_C[nivel] : BITS_NIVEL[nivel] + ' bits' + (nivel === NIVEL_MAX ? ' (experto)' : '');
-    document.getElementById('nivel-pill').textContent = `Nivel ${nivel}/${NIVEL_MAX} · ${detalle}`;
+    document.getElementById('nivel-pill').textContent = modo === 'escalera'
+      ? `${quizType} · Nivel ${nivel}/${NIVEL_MAX} · ${detalle}`
+      : `Práctica (no cuenta) · Nivel ${nivel} · ${detalle}`;
+    pintarBotonesModo();
+    pintarPeldanos();
   }
 
   /* Devuelve el texto de subida de nivel (o '') */
   function anotarAcierto() {
     const antes = nivelActual();
     currentQuestion.resuelta = true;
-    rachas[quizType]++;
-    if (rachas[quizType] > mejores[quizType]) {
-      mejores[quizType] = rachas[quizType];
-      guardarMejores();
+    if (modo === 'escalera') {
+      const tipoAntes = tipoEscalera(escalera.racha);
+      escalera.racha++;
+      if (escalera.racha > escalera.mejor) escalera.mejor = escalera.racha;
+      pintarMarcador();
+      guardarProgreso();
+      const despues = nivelActual();
+      const tipoDespues = tipoEscalera(escalera.racha);
+      const ganada = MEDALLAS.find(m => rachaMedalla(m) === escalera.racha);
+      if (ganada) {
+        setTimeout(() => mostrarMedalla(ganada), 400);
+        return ` <span class="subida">${ganada.icono} ¡Nivel ${ganada.nombre}!${escalera.racha === RACHA_COMPLETA ? ' Puedes seguir sumando racha.' : ''}</span>`;
+      }
+      if (despues > antes) return ` <span class="subida">¡Subes al nivel ${despues}! Empiezas otra vez por el reto A.</span>`;
+      if (tipoDespues !== tipoAntes) return ` <span class="subida">¡Peldaño superado! Ahora: ${NOMBRE_TIPO[tipoDespues]}.</span>`;
+      return '';
     }
+    rachas[quizType]++;
     pintarMarcador();
     guardarProgreso();
     const despues = nivelActual();
     return despues > antes ? ` <span class="subida">¡Subes al nivel ${despues}!</span>` : '';
   }
   function anotarFallo() {
-    rachas[quizType] = 0;
+    if (modo === 'escalera') {
+      escalera.racha = 0;
+      escalera.pregunta = null;
+    } else {
+      rachas[quizType] = 0;
+    }
     pintarMarcador();
     guardarProgreso();
   }
 
   function setQuizType(type) {
+    modo = 'practica';
     quizType = type;
-    ['A', 'B', 'C'].forEach(t => {
-      document.getElementById(`qtype-${t}`).classList.toggle('active', t === type);
-    });
     const pendiente = preguntas[type];
     if (pendiente && !pendiente.resuelta) {
       mostrarPregunta(pendiente);
@@ -2714,8 +2910,9 @@
 
   /* Crea un ejercicio nuevo del nivel que toca y lo muestra */
   function generateNewQuestion() {
+    if (modo === 'escalera') quizType = tipoEscalera(escalera.racha);
     const nivel = nivelActual();
-    const anterior = preguntas[quizType] || currentQuestion;
+    const anterior = (modo === 'escalera' ? escalera.pregunta : preguntas[quizType]) || currentQuestion;
     let q;
     if (quizType === 'A' || quizType === 'B') {
       const bits = BITS_NIVEL[nivel];
@@ -2736,7 +2933,7 @@
   let avisoSaltar = false;
   function siguienteEjercicio() {
     const q = currentQuestion;
-    if (q && !q.resuelta && rachas[quizType] > 0) {
+    if (q && !q.resuelta && rachaActual() > 0) {
       if (!avisoSaltar) {
         avisoSaltar = true;
         const fb = document.getElementById('quiz-feedback');
@@ -2752,7 +2949,9 @@
   /* Pinta un ejercicio (nuevo o recuperado del navegador) */
   function mostrarPregunta(q) {
     currentQuestion = q;
-    preguntas[q.type] = q;
+    quizType = q.type;
+    if (modo === 'escalera') escalera.pregunta = q;
+    else preguntas[q.type] = q;
     avisoSaltar = false;
     const fb = document.getElementById('quiz-feedback');
     fb.className = 'feedback-box';
@@ -2791,7 +2990,7 @@
 
   function guardarProgreso() {
     try {
-      localStorage.setItem(CLAVE_PROGRESO, JSON.stringify({ v: 1, quizType, rachas, preguntas }));
+      localStorage.setItem(CLAVE_PROGRESO, JSON.stringify({ v: 1, modo, quizType, rachas, preguntas, escalera }));
     } catch (e) { /* sin almacenamiento */ }
   }
 
@@ -2817,10 +3016,22 @@
       if (preguntaValida(q, t)) preguntas[t] = { ...q, resuelta: !!q.resuelta };
     });
     if (['A', 'B', 'C'].includes(g.quizType)) quizType = g.quizType;
-    ['A', 'B', 'C'].forEach(t => document.getElementById(`qtype-${t}`).classList.toggle('active', t === quizType));
-    const q = preguntas[quizType];
-    if (q && !q.resuelta) { mostrarPregunta(q); return true; }
-    return false;
+    const e = g.escalera || {};
+    if (Number.isInteger(e.racha) && e.racha >= 0 && e.racha <= 100000) escalera.racha = e.racha;
+    if (Number.isInteger(e.mejor) && e.mejor >= escalera.racha && e.mejor <= 100000) escalera.mejor = e.mejor;
+    else escalera.mejor = escalera.racha;
+    if (e.pregunta && TIPOS.includes(e.pregunta.type) && preguntaValida(e.pregunta, e.pregunta.type)) {
+      escalera.pregunta = { ...e.pregunta, resuelta: !!e.pregunta.resuelta };
+    }
+    if (g.modo === 'practica') {
+      modo = 'practica';
+      const q = preguntas[quizType];
+      if (q && !q.resuelta) { mostrarPregunta(q); return true; }
+      generateNewQuestion();
+      return true;
+    }
+    setModoEscalera();
+    return true;
   }
 
   function rejillaBits(bits, n, pulsable) {
@@ -3091,6 +3302,9 @@
     if (nuevo !== usuarioReto) {
       /* Otro nombre, rachas nuevas: la racha no se hereda de quien tenía el móvil antes */
       ['A', 'B', 'C'].forEach(t => { rachas[t] = 0; mejores[t] = 0; preguntas[t] = null; });
+      escalera.racha = 0;
+      escalera.mejor = 0;
+      escalera.pregunta = null;
       guardarMejores();
       generateNewQuestion();
     }
