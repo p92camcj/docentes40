@@ -1394,7 +1394,34 @@
       background: var(--bg-surface);
       white-space: nowrap;
     }
+    .llave-oculta {
+      position: absolute;
+      bottom: 0.4rem;
+      right: 0.5rem;
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      opacity: 0.18;
+      cursor: pointer;
+      padding: 0.2rem;
+    }
+    .llave-oculta:hover, .llave-oculta:focus {
+      opacity: 0.6;
+    }
+    .admin-binario {
+      word-break: break-all;
+      font-size: 1rem;
+      line-height: 1.5;
+      background: var(--bg-subtle);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.6rem 0.8rem;
+      user-select: text;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
     .medalla-dialog {
+      position: relative;
       max-width: 34rem;
       text-align: center;
       animation: medalla-entra 0.4s ease-out;
@@ -2112,7 +2139,7 @@
               <span id="streak-count" class="mono-num">0</span>
             </div>
             <div class="mejor-pill" id="mejor-pill">Mejor: <span id="mejor-count" class="mono-num">0</span></div>
-            <div class="medalla-pill" id="medalla-pill"></div>
+            <button class="medalla-pill" id="medalla-pill" onclick="verMiMedalla()" title="Ver mi medalla"></button>
           </div>
           <div class="peldanos" id="peldanos" aria-label="Escalera: peldaños superados"></div>
         </div>
@@ -2170,11 +2197,35 @@
 <!-- Aviso de medalla al completar un nivel de la escalera -->
 <div id="medalla-modal" class="modal-backdrop" onclick="cerrarMedalla()">
   <div class="modal-dialog medalla-dialog" onclick="event.stopPropagation()">
+    <button class="llave-oculta" onclick="abrirAdmin()" aria-label="Llave">🔑</button>
     <div id="medalla-icono" class="medalla-icono"></div>
     <h2 id="medalla-titulo" class="medalla-titulo"></h2>
     <p id="medalla-texto" style="margin-bottom:1rem;"></p>
     <button class="btn-large primary" onclick="cerrarMedalla()">Seguir subiendo ▶</button>
   </div>
+</div>
+
+<!-- Ventana de «administración» (la llave escondida de la medalla) -->
+<div id="admin-modal" class="modal-backdrop" onclick="cerrarAdmin()">
+  <form class="modal-dialog" style="max-width:40rem;" onclick="event.stopPropagation()" onsubmit="desbloquearAdmin(event)">
+    <h2 style="font-size:1.6rem; margin-bottom:0.4rem;">🔑 Ventana de administración</h2>
+    <div id="admin-cerrada">
+      <p style="margin-bottom:0.6rem;">Estás en la ventana de administración. Para entrar hace falta una contraseña.</p>
+      <input id="admin-clave" type="password" class="text-input-lg" style="font-family:var(--font-sans); margin-bottom:0.5rem;" autocomplete="off" aria-label="Contraseña">
+      <p id="admin-error" class="nota-ascii" style="color:var(--error-text); min-height:1.3em;"></p>
+      <div style="display:flex; gap:0.6rem; justify-content:flex-end;">
+        <button type="button" class="btn-large" onclick="cerrarAdmin()">Cerrar</button>
+        <button type="submit" class="btn-large primary">Desbloquear</button>
+      </div>
+    </div>
+    <div id="admin-abierta" style="display:none;">
+      <p style="margin-bottom:0.5rem;">Desbloqueado. Aquí tienes tu mensaje:</p>
+      <div id="admin-binario" class="mono-num admin-binario"></div>
+      <div style="display:flex; gap:0.6rem; justify-content:flex-end; margin-top:0.8rem;">
+        <button type="button" class="btn-large" onclick="cerrarAdmin()">Cerrar</button>
+      </div>
+    </div>
+  </form>
 </div>
 
 <!-- QR para que el alumnado abra la página del site en el móvil -->
@@ -2247,7 +2298,8 @@
 
   // Soporte para flechas del teclado en modo diapositivas
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); cerrarNombre(); cerrarMedalla(); }
+    if (e.key === 'Escape') { closeAsciiHintModal(); cerrarQr(); cerrarNombre(); cerrarMedalla(); cerrarAdmin(); }
+    if (document.getElementById('admin-modal').classList.contains('open')) return;
     if (document.getElementById('medalla-modal').classList.contains('open')) { if (e.key === 'Enter') cerrarMedalla(); return; }
     if (document.getElementById('nombre-modal').classList.contains('open')) return;
     const retosActive = document.getElementById('mod-ejercicios').classList.contains('active');
@@ -2758,8 +2810,55 @@
       : 'Has completado los niveles 1 a ' + m.nivel + ' de A, B y C sin fallar.';
     document.getElementById('medalla-modal').classList.add('open');
   }
+  function verMiMedalla() {
+    const m = medallaDe(escalera.mejor);
+    if (m) mostrarMedalla(m);
+  }
   function cerrarMedalla() {
     document.getElementById('medalla-modal').classList.remove('open');
+  }
+
+  /* Nota según la mejor racha de la escalera: Bronce 5, Plata 6, Oro 7,
+     Platino 8, Diamante 9 y, con 40 o más, 10 */
+  function notaDe(r) {
+    if (r >= RACHA_COMPLETA + 4) return 10;
+    const m = medallaDe(r);
+    return m ? 4 + MEDALLAS.indexOf(m) + 1 : 0;
+  }
+
+  /* La llave escondida: contraseña «juliomola», «admin» o el nombre del alumno.
+     El premio es un mensaje en binario (8 bits por carácter, sin espacios). */
+  function sinTildes(t) {
+    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  function abrirAdmin() {
+    document.getElementById('admin-cerrada').style.display = '';
+    document.getElementById('admin-abierta').style.display = 'none';
+    document.getElementById('admin-error').textContent = '';
+    document.getElementById('admin-clave').value = '';
+    document.getElementById('admin-modal').classList.add('open');
+    setTimeout(() => document.getElementById('admin-clave').focus(), 50);
+  }
+  function cerrarAdmin() {
+    document.getElementById('admin-modal').classList.remove('open');
+  }
+  function desbloquearAdmin(ev) {
+    ev.preventDefault();
+    const clave = sinTildes(document.getElementById('admin-clave').value);
+    let alumno = '';
+    try { alumno = (JSON.parse(localStorage.getItem('binario-ascii-alumno') || 'null') || {}).nombre || ''; } catch (e) { alumno = ''; }
+    const nombre = sinTildes(alumno);
+    const valida = clave && (clave === 'juliomola' || clave === 'admin' ||
+      (nombre && (clave === nombre || clave === nombre.split(' ')[0])));
+    if (!valida) {
+      document.getElementById('admin-error').textContent = 'Contraseña incorrecta.';
+      return;
+    }
+    const frase = 'Enhorabuena, crack, has sacado un ' + notaDe(escalera.mejor);
+    document.getElementById('admin-binario').textContent =
+      frase.split('').map(ch => ch.charCodeAt(0).toString(2).padStart(8, '0')).join('');
+    document.getElementById('admin-cerrada').style.display = 'none';
+    document.getElementById('admin-abierta').style.display = '';
   }
   let modo = 'escalera';
   const escalera = { racha: 0, mejor: 0, pregunta: null };
