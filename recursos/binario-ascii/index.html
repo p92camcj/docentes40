@@ -3065,6 +3065,7 @@
   function anotarAcierto() {
     const antes = nivelActual();
     currentQuestion.resuelta = true;
+    siguienteTrasAcierto(currentQuestion);
     if (modo === 'escalera') {
       const tipoAntes = tipoEscalera(escalera.racha);
       escalera.racha++;
@@ -3148,21 +3149,18 @@
     guardarProgreso();
   }
 
-  /* «Siguiente ejercicio»: saltarse uno sin resolver cuesta la racha (se avisa antes) */
-  let avisoSaltar = false;
+  /* «Siguiente»: para saltarse uno que no se sabe sin contestar. No cuesta la
+     racha (decisión de Julio); contestar mal o ver la solución, sí. */
   function siguienteEjercicio() {
-    const q = currentQuestion;
-    if (q && !q.resuelta && rachaActual() > 0) {
-      if (!avisoSaltar) {
-        avisoSaltar = true;
-        const fb = document.getElementById('quiz-feedback');
-        fb.className = 'feedback-box info';
-        fb.textContent = 'Si pasas sin resolverlo, la racha vuelve a 0. Pulsa otra vez «Siguiente» para pasar.';
-        return;
-      }
-      anotarFallo();
-    }
     generateNewQuestion();
+  }
+
+  /* Tras un acierto, a los 1,5 s sale el siguiente ejercicio solo */
+  const ESPERA_SIGUIENTE_MS = 1500;
+  function siguienteTrasAcierto(q) {
+    setTimeout(() => {
+      if (currentQuestion === q && q.resuelta) generateNewQuestion();
+    }, ESPERA_SIGUIENTE_MS);
   }
 
   /* Pinta un ejercicio (nuevo o recuperado del navegador) */
@@ -3171,8 +3169,7 @@
     quizType = q.type;
     if (modo === 'escalera') escalera.pregunta = q;
     else preguntas[q.type] = q;
-    avisoSaltar = false;
-    const fb = document.getElementById('quiz-feedback');
+        const fb = document.getElementById('quiz-feedback');
     fb.className = 'feedback-box';
     fb.textContent = '';
     quizUserInput = '';
