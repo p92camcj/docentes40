@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La máquina de von Neumann — TIC</title>
+<style>
+  /* ==========================================================================
+     TOKENS (mismos colores que el recurso de binario y ASCII)
+     ========================================================================== */
+  :root {
+    --bg-app: #F8FAFC; --bg-surface: #FFFFFF; --bg-subtle: #F1F5F9;
+    --text-main: #0F172A; --text-muted: #475569; --border-color: #CBD5E1;
+    --bit-1-bg: #1D4ED8; --bit-1-text: #FFFFFF; --bit-0-bg: #E2E8F0; --bit-0-text: #475569;
+    --accent: #0284C7; --accent-dark: #0369A1;
+    --ok-bg: #DCFCE7; --ok-border: #16A34A; --ok-text: #14532D;
+    --err-bg: #FEE2E2; --err-border: #DC2626; --err-text: #7F1D1D;
+    --warn-bg: #FEF3C7; --warn-border: #D97706; --warn-text: #78350F;
+    --azul-suave: #EFF6FF; --azul-borde: #BFDBFE; --azul-texto: #1E3A8A; --azul-fuerte: #1D4ED8;
+    /* Colores de la pizarra: instrucciones en rojo, códigos en azul */
+    --rojo-pizarra: #DC2626; --azul-pizarra: #1D4ED8;
+    --uc: #7C3AED; --uc-suave: #F5F3FF;
+    --alu: #EA580C; --alu-suave: #FFF7ED;
+    --mem: #0891B2; --mem-suave: #ECFEFF;
+    --activo: #FACC15; --activo-suave: #FEF9C3;
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'Consolas', 'Courier New', ui-monospace, monospace;
+    --radius-md: 0.636rem; --radius-lg: 0.909rem;
+    --shadow-sm: 0 2px 0.273rem rgba(15, 23, 42, 0.06);
+    --alto: 100vh;
+  }
+  :root[data-theme="dark"] {
+    --bg-app: #0B1120; --bg-surface: #111827; --bg-subtle: #1E293B;
+    --text-main: #F1F5F9; --text-muted: #94A3B8; --border-color: #334155;
+    --bit-1-bg: #2563EB; --bit-0-bg: #1E293B; --bit-0-text: #94A3B8;
+    --accent: #38BDF8; --accent-dark: #7DD3FC;
+    --ok-bg: #052E16; --ok-border: #22C55E; --ok-text: #BBF7D0;
+    --err-bg: #450A0A; --err-border: #EF4444; --err-text: #FECACA;
+    --warn-bg: #422006; --warn-border: #F59E0B; --warn-text: #FDE68A;
+    --azul-suave: #172554; --azul-borde: #1E40AF; --azul-texto: #BFDBFE; --azul-fuerte: #60A5FA;
+    --rojo-pizarra: #F87171; --azul-pizarra: #60A5FA;
+    --uc: #A78BFA; --uc-suave: #1E1B4B;
+    --alu: #FB923C; --alu-suave: #431407;
+    --mem: #22D3EE; --mem-suave: #083344;
+    --activo: #FACC15; --activo-suave: #422006;
+    --shadow-sm: 0 2px 0.273rem rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  /* Todo en rem: en la pizarra (16:9) cada vista cabe sin scroll */
+  html { font-size: clamp(11px, min(1.05vw, 1.95vh), 64px); }
+  html, body { width: 100%; height: var(--alto); overflow: hidden; background: var(--bg-app); color: var(--text-main); font-family: var(--font-sans); line-height: 1.35; }
+  button { font: inherit; color: var(--text-main); cursor: pointer; }
+  input, textarea, select { font: inherit; color: var(--text-main); background: var(--bg-surface); }
+  .mono { font-family: var(--font-mono); }
+
+  .app { display: flex; flex-direction: column; height: 100%; }
+
+  /* Barra superior */
+  .top-nav { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.45rem 1rem; background: var(--bg-surface); border-bottom: 2px solid var(--border-color); box-shadow: var(--shadow-sm); }
+  .marca { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.15rem; white-space: nowrap; }
+  .marca-icono { width: 2.3rem; height: 2.3rem; border-radius: 0.5rem; background: var(--uc); color: #fff; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.95rem; }
+  .pestanas { display: flex; gap: 0.4rem; }
+  .pestana { min-height: 2.5rem; padding: 0.35rem 0.85rem; border: 2px solid var(--border-color); background: var(--bg-subtle); border-radius: var(--radius-md); font-weight: 700; font-size: 1rem; }
+  .pestana.activa { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .corto { display: none; }
+
+  main { flex: 1; min-height: 0; padding: 0.7rem 1rem; }
+  .vista { display: none; height: 100%; }
+  .vista.activa { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .btn { min-height: 2.4rem; padding: 0.3rem 0.8rem; border: 2px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-md); font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primario { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.peligro { color: var(--err-border); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.mini { min-height: 2rem; padding: 0.15rem 0.55rem; font-size: 0.85rem; }
+  .grupo-btn { display: inline-flex; border: 2px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; }
+  .grupo-btn button { border: 0; background: var(--bg-surface); padding: 0.2rem 0.6rem; min-height: 2rem; font-weight: 700; font-size: 0.85rem; }
+  .grupo-btn button + button { border-left: 2px solid var(--border-color); }
+  .grupo-btn button.activo { background: var(--accent); color: #fff; }
+
+  /* ==========================================================================
+     SIMULADOR
+     ========================================================================== */
+  .sim { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 1.3fr 1fr; gap: 0.8rem; }
+  .col-cpu { display: flex; flex-direction: column; gap: 0.55rem; min-height: 0; }
+  .cpu { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0.6rem; }
+  .bloque { border: 3px solid; border-radius: var(--radius-lg); padding: 0.45rem 0.6rem 0.55rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .bloque > h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .b-uc { border-color: var(--uc); background: var(--uc-suave); }
+  .b-uc > h3 { color: var(--uc); }
+  .b-alu { border-color: var(--alu); background: var(--alu-suave); }
+  .b-alu > h3 { color: var(--alu); }
+  .b-mem { border-color: var(--mem); background: var(--mem-suave); }
+  .b-mem > h3 { color: var(--mem); }
+
+  .reg { background: var(--bg-surface); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.3rem 0.5rem; transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+  .reg-nombre { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; gap: 0.4rem; }
+  .reg-valor { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+  .bits { font-family: var(--font-mono); font-weight: 800; font-size: 1.25rem; letter-spacing: 0.04em; }
+  .bits .codigo { color: var(--azul-pizarra); }
+  .bits .dir { color: var(--rojo-pizarra); }
+  .reg-extra { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--text-muted); }
+  .reg.activo { border-color: #CA8A04; background: var(--activo-suave); box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.45); }
+  .fila-regs { display: grid; grid-template-columns: 1fr 1.5fr; gap: 0.45rem; }
+
+  /* Decodificador = la tabla de códigos de la pizarra */
+  .deco { background: var(--bg-surface); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.25rem 0.45rem; transition: background 0.2s, box-shadow 0.2s; }
+  .deco.activo { border-color: #CA8A04; box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.45); }
+  .deco table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .deco td { padding: 0.05rem 0.3rem; }
+  .deco td:first-child { font-family: var(--font-mono); font-weight: 800; color: var(--azul-pizarra); }
+  .deco td:nth-child(2) { font-family: var(--font-mono); font-weight: 800; text-align: center; width: 2.2rem; }
+  .deco tr.activo { background: var(--activo); color: #000; }
+  .deco tr.activo td { color: #000; }
+
+  .alu-op { display: flex; align-items: center; justify-content: center; gap: 0.6rem; background: var(--bg-surface); border: 2px solid var(--border-color); border-radius: 1.6rem 1.6rem 0.5rem 0.5rem; padding: 0.35rem; min-height: 4.3rem; transition: background 0.2s, box-shadow 0.2s; }
+  .alu-op.activo { border-color: #CA8A04; background: var(--activo-suave); box-shadow: 0 0 0 0.25rem rgba(250, 204, 21, 0.45); }
+  .alu-simbolo { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 800; color: var(--alu); min-width: 2.2rem; text-align: center; }
+  .alu-cuenta { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; }
+  .alu-nombre { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; }
+
+  /* Explicación del paso */
+  .explica { border: 3px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-lg); padding: 0.5rem 0.75rem; min-height: 6.4rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .explica-cab { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .fase { font-size: 0.8rem; font-weight: 800; padding: 0.1rem 0.55rem; border-radius: 99rem; color: #fff; background: var(--text-muted); }
+  .fase.busqueda { background: var(--uc); }
+  .fase.ejecucion { background: var(--alu); }
+  .fase.fin { background: var(--ok-border); }
+  .fase.error { background: var(--err-border); }
+  .paso-num { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
+  .explica-texto { font-size: 1.12rem; }
+  .explica.error { border-color: var(--err-border); background: var(--err-bg); color: var(--err-text); }
+  .explica.fin { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-text); }
+
+  .controles { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+  .velocidad { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+  .velocidad input { width: 6rem; accent-color: var(--accent); }
+
+  .traza { flex: 1; min-height: 3rem; overflow-y: auto; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.3rem 0.55rem; font-family: var(--font-mono); font-size: 0.92rem; }
+  .traza-titulo { font-family: var(--font-sans); font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+  .traza div.ult { font-weight: 800; }
+
+  /* Memoria */
+  .col-mem { display: flex; flex-direction: column; gap: 0.45rem; min-height: 0; }
+  .col-mem .bloque { flex: 1; min-height: 0; }
+  .barra-mem { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; }
+  .barra-mem select { min-height: 2.2rem; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.1rem 0.4rem; font-weight: 700; max-width: 100%; flex: 1 1 12rem; }
+  .regs-mem { display: grid; grid-template-columns: 1fr 1.4fr; gap: 0.45rem; }
+  .mem-scroll { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg-surface); border: 2px solid var(--border-color); border-radius: var(--radius-md); position: relative; }
+  table.mem { width: 100%; border-collapse: collapse; font-size: 1.02rem; }
+  table.mem th { position: sticky; top: 0; z-index: 1; background: var(--bg-subtle); font-size: 0.78rem; text-align: left; padding: 0.2rem 0.4rem; color: var(--text-muted); border-bottom: 2px solid var(--border-color); }
+  table.mem td { padding: 0.08rem 0.4rem; border-bottom: 1px solid var(--border-color); height: 1.75rem; }
+  table.mem td.c-dir { font-family: var(--font-mono); font-weight: 800; color: var(--rojo-pizarra); width: 4.2rem; white-space: nowrap; border-right: 2px solid var(--rojo-pizarra); }
+  table.mem td.c-bin { font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; cursor: text; }
+  table.mem td.c-bin .codigo { color: var(--azul-pizarra); }
+  table.mem td.c-cod { font-family: var(--font-mono); font-weight: 800; color: var(--rojo-pizarra); white-space: nowrap; cursor: text; }
+  table.mem td.c-cod.dato { color: var(--text-main); font-family: var(--font-sans); font-weight: 600; }
+  table.mem td.c-tipo { width: 2.4rem; text-align: center; }
+  table.mem tr.libre td.c-bin, table.mem tr.libre td.c-cod { color: var(--text-muted); opacity: 0.55; }
+  table.mem tr.separa td { border-top: 3px solid var(--rojo-pizarra); }
+  table.mem tr.cp td.c-dir::after { content: ' ◀'; color: var(--uc); }
+  table.mem tr.activa td { background: var(--activo); color: #000 !important; }
+  table.mem tr.activa td * { color: #000 !important; }
+  table.mem tr.escrita td { background: var(--ok-bg); }
+  table.mem tr.bloqueada td.c-cod, table.mem tr.bloqueada td.c-bin { cursor: not-allowed; }
+  .chip { border: 2px solid var(--border-color); border-radius: 0.4rem; background: var(--bg-subtle); font-size: 0.72rem; font-weight: 800; padding: 0 0.3rem; min-width: 1.6rem; }
+  .chip.ins { border-color: var(--rojo-pizarra); color: var(--rojo-pizarra); }
+  .candado { font-size: 0.8rem; }
+  .vista-bin .c-cod, .vista-bin .c-tipo { display: none; }
+  .vista-cod .c-bin { display: none; }
+  td input.editor { width: 100%; font-family: var(--font-mono); font-weight: 700; font-size: 1rem; border: 2px solid var(--accent); border-radius: 0.3rem; padding: 0 0.25rem; }
+  .aviso-mem { font-size: 0.85rem; min-height: 1.2rem; font-weight: 700; }
+  .aviso-mem.err { color: var(--err-border); }
+  .aviso-mem.ok { color: var(--ok-border); }
+  .ayuda-mem { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Flechas de los buses */
+  svg.buses { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
+  svg.buses path { fill: none; stroke: #CA8A04; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10 7; animation: bus 0.6s linear infinite; }
+  @keyframes bus { to { stroke-dashoffset: -17; } }
+
+  /* Banda del reto dentro del simulador */
+  .banda-reto { display: none; align-items: center; gap: 0.6rem; flex-wrap: wrap; border: 3px solid var(--warn-border); background: var(--warn-bg); color: var(--warn-text); border-radius: var(--radius-lg); padding: 0.4rem 0.7rem; }
+  .banda-reto.activa { display: flex; }
+  .banda-reto .texto { flex: 1; font-size: 1rem; min-width: 14rem; }
+  .banda-reto strong { font-size: 1.05rem; }
+
+  /* ==========================================================================
+     CÓMO FUNCIONA
+     ========================================================================== */
+  .teoria { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; flex: 1; min-height: 0; }
+  .tarjeta { background: var(--bg-surface); border: 3px solid var(--border-color); border-radius: var(--radius-lg); padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; overflow-y: auto; }
+  .tarjeta h2 { font-size: 1.35rem; }
+  .tarjeta p, .tarjeta li { font-size: 1.05rem; }
+  .tarjeta ol, .tarjeta ul { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  table.codigos { border-collapse: collapse; width: 100%; font-size: 1.1rem; }
+  table.codigos td { padding: 0.15rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+  table.codigos td:first-child { font-family: var(--font-mono); font-weight: 800; color: var(--azul-pizarra); }
+  table.codigos td:nth-child(2) { font-family: var(--font-mono); font-weight: 800; text-align: center; }
+  .formato { display: flex; gap: 0.25rem; font-family: var(--font-mono); font-weight: 800; font-size: 1.5rem; justify-content: center; }
+  .formato span { padding: 0.25rem 0.5rem; border-radius: 0.4rem; border: 2px solid; }
+  .formato .f-cod { border-color: var(--azul-pizarra); color: var(--azul-pizarra); }
+  .formato .f-dir { border-color: var(--rojo-pizarra); color: var(--rojo-pizarra); }
+  .pie-formato { display: flex; justify-content: center; gap: 2rem; font-size: 0.9rem; color: var(--text-muted); font-weight: 700; }
+  .nota { font-size: 0.92rem !important; color: var(--text-muted); }
+  .creditos { font-size: 0.8rem; color: var(--text-muted); text-align: right; }
+  .creditos a { color: var(--accent); }
+
+  /* ==========================================================================
+     RETOS
+     ========================================================================== */
+  .retos { display: grid; grid-template-columns: 0.9fr 1.4fr; gap: 0.8rem; flex: 1; min-height: 0; }
+  .alumno-linea { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-weight: 700; }
+  .pill { border: 2px solid var(--border-color); border-radius: 99rem; padding: 0.1rem 0.7rem; font-weight: 800; background: var(--bg-surface); font-size: 0.95rem; }
+  .escalera { display: flex; flex-direction: column; gap: 0.35rem; overflow-y: auto; }
+  .peldano { display: flex; gap: 0.6rem; align-items: center; text-align: left; border: 2px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-md); padding: 0.35rem 0.6rem; font-size: 1rem; }
+  .peldano .num { font-family: var(--font-mono); font-weight: 800; width: 1.8rem; }
+  .peldano .tit { flex: 1; font-weight: 700; }
+  .peldano.hecho { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-text); }
+  .peldano.actual { border-color: var(--accent); box-shadow: 0 0 0 0.2rem var(--azul-borde); }
+  .peldano.cerrado { opacity: 0.55; cursor: not-allowed; }
+  .peldano.sel { outline: 3px solid var(--accent); }
+  .enunciado h2 { font-size: 1.5rem; }
+  .enunciado .datos { font-family: var(--font-mono); font-size: 1.05rem; background: var(--bg-subtle); border-radius: var(--radius-md); padding: 0.45rem 0.7rem; white-space: pre-line; }
+  .pista { border-left: 4px solid var(--warn-border); background: var(--warn-bg); color: var(--warn-text); padding: 0.35rem 0.6rem; border-radius: 0.3rem; font-size: 0.98rem; }
+
+  /* Ventanas */
+  .fondo-modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+  .fondo-modal.abierto { display: flex; }
+  .modal { background: var(--bg-surface); border-radius: var(--radius-lg); max-width: 40rem; width: 100%; max-height: 90%; overflow-y: auto; padding: 1.1rem 1.2rem; border: 3px solid var(--border-color); display: flex; flex-direction: column; gap: 0.6rem; }
+  .modal h2 { font-size: 1.5rem; }
+  .modal textarea { width: 100%; min-height: 16rem; font-family: var(--font-mono); font-size: 1.05rem; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; resize: vertical; }
+  .modal input[type=text] { width: 100%; font-size: 1.15rem; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.35rem 0.6rem; }
+  .modal .acciones { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; }
+  .resultado-ok { color: var(--ok-text); background: var(--ok-bg); border: 2px solid var(--ok-border); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; }
+  .resultado-mal { color: var(--err-text); background: var(--err-bg); border: 2px solid var(--err-border); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; }
+  .medalla-icono { font-size: 5rem; text-align: center; }
+  .qr-caja { background: #fff; color: #000; padding: 0.8rem; border-radius: var(--radius-md); align-self: center; }
+  .qr-svg { display: block; width: min(54vh, 80vw); height: auto; image-rendering: pixelated; }
+  .qr-url { margin-top: 0.4rem; font-family: var(--font-mono); font-size: 0.85rem; word-break: break-all; max-width: min(54vh, 80vw); }
+
+  /* ==========================================================================
+     MÓVIL Y PANTALLAS ESTRECHAS: SE APILA Y HAY SCROLL
+     ========================================================================== */
+  @media (max-width: 900px), (max-aspect-ratio: 4/5) {
+    html { font-size: 15px; }
+    html, body { overflow: auto; height: auto; }
+    .app { height: auto; min-height: var(--alto); }
+    .top-nav { flex-wrap: wrap; position: sticky; top: 0; z-index: 20; padding: 0.4rem 0.6rem; }
+    .marca span { display: none; }
+    .largo { display: none; }
+    .corto { display: inline; }
+    main { padding: 0.5rem; }
+    .vista.activa { height: auto; }
+    .sim, .teoria, .retos { grid-template-columns: 1fr; }
+    .cpu { grid-template-columns: 1fr; }
+    .mem-scroll { max-height: 70vh; }
+    .col-mem .bloque { flex: none; }
+    .bits { font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top-nav">
+    <div class="marca"><div class="marca-icono">CPU</div><span>TIC · La máquina de von Neumann</span></div>
+    <nav class="pestanas" aria-label="Partes del recurso">
+      <button class="pestana" data-vista="v-teoria"><span class="largo">1. Cómo funciona</span><span class="corto">Teoría</span></button>
+      <button class="pestana activa" data-vista="v-sim"><span class="largo">2. Simulador</span><span class="corto">Simulador</span></button>
+      <button class="pestana" data-vista="v-retos"><span class="largo">3. Retos</span><span class="corto">Retos</span></button>
+      <button class="pestana" id="btn-qr" title="Abrir esta web en el móvil" aria-label="Código QR para abrir esta web en el móvil">📱<span class="largo"> QR</span></button>
+      <button class="pestana" id="btn-tema" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar entre tema claro y oscuro">🌓</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== 1. CÓMO FUNCIONA ===================== -->
+    <section class="vista" id="v-teoria">
+      <div class="teoria">
+        <div class="tarjeta">
+          <h2>La idea de von Neumann</h2>
+          <p>En 1945, John von Neumann describió un ordenador que guarda <strong>el programa y los datos en la misma memoria</strong>. Casi todos los ordenadores de hoy siguen esa idea.</p>
+          <ul>
+            <li><strong style="color:var(--mem)">Memoria</strong>: celdas numeradas (@0, @1, @2…). Cada una guarda un número en binario.</li>
+            <li><strong style="color:var(--uc)">Unidad de control</strong>: va leyendo las instrucciones una a una y decide qué hacer.</li>
+            <li><strong style="color:var(--alu)">ALU</strong> (unidad aritmético-lógica): hace las cuentas y deja el resultado en el <strong>acumulador</strong>.</li>
+            <li><strong>Buses</strong>: los «cables» por los que viajan direcciones y datos entre las partes.</li>
+          </ul>
+          <p class="nota">Una celda no «sabe» si es instrucción o dato: son solo bits. Depende de cómo la use la máquina. Pruébalo: ejecuta un programa sin la instrucción de Fin.</p>
+        </div>
+        <div class="tarjeta">
+          <h2>Cómo se codifica una instrucción</h2>
+          <div class="formato"><span class="f-cod">0001</span><span class="f-dir">1101</span></div>
+          <div class="pie-formato"><span style="color:var(--azul-pizarra)">código de operación</span><span style="color:var(--rojo-pizarra)">dirección</span></div>
+          <p style="text-align:center; font-size:1.15rem;"><span class="mono" style="color:var(--rojo-pizarra); font-weight:800; font-size:1.3rem">− @13</span> = «resta al acumulador lo que hay en la celda @13»</p>
+          <table class="codigos" aria-label="Tabla de códigos de operación">
+            <tbody id="tabla-codigos-teoria"></tbody>
+          </table>
+          <p class="nota">Con 16 celdas, la dirección ocupa 4 bits y cada celda 8 (un byte). Con 32 celdas, como en la pizarra (@0 a @18), la dirección necesita 5 bits y cada celda 9.</p>
+        </div>
+        <div class="tarjeta">
+          <h2>El ciclo de cada instrucción</h2>
+          <ol>
+            <li><strong style="color:var(--uc)">Búsqueda</strong>: el contador de programa dice qué celda toca. Su contenido viaja por el bus de datos hasta el registro de instrucción, y el contador avanza.</li>
+            <li><strong style="color:var(--uc)">Decodificación</strong>: el decodificador mira los 4 primeros bits y sabe qué operación es.</li>
+            <li><strong style="color:var(--alu)">Ejecución</strong>: se trae el dato de la dirección indicada y la ALU opera con el acumulador; o, con <strong>M</strong>, el acumulador se guarda en esa celda.</li>
+          </ol>
+          <p>El acumulador empieza en 0. Por eso un programa suele empezar con <span class="mono" style="color:var(--rojo-pizarra); font-weight:800">+ @dato</span>, y para dejarlo otra vez a 0 se resta a sí mismo (<span class="mono" style="color:var(--rojo-pizarra); font-weight:800">− @resultado</span>), como en la pizarra.</p>
+          <p class="nota">No hay números negativos: si una resta da menos de 0, o un resultado no cabe en los bits de la celda, la máquina se para con un error de desbordamiento.</p>
+          <button class="btn primario" onclick="irAVista('v-sim')">Ir al simulador ▶</button>
+          <p class="creditos">Inspirado en el simulador de Pedro Gutiérrez y Noemi Navarro (<a href="https://lab.xitrus.es/VonNeumann/" target="_blank" rel="noopener">lab.xitrus.es</a>), del que vienen los programas de ejemplo.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 2. SIMULADOR ===================== -->
+    <section class="vista activa" id="v-sim">
+      <div class="banda-reto" id="banda-reto">
+        <div class="texto"><strong id="banda-titulo"></strong> <span id="banda-texto"></span></div>
+        <button class="btn primario" onclick="comprobarReto()">✓ Comprobar</button>
+        <button class="btn" onclick="salirDeReto()">Salir del reto</button>
+      </div>
+      <div class="sim" id="sim">
+        <div class="col-cpu">
+          <div class="cpu">
+            <div class="bloque b-uc">
+              <h3>Unidad de control</h3>
+              <div class="fila-regs">
+                <div class="reg" id="r-cp"><div class="reg-nombre">Contador de programa</div><div class="reg-valor"><span class="bits" id="v-cp"></span><span class="reg-extra" id="x-cp"></span></div></div>
+                <div class="reg" id="r-ri"><div class="reg-nombre">Registro de instrucción</div><div class="reg-valor"><span class="bits" id="v-ri"></span><span class="reg-extra" id="x-ri" style="color:var(--rojo-pizarra)"></span></div></div>
+              </div>
+              <div class="deco" id="r-dec">
+                <div class="reg-nombre">Decodificador</div>
+                <table><tbody id="tabla-deco"></tbody></table>
+              </div>
+            </div>
+            <div class="bloque b-alu">
+              <h3>ALU · unidad aritmético-lógica</h3>
+              <div class="reg" id="r-ent"><div class="reg-nombre">Registro de entrada</div><div class="reg-valor"><span class="bits" id="v-ent"></span><span class="reg-extra" id="x-ent"></span></div></div>
+              <div class="alu-op" id="r-alu">
+                <div class="alu-simbolo" id="alu-simbolo">·</div>
+                <div><div class="alu-nombre">Circuito operacional</div><div class="alu-cuenta" id="alu-cuenta">—</div></div>
+              </div>
+              <div class="reg" id="r-acc"><div class="reg-nombre">Acumulador</div><div class="reg-valor"><span class="bits" id="v-acc"></span><span class="reg-extra" id="x-acc"></span></div></div>
+            </div>
+          </div>
+          <div class="explica" id="explica" aria-live="polite">
+            <div class="explica-cab"><span class="fase" id="fase">Listo</span><span class="paso-num" id="paso-num"></span></div>
+            <div class="explica-texto" id="explica-texto"></div>
+          </div>
+          <div class="controles">
+            <button class="btn" id="b-reiniciar" onclick="reiniciarEjecucion()" title="Volver al principio con la memoria del programa">↺ Reiniciar</button>
+            <button class="btn" id="b-atras" onclick="pasoAtras()" title="Deshacer el último paso">◀ Atrás</button>
+            <button class="btn primario" id="b-paso" onclick="pasoAdelante()" title="Siguiente paso (tecla →)">Paso ▶</button>
+            <button class="btn" id="b-instr" onclick="instruccionCompleta()" title="Hasta acabar la instrucción">Instrucción ⏭</button>
+            <button class="btn" id="b-ejecutar" onclick="alternarEjecutar()">Ejecutar ▶▶</button>
+            <label class="velocidad">Velocidad <input type="range" id="velocidad" min="1" max="10" value="5"></label>
+          </div>
+          <div class="traza" id="traza"><div class="traza-titulo">Lo que lleva hecho</div><div id="traza-lineas"></div></div>
+        </div>
+
+        <div class="col-mem">
+          <div class="barra-mem">
+            <select id="sel-programa" aria-label="Programa"></select>
+            <button class="btn mini" onclick="nuevoPrograma()" title="Memoria vacía para escribir un programa">＋ Nuevo</button>
+            <button class="btn mini" onclick="abrirTexto()" title="Escribir o copiar el programa como texto">✎ Texto</button>
+            <button class="btn mini" onclick="abrirGuardar()" title="Guardar en este navegador">💾 Guardar</button>
+            <button class="btn mini peligro" id="b-borrar-prog" onclick="abrirBorrar()" title="Borrar este programa guardado">🗑</button>
+          </div>
+          <div class="barra-mem">
+            <span class="ayuda-mem">Ver:</span>
+            <div class="grupo-btn" id="grupo-vista">
+              <button data-v="bin">Binario</button><button data-v="cod">Codificada</button><button data-v="las2">Las dos</button>
+            </div>
+            <span class="ayuda-mem">Celdas:</span>
+            <div class="grupo-btn" id="grupo-tam">
+              <button data-t="4" title="Direcciones de 4 bits, celdas de 8 bits">16</button><button data-t="5" title="Direcciones de 5 bits, celdas de 9 bits">32</button>
+            </div>
+          </div>
+          <div class="bloque b-mem">
+            <h3>Memoria principal</h3>
+            <div class="regs-mem">
+              <div class="reg" id="r-rdir"><div class="reg-nombre">Reg. de direcciones</div><div class="reg-valor"><span class="bits" id="v-rdir"></span><span class="reg-extra" id="x-rdir"></span></div></div>
+              <div class="reg" id="r-rdat"><div class="reg-nombre">Reg. de datos</div><div class="reg-valor"><span class="bits" id="v-rdat"></span><span class="reg-extra" id="x-rdat"></span></div></div>
+            </div>
+            <div class="mem-scroll" id="mem-scroll">
+              <table class="mem" id="tabla-mem">
+                <thead><tr><th>Dir.</th><th class="c-bin">Binario</th><th class="c-cod">Codificada</th><th class="c-tipo" title="Instrucción o dato">Tipo</th></tr></thead>
+                <tbody id="cuerpo-mem"></tbody>
+              </table>
+            </div>
+            <div class="aviso-mem" id="aviso-mem"></div>
+            <div class="ayuda-mem">Toca una celda para escribir: en binario (<span class="mono">00001100</span>) o codificada (<span class="mono">+ @12</span>, <span class="mono">M @14</span>, <span class="mono">fin</span>, <span class="mono">Dato 8</span>, <span class="mono">Resultado</span>). Intro pasa a la siguiente.</div>
+          </div>
+        </div>
+        <svg class="buses" id="buses" aria-hidden="true">
+          <defs><marker id="punta" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#CA8A04" style="animation:none; stroke:none"/></marker></defs>
+          <g id="buses-g"></g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ===================== 3. RETOS ===================== -->
+    <section class="vista" id="v-retos">
+      <div class="retos">
+        <div class="tarjeta">
+          <div class="alumno-linea"><span id="alumno-texto"></span><button class="btn mini" onclick="abrirAlumno()">Cambiar</button></div>
+          <div class="alumno-linea"><span class="pill" id="pill-hechos"></span><button class="pill" id="pill-medalla" onclick="verMiMedalla()"></button></div>
+          <div class="escalera" id="escalera"></div>
+        </div>
+        <div class="tarjeta enunciado" id="enunciado"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Programa como texto -->
+<div class="fondo-modal" id="m-texto">
+  <div class="modal">
+    <h2>El programa como texto</h2>
+    <p class="nota">Una celda por línea, como en la pizarra. Puedes poner la dirección delante (<span class="mono">@12 Dato 8</span>) o no (va en la siguiente). También vale el binario. Lo que va tras <span class="mono">;</span> es un comentario.</p>
+    <textarea id="texto-prog" spellcheck="false"></textarea>
+    <div class="aviso-mem" id="aviso-texto"></div>
+    <div class="acciones">
+      <button class="btn" onclick="copiarTexto()">📋 Copiar</button>
+      <button class="btn" onclick="cerrarModal('m-texto')">Cancelar</button>
+      <button class="btn primario" onclick="cargarTexto()">Cargar en memoria</button>
+    </div>
+  </div>
+</div>
+
+<!-- Guardar programa -->
+<div class="fondo-modal" id="m-guardar">
+  <form class="modal" onsubmit="event.preventDefault(); guardarPrograma();">
+    <h2>Guardar el programa</h2>
+    <p class="nota">Se guarda en este navegador. Para llevártelo a otro sitio, usa «✎ Texto» y cópialo.</p>
+    <input type="text" id="nombre-prog" maxlength="50" placeholder="Ej. (8 − 5) ^ (3 − 1)" required>
+    <div class="acciones">
+      <button type="button" class="btn" onclick="cerrarModal('m-guardar')">Cancelar</button>
+      <button type="submit" class="btn primario">Guardar</button>
+    </div>
+  </form>
+</div>
+
+<!-- Borrar programa -->
+<div class="fondo-modal" id="m-borrar">
+  <div class="modal">
+    <h2>¿Borrar este programa?</h2>
+    <p id="texto-borrar"></p>
+    <div class="acciones">
+      <button class="btn" onclick="cerrarModal('m-borrar')">Cancelar</button>
+      <button class="btn primario" style="background:var(--err-border); border-color:var(--err-border)" onclick="borrarPrograma()">Borrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Resultado de comprobar un reto -->
+<div class="fondo-modal" id="m-resultado">
+  <div class="modal">
+    <h2 id="res-titulo"></h2>
+    <div id="res-cuerpo"></div>
+    <div class="acciones" id="res-acciones"></div>
+  </div>
+</div>
+
+<!-- Nombre y grupo del alumno -->
+<div class="fondo-modal" id="m-alumno">
+  <form class="modal" onsubmit="event.preventDefault(); guardarAlumno();">
+    <h2>¿Quién eres?</h2>
+    <p class="nota">Sale junto a tus retos para que tu profesor lo vea. Solo se guarda en este navegador.</p>
+    <label for="nombre-alumno"><strong>Nombre y primer apellido</strong></label>
+    <input type="text" id="nombre-alumno" maxlength="40" autocomplete="name" required>
+    <label for="grupo-alumno"><strong>Grupo</strong></label>
+    <input type="text" id="grupo-alumno" maxlength="12" placeholder="Ej. 1.º B" required>
+    <div class="acciones"><button type="submit" class="btn primario">Empezar</button></div>
+  </form>
+</div>
+
+<!-- Medalla -->
+<div class="fondo-modal" id="m-medalla" onclick="cerrarModal('m-medalla')">
+  <div class="modal" style="text-align:center" onclick="event.stopPropagation()">
+    <div class="medalla-icono" id="medalla-icono"></div>
+    <h2 id="medalla-titulo"></h2>
+    <p id="medalla-texto"></p>
+    <div class="acciones" style="justify-content:center"><button class="btn primario" onclick="cerrarModal('m-medalla')">¡Seguir!</button></div>
+  </div>
+</div>
+
+<!-- QR para abrir la página del site en el móvil -->
+<div class="fondo-modal" id="m-qr" onclick="cerrarModal('m-qr')">
+  <div class="modal" style="width:auto; max-width:none; align-items:center; text-align:center" onclick="event.stopPropagation()">
+    <h2>Ábrelo en tu móvil</h2>
+    <p class="nota">Escanea el código con la cámara.</p>
+    <div class="qr-caja"><!--QR-INICIO--><svg viewBox="0 0 41 41" class="qr-svg" role="img" aria-label="Código QR de la página" xmlns="http://www.w3.org/2000/svg" class="segno"><path fill="#fff" d="M0 0h41v41h-41z"/><path class="qrline" stroke="#000" d="M2 2.5h7m5 0h1m2 0h1m1 0h1m7 0h1m2 0h1m1 0h7m-37 1h1m5 0h1m2 0h4m1 0h1m1 0h2m2 0h1m1 0h7m1 0h1m5 0h1m-37 1h1m1 0h3m1 0h1m1 0h3m3 0h3m1 0h1m2 0h3m2 0h3m1 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h1m2 0h1m4 0h5m3 0h1m1 0h3m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h3m1 0h2m1 0h7m1 0h3m2 0h1m1 0h1m1 0h3m1 0h1m-37 1h1m5 0h1m1 0h2m1 0h1m5 0h1m2 0h2m3 0h4m1 0h1m5 0h1m-37 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-29 1h1m1 0h2m1 0h2m2 0h2m2 0h2m5 0h1m-29 1h1m1 0h5m2 0h1m1 0h1m2 0h1m1 0h1m4 0h1m1 0h5m2 0h5m-32 1h1m1 0h1m1 0h2m5 0h2m2 0h1m1 0h3m1 0h2m5 0h1m3 0h1m-35 1h1m1 0h1m1 0h2m1 0h4m3 0h2m2 0h1m2 0h1m1 0h4m2 0h1m2 0h1m1 0h2m-37 1h2m2 0h1m5 0h4m1 0h1m2 0h5m1 0h1m1 0h1m1 0h2m1 0h2m3 0h1m-36 1h1m3 0h2m2 0h1m1 0h2m1 0h2m1 0h3m4 0h3m2 0h8m-37 1h1m1 0h3m2 0h3m2 0h2m2 0h1m1 0h3m2 0h1m4 0h1m2 0h1m3 0h1m-36 1h5m1 0h2m1 0h2m4 0h2m1 0h1m1 0h1m1 0h1m3 0h2m3 0h3m1 0h2m-35 1h2m3 0h2m1 0h2m1 0h2m1 0h1m6 0h1m2 0h1m1 0h5m-32 1h1m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1m3 0h1m1 0h7m2 0h2m1 0h1m1 0h2m-36 1h1m1 0h1m1 0h1m2 0h1m1 0h3m1 0h1m1 0h3m6 0h1m1 0h1m1 0h1m2 0h1m3 0h1m-36 1h1m1 0h1m3 0h5m1 0h1m1 0h1m2 0h1m2 0h1m1 0h1m1 0h5m2 0h1m3 0h2m-37 1h1m1 0h1m2 0h1m1 0h3m1 0h3m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m1 0h4m1 0h1m2 0h1m-37 1h1m1 0h3m1 0h2m1 0h3m1 0h1m3 0h1m4 0h5m2 0h2m1 0h1m1 0h1m-27 1h1m3 0h2m2 0h6m1 0h1m5 0h1m3 0h1m-33 1h6m1 0h1m2 0h1m1 0h3m1 0h1m2 0h2m4 0h4m1 0h3m1 0h2m-37 1h1m2 0h1m5 0h1m3 0h7m1 0h4m1 0h1m2 0h1m1 0h2m2 0h2m-37 1h1m1 0h1m1 0h4m1 0h5m1 0h2m4 0h1m2 0h4m2 0h3m1 0h3m-37 1h1m2 0h2m2 0h1m1 0h2m3 0h2m2 0h1m1 0h4m1 0h1m2 0h1m2 0h1m-32 1h1m1 0h1m1 0h4m1 0h1m3 0h4m2 0h1m1 0h2m1 0h1m1 0h2m1 0h2m1 0h2m1 0h2m-37 1h1m3 0h2m1 0h3m2 0h1m1 0h2m3 0h5m4 0h1m1 0h1m1 0h2m1 0h2m-37 1h1m1 0h1m1 0h1m1 0h4m4 0h2m1 0h1m1 0h1m2 0h11m1 0h1m1 0h1m-29 1h2m1 0h4m1 0h1m2 0h2m2 0h1m1 0h1m2 0h1m3 0h2m-34 1h7m7 0h3m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m-37 1h1m5 0h1m1 0h1m2 0h1m1 0h2m1 0h1m3 0h1m2 0h1m2 0h1m1 0h1m3 0h2m1 0h1m-36 1h1m1 0h3m1 0h1m1 0h2m2 0h1m5 0h1m1 0h13m1 0h1m1 0h1m-37 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m1 0h2m4 0h1m1 0h1m5 0h2m1 0h2m2 0h1m-37 1h1m1 0h3m1 0h1m1 0h3m3 0h1m2 0h2m1 0h3m3 0h1m6 0h1m1 0h2m-37 1h1m5 0h1m3 0h2m4 0h1m4 0h1m2 0h1m1 0h1m1 0h2m2 0h1m3 0h1m-37 1h7m1 0h1m1 0h1m2 0h2m2 0h2m1 0h1m1 0h1m1 0h2m3 0h1m2 0h5"/></svg><div class="qr-url">https://sites.google.com/g.educaand.es/docente40julio/von-neumann</div><!--QR-FIN--></div>
+    <button class="btn primario" onclick="cerrarModal('m-qr')">Cerrar ✕</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ==========================================================================
+   LA MÁQUINA
+   Cada celda: { v: número, tipo: 'ins' | 'dato' | 'libre', etq: texto }.
+   El tipo y la etiqueta solo sirven para la vista codificada: la máquina
+   solo ve bits, igual que una de verdad.
+   ========================================================================== */
+const OPS = [
+  { cod: '0000', sim: '+', nombre: 'Suma' },
+  { cod: '0001', sim: '−', nombre: 'Resta' },
+  { cod: '0010', sim: '*', nombre: 'Producto' },
+  { cod: '0011', sim: '^', nombre: 'Potencia' },
+  { cod: '0100', sim: '&', nombre: 'AND' },
+  { cod: '0101', sim: '|', nombre: 'OR' },
+  { cod: '0110', sim: 'M', nombre: 'Mover' },
+  { cod: '0111', sim: '…', nombre: 'Fin' }
+];
+const ALMACEN = 'von-neumann-';
+
+let BD = 4;                      /* bits de dirección: 4 → 16 celdas, 5 → 32 */
+function tam() { return 1 << BD; }
+function W() { return 4 + BD; }  /* bits por celda */
+function maxV() { return (1 << W()) - 1; }
+function bin(v, n) { return (v >>> 0).toString(2).padStart(n, '0').slice(-n); }
+function opDe(v) { return v >> BD; }
+function dirDe(v) { return v & (tam() - 1); }
+function instr(op, dir) { return (op << BD) | dir; }
+
+/* Texto codificado de una instrucción (sin mirar el tipo) */
+function textoInstr(v) {
+  const op = opDe(v);
+  if (op > 7) return '¿' + bin(op, 4) + '?';
+  if (op === 7) return '… Fin';
+  return OPS[op].sim + ' @' + dirDe(v);
+}
+function textoCelda(c) {
+  if (c.tipo === 'libre') return '';
+  if (c.tipo === 'ins') return textoInstr(c.v);
+  return (c.etq || 'Dato') + ' ' + c.v;
+}
+
+/* --------------------------------------------------------------------------
+   Lectura de una celda escrita a mano (vista codificada)
+   -------------------------------------------------------------------------- */
+const SIMBOLOS = { '+': 0, '-': 1, '−': 1, '–': 1, '*': 2, 'x': 2, '×': 2, '·': 2, '^': 3, '&': 4, '|': 5, 'm': 6,
+  'suma': 0, 'resta': 1, 'producto': 2, 'potencia': 3, 'and': 4, 'or': 5, 'mover': 6, 'mueve': 6 };
+function leerCodificada(texto) {
+  const t = texto.trim().replace(/\s+/g, ' ');
+  if (t === '') return { celda: { v: 0, tipo: 'libre', etq: '' } };
+  const tl = t.toLowerCase();
+  if (/^(\.{2,}|…|fin|… ?fin|\.\.\. ?fin)$/.test(tl)) return { celda: { v: instr(7, 0), tipo: 'ins', etq: '' } };
+  let m = tl.match(/^([+\-−–*x×·^&|m]|suma|resta|producto|potencia|and|or|mover|mueve)\s*@?\s*(\d+)$/);
+  if (m) {
+    const dir = parseInt(m[2], 10);
+    if (dir >= tam()) return { error: 'La dirección @' + dir + ' no existe: esta memoria va de @0 a @' + (tam() - 1) + '.' };
+    return { celda: { v: instr(SIMBOLOS[m[1]], dir), tipo: 'ins', etq: '' } };
+  }
+  if (/^([+\-−–*x×·^&|m]|suma|resta|producto|potencia|and|or|mover|mueve)$/.test(tl)) return { error: 'Falta la dirección: por ejemplo «' + t + ' @12».' };
+  m = t.match(/^(dato|resultado|res|[a-záéíóúñü][a-záéíóúñü]*)?\s*(\d+)?$/i);
+  if (m && (m[1] || m[2])) {
+    let etq = m[1] || 'Dato';
+    if (/^res$/i.test(etq)) etq = 'Resultado';
+    etq = etq.charAt(0).toUpperCase() + etq.slice(1).toLowerCase();
+    const v = m[2] ? parseInt(m[2], 10) : 0;
+    if (v > maxV()) return { error: 'El número ' + v + ' no cabe en ' + W() + ' bits (el máximo es ' + maxV() + ').' };
+    return { celda: { v, tipo: 'dato', etq } };
+  }
+  return { error: 'No entiendo «' + t + '». Ejemplos: + @12, − @13, M @14, fin, Dato 8, Resultado.' };
+}
+function leerBinaria(texto, anterior) {
+  const t = texto.replace(/\s+/g, '');
+  if (t === '') return { celda: { v: 0, tipo: 'libre', etq: '' } };
+  if (!/^[01]+$/.test(t)) return { error: 'En binario solo valen ceros y unos.' };
+  if (t.length !== W()) return { error: 'Cada celda tiene ' + W() + ' bits y has escrito ' + t.length + '.' };
+  const v = parseInt(t, 2);
+  let tipo = anterior.tipo;
+  if (tipo === 'libre') tipo = opDe(v) <= 7 ? 'ins' : 'dato';
+  return { celda: { v, tipo, etq: tipo === 'dato' ? (anterior.etq || 'Dato') : '' } };
+}
+
+/* Programa escrito como texto: una celda por línea */
+function leerPrograma(texto) {
+  const mem = memoriaVacia();
+  let pos = 0;
+  const lineas = texto.split(/\r?\n/);
+  for (let i = 0; i < lineas.length; i++) {
+    let l = lineas[i].replace(/;.*$/, '').trim();
+    if (l === '') continue;
+    const m = l.match(/^@\s*(\d+)\s*[:|]?\s*(.*)$/);
+    if (m) { pos = parseInt(m[1], 10); l = m[2]; }
+    if (pos >= tam()) return { error: 'Línea ' + (i + 1) + ': la dirección @' + pos + ' no existe (esta memoria va de @0 a @' + (tam() - 1) + ').' };
+    const r = /^[01\s]+$/.test(l) && l.replace(/\s/g, '').length === W() ? leerBinaria(l, mem[pos]) : leerCodificada(l);
+    if (r.error) return { error: 'Línea ' + (i + 1) + ': ' + r.error };
+    mem[pos] = r.celda;
+    pos++;
+  }
+  return { mem };
+}
+function escribirPrograma(mem) {
+  const lineas = [];
+  mem.forEach((c, i) => { if (c.tipo !== 'libre') lineas.push('@' + i + ' ' + textoCelda(c)); });
+  return lineas.join('\n');
+}
+function memoriaVacia() { return Array.from({ length: tam() }, () => ({ v: 0, tipo: 'libre', etq: '' })); }
+function copiaMem(mem) { return mem.map(c => ({ v: c.v, tipo: c.tipo, etq: c.etq })); }
+
+/* --------------------------------------------------------------------------
+   Programas de ejemplo (los del simulador original y el de la pizarra)
+   -------------------------------------------------------------------------- */
+const EJEMPLOS = [
+  { id: 'e-pizarra', nombre: '(8 − 5) ^ (3 − 1) = 9 · el de la pizarra', bd: 5, texto:
+    '@0 + @12\n@1 - @13\n@2 M @14\n@3 - @14\n@4 + @15\n@5 - @16\n@6 M @17\n@7 - @17\n@8 + @14\n@9 ^ @17\n@10 M @18\n@11 fin\n@12 Dato 8\n@13 Dato 5\n@14 Resultado\n@15 Dato 3\n@16 Dato 1\n@17 Resultado\n@18 Resultado' },
+  { id: 'e-suma', nombre: '5 + 11 = 16', bd: 4, texto: '+ @4\n+ @5\nM @7\nfin\nDato 5\nDato 11\n@7 Resultado' },
+  { id: 'e-pot', nombre: '(1 + 1) ^ 5 = 32', bd: 4, texto: '+ @5\n+ @5\n^ @6\nM @7\nfin\nDato 1\nDato 5\nResultado' },
+  { id: 'e-or', nombre: '01001011 OR 01010101 = 01011111', bd: 4, texto: '+ @4\n| @5\nM @7\nfin\nDato 75\nDato 85\n@7 Resultado' },
+  { id: 'e-and', nombre: '01001011 AND 01010101 = 01000001', bd: 4, texto: '+ @4\n& @5\nM @7\nfin\nDato 75\nDato 85\n@7 Resultado' },
+  { id: 'e-over', nombre: '255 + 1 = desbordamiento', bd: 4, texto: '+ @4\n+ @5\nM @7\nfin\nDato 255\nDato 1\n@7 Resultado' },
+  { id: 'e-36', nombre: '((2 ^ 2) + 2) ^ 2 = 36', bd: 4, texto: '+ @6\n^ @6\n+ @6\n^ @6\nM @7\nfin\nDato 2\nResultado' },
+  { id: 'e-125', nombre: '(8 − 3) ^ 3 = 125', bd: 4, texto: '+ @5\n- @6\n^ @6\nM @7\nfin\nDato 8\nDato 3\nResultado' },
+  { id: 'e-sinfin', nombre: '¿Y si se olvida el Fin? (2 + 3)', bd: 4, texto: '+ @3\n+ @4\nM @5\nDato 2\nDato 3\nResultado' }
+];
+
+/* --------------------------------------------------------------------------
+   Estado de la ejecución
+   -------------------------------------------------------------------------- */
+let programa = null;   /* { id, nombre, bd, mem } tal como se cargó o editó */
+let E = null;          /* estado de la máquina */
+let historial = [];
+let reto = null;       /* reto abierto en el simulador */
+
+function estadoInicial(mem) {
+  return { mem: copiaMem(mem), cp: 0, ri: 0, rdir: 0, rdat: 0, ent: 0, acc: 0,
+    cola: 'busq', i: 0, fin: false, error: null, traza: [], n: 0,
+    resaltes: [], flechas: [], fila: null, escrita: null, deco: null, alu: null, fase: 'listo', texto: '', pasoTxt: '' };
+}
+function clonar(e) { const c = JSON.parse(JSON.stringify(e)); return c; }
+
+/* Un paso de la máquina. Devuelve el estado nuevo (no toca el DOM). */
+function paso(e) {
+  e.resaltes = []; e.flechas = []; e.fila = null; e.escrita = null; e.alu = null;
+  if (e.fin) return e;
+  const T = tam();
+  const fallo = (txt) => { e.fin = true; e.error = txt; e.fase = 'error'; e.texto = txt; e.pasoTxt = ''; };
+  if (e.cola === 'busq') {
+    e.fase = 'busqueda';
+    const n = e.i + 1;
+    e.pasoTxt = 'Paso ' + n + ' de 6';
+    if (e.i === 0) {
+      e.deco = null;
+      e.rdir = e.cp;
+      e.resaltes = ['r-cp', 'r-rdir']; e.flechas = [['r-cp', 'r-rdir']];
+      e.texto = 'La unidad de control copia el contador de programa (@' + e.cp + ') en el registro de direcciones: ahí está la siguiente instrucción.';
+    } else if (e.i === 1) {
+      e.cp = e.cp + 1;
+      e.resaltes = ['r-cp'];
+      e.texto = 'El contador de programa avanza a @' + e.cp + ' para la próxima vez.';
+      if (e.cp >= T) e.texto = 'El contador de programa ya ha llegado al final de la memoria.';
+    } else if (e.i === 2) {
+      e.fila = e.rdir;
+      e.resaltes = ['r-rdir']; e.flechas = [['r-rdir', 'fila']];
+      e.texto = 'Por el bus de direcciones, la memoria localiza la celda @' + e.rdir + '.';
+    } else if (e.i === 3) {
+      e.fila = e.rdir;
+      e.rdat = e.mem[e.rdir].v;
+      e.resaltes = ['r-rdat']; e.flechas = [['fila', 'r-rdat']];
+      e.texto = 'Su contenido (' + bin(e.rdat, W()) + ') viaja por el bus de datos hasta el registro de datos.';
+    } else if (e.i === 4) {
+      e.ri = e.rdat;
+      e.resaltes = ['r-ri']; e.flechas = [['r-rdat', 'r-ri']];
+      e.texto = 'Del registro de datos pasa al registro de instrucción de la unidad de control.';
+    } else if (e.i === 5) {
+      const op = opDe(e.ri);
+      e.deco = op;
+      e.fase = 'decodificacion';
+      e.resaltes = ['r-ri', 'r-dec']; e.flechas = [['r-ri', 'r-dec']];
+      if (op > 7) { fallo('El decodificador lee ' + bin(op, 4) + ', que no es ningún código de operación. La máquina se para. ¿Se ha llegado a una celda de datos sin pasar por Fin?'); return e; }
+      e.texto = 'El decodificador lee los 4 primeros bits, ' + OPS[op].cod + ': es «' + OPS[op].nombre + '» (' + OPS[op].sim + ').';
+    }
+    e.i++;
+    if (e.i === 6) { const op = opDe(e.ri); e.cola = op <= 5 ? 'alu' : (op === 6 ? 'mover' : 'fin'); e.i = 0; }
+    return e;
+  }
+  const op = opDe(e.ri), dir = dirDe(e.ri);
+  e.fase = 'ejecucion';
+  if (e.cola === 'alu') {
+    e.pasoTxt = 'Paso ' + (e.i + 1) + ' de 5';
+    if (e.i === 0) {
+      e.rdir = dir;
+      e.resaltes = ['r-ri', 'r-rdir']; e.flechas = [['r-ri', 'r-rdir']];
+      e.texto = 'Los últimos ' + BD + ' bits de la instrucción (' + bin(dir, BD) + ' = @' + dir + ') van al registro de direcciones: es donde está el dato.';
+    } else if (e.i === 1) {
+      e.fila = dir;
+      e.resaltes = ['r-rdir']; e.flechas = [['r-rdir', 'fila']];
+      e.texto = 'La memoria localiza la celda @' + dir + '.';
+    } else if (e.i === 2) {
+      e.fila = dir; e.rdat = e.mem[dir].v;
+      e.resaltes = ['r-rdat']; e.flechas = [['fila', 'r-rdat']];
+      e.texto = 'El dato (' + e.rdat + ') viaja por el bus de datos hasta el registro de datos.';
+    } else if (e.i === 3) {
+      e.ent = e.rdat;
+      e.resaltes = ['r-ent']; e.flechas = [['r-rdat', 'r-ent']];
+      e.texto = 'Pasa al registro de entrada de la ALU.';
+    } else if (e.i === 4) {
+      const a = e.acc, b = e.ent;
+      let r;
+      switch (op) {
+        case 0: r = a + b; break;
+        case 1: r = a - b; break;
+        case 2: r = a * b; break;
+        case 3: r = Math.pow(a, b); break;
+        case 4: r = a & b; break;
+        case 5: r = a | b; break;
+      }
+      e.alu = { op, a, b, r };
+      e.resaltes = ['r-acc', 'r-ent', 'r-alu']; e.flechas = [['r-ent', 'r-alu'], ['r-alu', 'r-acc']];
+      if (r < 0) { fallo('La ALU calcula ' + a + ' ' + OPS[op].sim + ' ' + b + ' = ' + r + '. Esta máquina no tiene números negativos: desbordamiento. Se para.'); e.resaltes = ['r-alu']; return e; }
+      if (r > maxV()) { fallo('La ALU calcula ' + a + ' ' + OPS[op].sim + ' ' + b + ' = ' + r + ', que no cabe en ' + W() + ' bits (máximo ' + maxV() + '): desbordamiento (OVERFLOW). Se para.'); e.resaltes = ['r-alu']; return e; }
+      e.acc = r;
+      e.texto = 'La ALU hace acumulador ' + OPS[op].sim + ' entrada: ' + a + ' ' + OPS[op].sim + ' ' + b + ' = ' + r + ', y lo deja en el acumulador.';
+      if (op >= 4) e.texto = 'La ALU hace ' + OPS[op].nombre + ' bit a bit: ' + bin(a, W()) + ' ' + OPS[op].sim + ' ' + bin(b, W()) + ' = ' + bin(r, W()) + ' (' + r + '), y lo deja en el acumulador.';
+      terminarInstr(e, 'Acumulador = ' + r);
+      return e;
+    }
+    e.i++;
+    return e;
+  }
+  if (e.cola === 'mover') {
+    e.pasoTxt = 'Paso ' + (e.i + 1) + ' de 3';
+    if (e.i === 0) {
+      e.rdir = dir;
+      e.resaltes = ['r-ri', 'r-rdir']; e.flechas = [['r-ri', 'r-rdir']];
+      e.texto = 'Mover: la dirección de destino (@' + dir + ') va al registro de direcciones.';
+    } else if (e.i === 1) {
+      e.rdat = e.acc;
+      e.resaltes = ['r-acc', 'r-rdat']; e.flechas = [['r-acc', 'r-rdat']];
+      e.texto = 'El acumulador (' + e.acc + ') envía su valor al registro de datos.';
+    } else if (e.i === 2) {
+      const c = e.mem[dir];
+      const eraIns = c.tipo === 'ins';
+      c.v = e.rdat;
+      if (c.tipo !== 'dato') { c.tipo = 'dato'; c.etq = 'Resultado'; }
+      e.fila = dir; e.escrita = dir;
+      e.resaltes = ['r-rdat']; e.flechas = [['r-rdat', 'fila']];
+      e.texto = 'Se escribe ' + e.rdat + ' en la celda @' + dir + '.' + (eraIns ? ' ¡Ojo! Ahí había una instrucción: el programa se ha modificado a sí mismo.' : '');
+      terminarInstr(e, '@' + dir + ' = ' + e.rdat);
+      return e;
+    }
+    e.i++;
+    return e;
+  }
+  if (e.cola === 'fin') {
+    e.pasoTxt = '';
+    e.fin = true; e.fase = 'fin';
+    e.resaltes = ['r-dec', 'r-acc'];
+    e.texto = 'Fin del programa. La máquina se para con ' + e.acc + ' en el acumulador.' + resumenResultados(e);
+    e.traza.push({ dir: e.cp - 1, ins: '… Fin', efecto: 'parada' });
+    return e;
+  }
+  return e;
+}
+function terminarInstr(e, efecto) {
+  e.traza.push({ dir: e.cp - 1, ins: textoInstr(e.ri), efecto });
+  e.n++;
+  e.cola = 'busq'; e.i = 0;
+  if (e.cp >= tam() && !e.fin) {
+    /* La siguiente búsqueda se saldría de la memoria */
+  }
+}
+function resumenResultados(e) {
+  const r = [];
+  e.mem.forEach((c, i) => { if (c.tipo === 'dato' && /^resultado/i.test(c.etq)) r.push('@' + i + ' = ' + c.v); });
+  return r.length ? ' Resultados: ' + r.join(', ') + '.' : '';
+}
+/* Comprobación del contador antes de cada búsqueda */
+function pasoSeguro(e) {
+  if (!e.fin && e.cola === 'busq' && e.i === 0 && e.cp >= tam()) {
+    e.resaltes = ['r-cp']; e.flechas = []; e.fila = null;
+    e.fin = true; e.error = 'El contador de programa ha llegado a @' + e.cp + ', que no existe: el programa se ha salido de la memoria sin encontrar Fin.';
+    e.fase = 'error'; e.texto = e.error; e.pasoTxt = '';
+    return e;
+  }
+  return paso(e);
+}
+
+/* Ejecutar entero sin dibujar (retos) */
+function ejecutarEntero(mem) {
+  let e = estadoInicial(mem);
+  for (let k = 0; k < 5000 && !e.fin; k++) e = pasoSeguro(e);
+  return e;
+}
+
+/* ==========================================================================
+   DIBUJO
+   ========================================================================== */
+const $ = (id) => document.getElementById(id);
+let vistaMem = 'las2';
+
+function bitsInstr(el, v) {
+  el.textContent = '';
+  const s = bin(v, W());
+  const a = document.createElement('span'); a.className = 'codigo'; a.textContent = s.slice(0, 4);
+  const b = document.createElement('span'); b.className = 'dir'; b.textContent = s.slice(4);
+  el.appendChild(a); el.appendChild(document.createTextNode(' ')); el.appendChild(b);
+}
+function pintarRegistros() {
+  $('v-cp').textContent = bin(E.cp, BD + (E.cp >= tam() ? 1 : 0));
+  $('x-cp').textContent = '@' + E.cp;
+  bitsInstr($('v-ri'), E.ri);
+  $('x-ri').textContent = textoInstr(E.ri);
+  $('v-rdir').textContent = bin(E.rdir, BD); $('x-rdir').textContent = '@' + E.rdir;
+  $('v-rdat').textContent = bin(E.rdat, W()); $('x-rdat').textContent = E.rdat;
+  $('v-ent').textContent = bin(E.ent, W()); $('x-ent').textContent = E.ent;
+  $('v-acc').textContent = bin(E.acc, W()); $('x-acc').textContent = E.acc;
+  ['r-cp', 'r-ri', 'r-dec', 'r-rdir', 'r-rdat', 'r-ent', 'r-alu', 'r-acc'].forEach(id => $(id).classList.toggle('activo', E.resaltes.includes(id)));
+  /* Decodificador */
+  [...$('tabla-deco').children].forEach((tr, i) => tr.classList.toggle('activo', E.deco === i));
+  /* ALU */
+  if (E.alu) {
+    $('alu-simbolo').textContent = OPS[E.alu.op].sim;
+    $('alu-cuenta').textContent = E.alu.a + ' ' + OPS[E.alu.op].sim + ' ' + E.alu.b + ' = ' + E.alu.r;
+  } else if (E.deco !== null && E.deco <= 5) {
+    $('alu-simbolo').textContent = OPS[E.deco].sim;
+    $('alu-cuenta').textContent = 'preparada para ' + OPS[E.deco].nombre.toLowerCase();
+  } else { $('alu-simbolo').textContent = '·'; $('alu-cuenta').textContent = '—'; }
+  /* Explicación */
+  const nombres = { listo: 'Listo', busqueda: 'Búsqueda', decodificacion: 'Decodificación', ejecucion: 'Ejecución', fin: 'Fin', error: 'Error' };
+  const f = $('fase');
+  f.textContent = nombres[E.fase];
+  f.className = 'fase ' + (E.fase === 'decodificacion' ? 'busqueda' : E.fase);
+  $('paso-num').textContent = E.pasoTxt + (E.fase !== 'listo' ? ' · instrucciones hechas: ' + E.n : '');
+  $('explica-texto').textContent = E.fase === 'listo'
+    ? (reto ? 'Escribe tu programa en la memoria y pulsa «Paso ▶» o «Ejecutar» para probarlo. Cuando funcione, «✓ Comprobar».' : 'Pulsa «Paso ▶» para ver la máquina por dentro, o «Ejecutar ▶▶» para verla de seguido. Puedes escribir en cualquier celda de la memoria.')
+    : E.texto;
+  $('explica').className = 'explica' + (E.fase === 'error' ? ' error' : (E.fase === 'fin' ? ' fin' : ''));
+  /* Traza */
+  const tz = $('traza-lineas'); tz.textContent = '';
+  E.traza.forEach((t, k) => {
+    const d = document.createElement('div');
+    d.textContent = '@' + t.dir + '  ' + t.ins + '  →  ' + t.efecto;
+    if (k === E.traza.length - 1) d.className = 'ult';
+    tz.appendChild(d);
+  });
+  $('traza').scrollTop = $('traza').scrollHeight;
+  /* Botones */
+  $('b-atras').disabled = historial.length === 0;
+  $('b-paso').disabled = E.fin; $('b-instr').disabled = E.fin; $('b-ejecutar').disabled = E.fin && !temporizador;
+}
+
+function pintarMemoria() {
+  const cuerpo = $('cuerpo-mem');
+  cuerpo.textContent = '';
+  const tabla = $('tabla-mem');
+  tabla.className = 'mem vista-' + vistaMem;
+  /* Raya roja entre el programa y los datos, como en la pizarra */
+  let primerDato = -1;
+  for (let i = 0; i < E.mem.length; i++) {
+    if (E.mem[i].tipo === 'dato') { primerDato = i; break; }
+  }
+  E.mem.forEach((c, i) => {
+    const tr = document.createElement('tr');
+    tr.id = 'fila-' + i;
+    let cls = c.tipo;
+    if (i === primerDato && i > 0) cls += ' separa';
+    if (!E.fin && i === E.cp && E.fase !== 'listo') cls += ' cp';
+    if (E.fila === i) cls += ' activa';
+    if (E.escrita === i) cls += ' escrita';
+    if (celdaBloqueada(i)) cls += ' bloqueada';
+    tr.className = cls;
+    const td0 = document.createElement('td'); td0.className = 'c-dir'; td0.textContent = '@' + i;
+    const td1 = document.createElement('td'); td1.className = 'c-bin';
+    const s = bin(c.v, W());
+    if (c.tipo === 'ins') {
+      const a = document.createElement('span'); a.className = 'codigo'; a.textContent = s.slice(0, 4);
+      td1.appendChild(a); td1.appendChild(document.createTextNode(' ' + s.slice(4)));
+    } else td1.textContent = s;
+    td1.onclick = () => editarCelda(i, 'bin');
+    const td2 = document.createElement('td'); td2.className = 'c-cod' + (c.tipo === 'dato' ? ' dato' : '');
+    td2.textContent = textoCelda(c);
+    td2.onclick = () => editarCelda(i, 'cod');
+    const td3 = document.createElement('td'); td3.className = 'c-tipo';
+    if (celdaBloqueada(i)) { const sp = document.createElement('span'); sp.className = 'candado'; sp.textContent = '🔒'; sp.title = 'Celda del reto: no se puede cambiar'; td3.appendChild(sp); }
+    else if (c.tipo !== 'libre') {
+      const b = document.createElement('button');
+      b.className = 'chip' + (c.tipo === 'ins' ? ' ins' : '');
+      b.textContent = c.tipo === 'ins' ? 'I' : 'D';
+      b.title = 'Leer esta celda como ' + (c.tipo === 'ins' ? 'dato' : 'instrucción') + ' (los bits no cambian)';
+      b.onclick = (ev) => { ev.stopPropagation(); alternarTipo(i); };
+      td3.appendChild(b);
+    }
+    tr.append(td0, td1, td2, td3);
+    cuerpo.appendChild(tr);
+  });
+  [...$('grupo-vista').children].forEach(b => b.classList.toggle('activo', b.dataset.v === vistaMem));
+  [...$('grupo-tam').children].forEach(b => { b.classList.toggle('activo', +b.dataset.t === BD); b.disabled = !!reto; });
+}
+
+/* Flechas entre las piezas (buses) */
+function centroBorde(r, hacia) {
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const dx = hacia.x - cx, dy = hacia.y - cy;
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+  const sx = (r.width / 2) / Math.abs(dx || 1e-9), sy = (r.height / 2) / Math.abs(dy || 1e-9);
+  const s = Math.min(sx, sy);
+  return { x: cx + dx * s, y: cy + dy * s };
+}
+function pintarBuses() {
+  const g = $('buses-g'); g.textContent = '';
+  if (!E.flechas.length) return;
+  const base = $('sim').getBoundingClientRect();
+  const scroll = $('mem-scroll');
+  const rect = (id) => {
+    let el = id === 'fila' ? $('fila-' + E.fila) : $(id);
+    if (!el) return null;
+    let r = el.getBoundingClientRect();
+    if (id === 'fila') {
+      /* Solo la parte de la fila que se ve */
+      const rs = scroll.getBoundingClientRect();
+      const top = Math.max(r.top, rs.top), bottom = Math.min(r.bottom, rs.bottom);
+      r = { left: r.left, top, width: Math.min(r.width, 14 * parseFloat(getComputedStyle(document.documentElement).fontSize)), height: Math.max(bottom - top, 4) };
+    }
+    if (r.width === 0) return null;
+    return { left: r.left - base.left, top: r.top - base.top, width: r.width, height: r.height };
+  };
+  E.flechas.forEach(([de, a]) => {
+    const r1 = rect(de), r2 = rect(a);
+    if (!r1 || !r2) return;
+    const c1 = { x: r1.left + r1.width / 2, y: r1.top + r1.height / 2 }, c2 = { x: r2.left + r2.width / 2, y: r2.top + r2.height / 2 };
+    const p1 = centroBorde(r1, c2), p2 = centroBorde(r2, c1);
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const mx = (p1.x + p2.x) / 2;
+    p.setAttribute('d', Math.abs(p1.y - p2.y) > 8 && Math.abs(p1.x - p2.x) > 40
+      ? `M${p1.x},${p1.y} C${mx},${p1.y} ${mx},${p2.y} ${p2.x},${p2.y}`
+      : `M${p1.x},${p1.y} L${p2.x},${p2.y}`);
+    p.setAttribute('marker-end', 'url(#punta)');
+    g.appendChild(p);
+  });
+}
+/* Que la celda que se está usando se vea en la memoria */
+function filaVisible() {
+  if (E.fila === null) return;
+  const scroll = $('mem-scroll'), fila = $('fila-' + E.fila);
+  if (!fila) return;
+  const rf = fila.getBoundingClientRect(), rs = scroll.getBoundingClientRect();
+  if (rf.top < rs.top + rf.height || rf.bottom > rs.bottom) scroll.scrollTop += (rf.top - rs.top) - rs.height / 2;
+}
+function pintar() { pintarRegistros(); pintarMemoria(); filaVisible(); requestAnimationFrame(pintarBuses); }
+
+/* ==========================================================================
+   CONTROLES DE EJECUCIÓN
+   ========================================================================== */
+let temporizador = null;
+function pasoAdelante() {
+  if (E.fin) return;
+  historial.push(clonar(E));
+  if (historial.length > 3000) historial.shift();
+  E = pasoSeguro(E);
+  pintar();
+}
+function pasoAtras() {
+  parar();
+  if (!historial.length) return;
+  E = historial.pop();
+  pintar();
+}
+function instruccionCompleta() {
+  if (E.fin) return;
+  parar();
+  historial.push(clonar(E));
+  const n = E.n;
+  let k = 0;
+  do { E = pasoSeguro(E); k++; } while (!E.fin && E.n === n && k < 20);
+  pintar();
+}
+const RETARDOS = [1600, 1200, 900, 650, 480, 340, 230, 140, 70, 25];
+function alternarEjecutar() { if (temporizador) parar(); else arrancar(); }
+function arrancar() {
+  if (E.fin) return;
+  $('b-ejecutar').textContent = 'Pausa ⏸';
+  const tic = () => {
+    pasoAdelante();
+    if (E.fin) { parar(); return; }
+    temporizador = setTimeout(tic, RETARDOS[$('velocidad').value - 1]);
+  };
+  temporizador = setTimeout(tic, 50);
+}
+function parar() {
+  if (temporizador) clearTimeout(temporizador);
+  temporizador = null;
+  $('b-ejecutar').textContent = 'Ejecutar ▶▶';
+  $('b-ejecutar').disabled = E && E.fin;
+}
+function reiniciarEjecucion() {
+  parar();
+  historial = [];
+  E = estadoInicial(programa.mem);
+  pintar();
+}
+
+/* ==========================================================================
+   EDICIÓN DE LA MEMORIA
+   ========================================================================== */
+function aviso(txt, tipo) { const a = $('aviso-mem'); a.textContent = txt || ''; a.className = 'aviso-mem' + (tipo ? ' ' + tipo : ''); }
+function celdaBloqueada(i) { return !!(reto && reto.bloqueadas.includes(i)); }
+function editarCelda(i, modo) {
+  if (celdaBloqueada(i)) { aviso('@' + i + ' es una celda del reto: no se puede cambiar.', 'err'); return; }
+  parar();
+  const fila = $('fila-' + i);
+  const td = fila.querySelector(modo === 'bin' ? '.c-bin' : '.c-cod');
+  if (td.querySelector('input')) return;
+  const c = programa.mem[i];
+  const inp = document.createElement('input');
+  inp.className = 'editor';
+  inp.value = modo === 'bin' ? (c.tipo === 'libre' ? '' : bin(c.v, W())) : textoCelda(c).replace('… Fin', 'fin');
+  inp.setAttribute('aria-label', 'Celda @' + i);
+  inp.spellcheck = false;
+  if (modo === 'bin') inp.inputMode = 'numeric';
+  td.textContent = '';
+  td.appendChild(inp);
+  inp.focus(); inp.select();
+  let hecho = false;
+  const confirmar = (siguiente) => {
+    if (hecho) return;
+    const r = modo === 'bin' ? leerBinaria(inp.value, c) : leerCodificada(inp.value);
+    if (r.error) { aviso('@' + i + ': ' + r.error, 'err'); inp.focus(); return; }
+    hecho = true;
+    programa.mem[i] = r.celda;
+    programaEditado();
+    aviso('');
+    if (siguiente && i + 1 < tam()) {
+      let j = i + 1;
+      while (j < tam() && celdaBloqueada(j)) j++;
+      if (j < tam()) editarCelda(j, modo);
+    }
+  };
+  inp.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); confirmar(true); }
+    else if (ev.key === 'Escape') { hecho = true; aviso(''); pintar(); }
+    else if (ev.key === 'ArrowDown' || ev.key === 'Tab') { ev.preventDefault(); confirmar(true); }
+  });
+  inp.addEventListener('blur', () => setTimeout(() => { if (!hecho) { const r = modo === 'bin' ? leerBinaria(inp.value, c) : leerCodificada(inp.value); if (r.error) { hecho = true; aviso('@' + i + ': ' + r.error + ' No se ha cambiado.', 'err'); pintar(); } else confirmar(false); } }, 0));
+}
+function alternarTipo(i) {
+  const c = programa.mem[i];
+  if (c.tipo === 'ins') { c.tipo = 'dato'; c.etq = 'Dato'; }
+  else if (c.tipo === 'dato') { c.tipo = 'ins'; c.etq = ''; }
+  aviso('@' + i + ': mismos bits, ahora leídos como ' + (c.tipo === 'ins' ? 'instrucción (' + textoInstr(c.v) + ')' : 'dato (' + c.v + ')') + '.', 'ok');
+  programaEditado();
+}
+/* Cualquier cambio en la memoria vuelve a empezar la ejecución */
+function programaEditado() {
+  if (programa.id && programa.id.startsWith('e-')) { programa.id = null; programa.nombre = programa.nombre + ' (cambiado)'; actualizarSelector(); }
+  if (reto) guardarIntentoReto();
+  reiniciarEjecucion();
+}
+
+/* ==========================================================================
+   PROGRAMAS: EJEMPLOS Y GUARDADOS
+   ========================================================================== */
+function leerGuardados() { try { return JSON.parse(localStorage.getItem(ALMACEN + 'programas') || '[]'); } catch (e) { return []; } }
+function escribirGuardados(l) { try { localStorage.setItem(ALMACEN + 'programas', JSON.stringify(l)); return true; } catch (e) { return false; } }
+
+function ponerTam(bd) { BD = bd; }
+function cargarEjemplo(id) {
+  const ej = EJEMPLOS.find(x => x.id === id);
+  ponerTam(ej.bd);
+  programa = { id: ej.id, nombre: ej.nombre, bd: ej.bd, mem: leerPrograma(ej.texto).mem };
+  aviso('');
+  reiniciarEjecucion();
+}
+function cargarGuardado(id) {
+  const p = leerGuardados().find(x => x.id === id);
+  if (!p) return;
+  ponerTam(p.bd);
+  programa = { id: p.id, nombre: p.nombre, bd: p.bd, mem: copiaMem(p.mem) };
+  aviso('');
+  reiniciarEjecucion();
+}
+function actualizarSelector() {
+  const sel = $('sel-programa');
+  sel.textContent = '';
+  if (reto) {
+    const o = document.createElement('option'); o.textContent = 'Reto ' + (reto.n + 1) + ' · ' + reto.def.titulo; o.value = ''; sel.appendChild(o); sel.disabled = true;
+    $('b-borrar-prog').disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  const g1 = document.createElement('optgroup'); g1.label = 'Ejemplos';
+  EJEMPLOS.forEach(ej => { const o = document.createElement('option'); o.value = ej.id; o.textContent = ej.nombre; g1.appendChild(o); });
+  sel.appendChild(g1);
+  const guardados = leerGuardados();
+  if (guardados.length) {
+    const g2 = document.createElement('optgroup'); g2.label = 'Mis programas';
+    guardados.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.nombre; g2.appendChild(o); });
+    sel.appendChild(g2);
+  }
+  if (!programa.id) {
+    const o = document.createElement('option'); o.value = ''; o.textContent = '✎ ' + programa.nombre; sel.insertBefore(o, sel.firstChild);
+  }
+  sel.value = programa.id || '';
+  $('b-borrar-prog').disabled = !(programa.id && programa.id.startsWith('p-'));
+}
+$('sel-programa').addEventListener('change', (ev) => {
+  const id = ev.target.value;
+  if (!id) return;
+  if (id.startsWith('e-')) cargarEjemplo(id); else cargarGuardado(id);
+  actualizarSelector();
+});
+function nuevoPrograma() {
+  programa = { id: null, nombre: 'Programa nuevo', bd: BD, mem: memoriaVacia() };
+  actualizarSelector();
+  reiniciarEjecucion();
+  aviso('Memoria vacía. Toca @0 y escribe la primera instrucción.', 'ok');
+}
+function abrirModal(id) { $(id).classList.add('abierto'); }
+function cerrarModal(id) { $(id).classList.remove('abierto'); }
+function abrirTexto() {
+  parar();
+  $('texto-prog').value = escribirPrograma(programa.mem);
+  $('aviso-texto').textContent = '';
+  abrirModal('m-texto');
+  $('texto-prog').focus();
+}
+function cargarTexto() {
+  const r = leerPrograma($('texto-prog').value);
+  if (r.error) { $('aviso-texto').textContent = r.error; $('aviso-texto').className = 'aviso-mem err'; return; }
+  if (reto) {
+    for (const i of reto.bloqueadas) r.mem[i] = copiaMem([reto.memBase[i]])[0];
+  }
+  programa.mem = r.mem;
+  cerrarModal('m-texto');
+  programaEditado();
+  aviso('Programa cargado en memoria.' + (reto ? ' Las celdas del reto (🔒) no cambian.' : ''), 'ok');
+}
+function copiarTexto() {
+  const t = $('texto-prog');
+  t.select();
+  const ok = () => { $('aviso-texto').textContent = 'Copiado.'; $('aviso-texto').className = 'aviso-mem ok'; };
+  if (navigator.clipboard) navigator.clipboard.writeText(t.value).then(ok, () => { try { document.execCommand('copy'); ok(); } catch (e) { /* nada */ } });
+  else { try { document.execCommand('copy'); ok(); } catch (e) { /* nada */ } }
+}
+function abrirGuardar() {
+  if (reto) { aviso('En un reto tu programa se guarda solo.', 'ok'); return; }
+  $('nombre-prog').value = programa.id && programa.id.startsWith('p-') ? programa.nombre : '';
+  abrirModal('m-guardar');
+  $('nombre-prog').focus();
+}
+function guardarPrograma() {
+  const nombre = $('nombre-prog').value.trim().slice(0, 50);
+  if (!nombre) return;
+  const l = leerGuardados();
+  let p = l.find(x => x.nombre === nombre);
+  if (!p) { p = { id: 'p-' + Date.now().toString(36) }; l.push(p); }
+  Object.assign(p, { nombre, bd: BD, mem: copiaMem(programa.mem) });
+  if (!escribirGuardados(l)) { aviso('Este navegador no deja guardar. Usa «✎ Texto» y copia el programa.', 'err'); cerrarModal('m-guardar'); return; }
+  programa.id = p.id; programa.nombre = nombre;
+  cerrarModal('m-guardar');
+  actualizarSelector();
+  aviso('Guardado como «' + nombre + '».', 'ok');
+}
+function abrirBorrar() {
+  if (!(programa.id && programa.id.startsWith('p-'))) return;
+  $('texto-borrar').textContent = '«' + programa.nombre + '» se borrará de este navegador.';
+  abrirModal('m-borrar');
+}
+function borrarPrograma() {
+  escribirGuardados(leerGuardados().filter(x => x.id !== programa.id));
+  cerrarModal('m-borrar');
+  cargarEjemplo(EJEMPLOS[0].id);
+  actualizarSelector();
+}
+/* Cambiar el número de celdas: se recodifican las instrucciones */
+function cambiarTam(nuevo) {
+  if (nuevo === BD || reto) return;
+  const viejo = BD;
+  const mem = programa.mem;
+  const nt = 1 << nuevo, nmax = (1 << (4 + nuevo)) - 1;
+  for (let i = nt; i < mem.length; i++) if (mem[i].tipo !== 'libre') { aviso('No cabe en 16 celdas: hay algo escrito en @' + i + '.', 'err'); return; }
+  const nueva = [];
+  for (let i = 0; i < nt; i++) {
+    const c = i < mem.length ? { ...mem[i] } : { v: 0, tipo: 'libre', etq: '' };
+    if (c.tipo === 'ins') {
+      const op = c.v >> viejo, dir = c.v & ((1 << viejo) - 1);
+      if (dir >= nt) { aviso('No cabe en 16 celdas: @' + i + ' usa la dirección @' + dir + '.', 'err'); return; }
+      c.v = (op << nuevo) | dir;
+    } else if (c.v > nmax) { aviso('No cabe: el dato de @' + i + ' (' + c.v + ') necesita más de ' + (4 + nuevo) + ' bits.', 'err'); return; }
+    nueva.push(c);
+  }
+  BD = nuevo;
+  programa.mem = nueva; programa.bd = nuevo;
+  aviso(nt + ' celdas: direcciones de ' + nuevo + ' bits y celdas de ' + (4 + nuevo) + ' bits.', 'ok');
+  programaEditado();
+}
+
+/* ==========================================================================
+   RETOS
+   Cada reto da unas celdas de datos fijas (🔒) y la celda del resultado.
+   Se comprueba con los datos del enunciado y con otros, para que el
+   programa calcule de verdad y no escriba el resultado a mano.
+   ========================================================================== */
+const RETOS = [
+  { titulo: 'Sumar', bd: 4, datos: { 12: ['a', 'Dato'], 13: ['b', 'Dato'] }, res: { 14: (d) => d.a + d.b },
+    casos: [{ a: 6, b: 7 }, { a: 20, b: 15 }, { a: 100, b: 55 }],
+    texto: 'Calcula a + b y guarda el resultado en @14.', pista: 'Empieza con + @12 (el acumulador vale 0), suma @13, mueve el acumulador a @14 y termina con fin.' },
+  { titulo: 'Restar', bd: 4, datos: { 12: ['a', 'Dato'], 13: ['b', 'Dato'] }, res: { 14: (d) => d.a - d.b },
+    casos: [{ a: 20, b: 8 }, { a: 9, b: 9 }, { a: 200, b: 1 }],
+    texto: 'Calcula a − b y guarda el resultado en @14.', pista: 'Como en la suma, pero la segunda operación es una resta.' },
+  { titulo: 'Multiplicar', bd: 4, datos: { 12: ['a', 'Dato'], 13: ['b', 'Dato'] }, res: { 14: (d) => d.a * d.b },
+    casos: [{ a: 4, b: 5 }, { a: 3, b: 7 }, { a: 12, b: 10 }],
+    texto: 'Calcula a × b y guarda el resultado en @14.', pista: 'El código del producto es 0010 (*).' },
+  { titulo: 'Potencia', bd: 4, datos: { 12: ['a', 'Dato'], 13: ['b', 'Dato'] }, res: { 14: (d) => Math.pow(d.a, d.b) },
+    casos: [{ a: 2, b: 5 }, { a: 3, b: 4 }, { a: 5, b: 3 }],
+    texto: 'Calcula a elevado a b y guarda el resultado en @14.', pista: 'Primero lleva a al acumulador con + @12. Después, ^ @13.' },
+  { titulo: 'Tres sumandos', bd: 4, datos: { 11: ['a', 'Dato'], 12: ['b', 'Dato'], 13: ['c', 'Dato'] }, res: { 14: (d) => d.a + d.b + d.c },
+    casos: [{ a: 10, b: 20, c: 30 }, { a: 1, b: 2, c: 3 }, { a: 99, b: 0, c: 100 }],
+    texto: 'Calcula a + b + c y guarda el resultado en @14.', pista: 'El acumulador va guardando la suma parcial.' },
+  { titulo: 'Con paréntesis', bd: 4, datos: { 11: ['a', 'Dato'], 12: ['b', 'Dato'], 13: ['c', 'Dato'] }, res: { 14: (d) => (d.a + d.b) * d.c },
+    casos: [{ a: 3, b: 4, c: 5 }, { a: 10, b: 2, c: 3 }, { a: 0, b: 7, c: 7 }],
+    texto: 'Calcula (a + b) × c y guarda el resultado en @14.', pista: 'Lo de dentro del paréntesis va primero.' },
+  { titulo: 'La máscara AND', bd: 4, datos: { 12: ['x', 'Dato'], 13: ['m', 'Máscara'] }, res: { 14: (d) => d.x & 15 },
+    casos: [{ x: 182, m: 15 }, { x: 75, m: 15 }, { x: 255, m: 15 }],
+    texto: 'En @12 hay un número x y en @13 la máscara 00001111. Guarda en @14 solo los 4 bits de la derecha de x.', pista: 'AND deja un 1 solo donde los dos bits valen 1. Míralo en la vista binaria.' },
+  { titulo: 'Dos resultados', bd: 4, datos: { 11: ['a', 'Dato'], 12: ['b', 'Dato'] }, res: { 13: (d) => d.a + d.b, 14: (d) => d.a - d.b },
+    casos: [{ a: 9, b: 4 }, { a: 50, b: 50 }, { a: 120, b: 7 }],
+    texto: 'Guarda a + b en @13 y a − b en @14.', pista: 'Después de guardar el primer resultado, el acumulador sigue lleno. Para dejarlo a 0, réstale lo que acabas de guardar (como en la pizarra: − @14).' },
+  { titulo: 'La de la pizarra', bd: 5, datos: { 24: ['a', 'Dato'], 25: ['b', 'Dato'], 26: ['c', 'Dato'], 27: ['d', 'Dato'] }, res: { 28: (d) => Math.pow(d.a - d.b, d.c - d.d) },
+    casos: [{ a: 8, b: 5, c: 3, d: 1 }, { a: 7, b: 5, c: 4, d: 1 }, { a: 6, b: 2, c: 5, d: 3 }],
+    texto: 'Memoria de 32 celdas. Calcula (a − b) ^ (c − d) y guarda el resultado en @28. Puedes usar las celdas libres para resultados intermedios.', pista: 'Mira el ejemplo de la pizarra: guarda a − b, deja el acumulador a 0, calcula c − d, guárdalo y luego eleva.' },
+  { titulo: 'Suma por diferencia', bd: 4, datos: { 12: ['a', 'Dato'], 13: ['b', 'Dato'] }, res: { 15: (d) => (d.a + d.b) * (d.a - d.b) },
+    casos: [{ a: 7, b: 3 }, { a: 10, b: 2 }, { a: 9, b: 9 }],
+    texto: 'Calcula (a + b) × (a − b) y guarda el resultado en @15. La celda @14 está libre para lo que necesites.', pista: 'Calcula primero a − b, guárdalo en @14, deja el acumulador a 0 y luego haz (a + b) × @14.' }
+];
+const MEDALLAS = [
+  { retos: 2, nombre: 'Bronce', icono: '🥉', color: '#B45309' },
+  { retos: 4, nombre: 'Plata', icono: '🥈', color: '#64748B' },
+  { retos: 6, nombre: 'Oro', icono: '🥇', color: '#CA8A04' },
+  { retos: 8, nombre: 'Platino', icono: '💠', color: '#0891B2' },
+  { retos: 10, nombre: 'Diamante', icono: '💎', color: '#7C3AED' }
+];
+let progreso = { hechos: [], intentos: {} };
+let retoSel = 0;
+try { const p = JSON.parse(localStorage.getItem(ALMACEN + 'retos') || 'null'); if (p && Array.isArray(p.hechos)) progreso = { hechos: p.hechos, intentos: p.intentos || {} }; } catch (e) { /* sin almacenamiento */ }
+function guardarProgreso() { try { localStorage.setItem(ALMACEN + 'retos', JSON.stringify(progreso)); } catch (e) { /* sin almacenamiento */ } }
+function disponible(n) { return n === 0 || progreso.hechos.includes(n - 1) || progreso.hechos.includes(n); }
+function medallaDe(k) { let m = null; MEDALLAS.forEach(x => { if (k >= x.retos) m = x; }); return m; }
+
+function memDeReto(def, caso) {
+  const bdAnt = BD; BD = def.bd;
+  const mem = memoriaVacia();
+  Object.entries(def.datos).forEach(([dir, [clave, etq]]) => { mem[+dir] = { v: caso[clave], tipo: 'dato', etq }; });
+  Object.keys(def.res).forEach(dir => { mem[+dir] = { v: 0, tipo: 'dato', etq: 'Resultado' }; });
+  BD = bdAnt;
+  return mem;
+}
+function datosTexto(def, caso) {
+  return Object.entries(def.datos).map(([dir, [clave, etq]]) => '@' + dir + '  ' + etq + ' ' + caso[clave] + '   (' + clave + ')').join('\n')
+    + '\n' + Object.keys(def.res).map(dir => '@' + dir + '  Resultado').join('\n');
+}
+
+function pintarRetos() {
+  const al = leerAlumno();
+  $('alumno-texto').textContent = al ? '👤 ' + al.nombre + ' · ' + al.grupo : '👤 Sin nombre';
+  $('pill-hechos').textContent = progreso.hechos.length + ' de ' + RETOS.length + ' retos';
+  const med = medallaDe(progreso.hechos.length);
+  $('pill-medalla').textContent = med ? med.icono + ' ' + med.nombre : 'Sin medalla';
+  const esc = $('escalera'); esc.textContent = '';
+  RETOS.forEach((r, n) => {
+    const b = document.createElement('button');
+    const hecho = progreso.hechos.includes(n), abierto = disponible(n);
+    b.className = 'peldano' + (hecho ? ' hecho' : (abierto ? ' actual' : ' cerrado')) + (n === retoSel ? ' sel' : '');
+    const a = document.createElement('span'); a.className = 'num'; a.textContent = n + 1;
+    const t = document.createElement('span'); t.className = 'tit'; t.textContent = r.titulo;
+    const s = document.createElement('span'); s.textContent = hecho ? '✓' : (abierto ? '▶' : '🔒');
+    b.append(a, t, s);
+    b.onclick = () => { if (abierto) { retoSel = n; pintarRetos(); } };
+    esc.appendChild(b);
+  });
+  const def = RETOS[retoSel];
+  const en = $('enunciado'); en.textContent = '';
+  const h = document.createElement('h2'); h.textContent = 'Reto ' + (retoSel + 1) + ' · ' + def.titulo;
+  const p = document.createElement('p'); p.textContent = def.texto;
+  const d = document.createElement('div'); d.className = 'datos'; d.textContent = 'Lo que ya hay en la memoria (' + (1 << def.bd) + ' celdas):\n' + datosTexto(def, def.casos[0]);
+  const pi = document.createElement('details');
+  const su = document.createElement('summary'); su.textContent = 'Necesito una pista'; su.style.cursor = 'pointer'; su.style.fontWeight = '700';
+  const pt = document.createElement('div'); pt.className = 'pista'; pt.textContent = def.pista;
+  pi.append(su, pt);
+  const p2 = document.createElement('p'); p2.className = 'nota';
+  p2.textContent = 'Al comprobarlo, tu programa se ejecuta con estos datos y con otros distintos: tiene que calcular el resultado, no escribirlo. ' + (progreso.hechos.includes(retoSel) ? '✓ Este ya lo tienes.' : '');
+  const bt = document.createElement('button'); bt.className = 'btn primario'; bt.textContent = 'Resolver en el simulador ▶';
+  bt.onclick = () => abrirReto(retoSel);
+  bt.style.alignSelf = 'flex-start';
+  en.append(h, p, d, pi, p2, bt);
+}
+function abrirReto(n) {
+  if (!leerAlumno()) { abrirAlumno(() => abrirReto(n)); return; }
+  const def = RETOS[n];
+  BD = def.bd;
+  const memBase = memDeReto(def, def.casos[0]);
+  const bloqueadas = Object.keys(def.datos).concat(Object.keys(def.res)).map(Number);
+  reto = { n, def, memBase, bloqueadas };
+  let mem = copiaMem(memBase);
+  const intento = progreso.intentos[n];
+  if (intento && intento.length === mem.length) { mem = copiaMem(intento); bloqueadas.forEach(i => { mem[i] = { ...memBase[i] }; }); }
+  programa = { id: null, nombre: 'Reto ' + (n + 1), bd: def.bd, mem };
+  $('banda-titulo').textContent = 'Reto ' + (n + 1) + ' · ' + def.titulo + ':';
+  $('banda-texto').textContent = def.texto;
+  $('banda-reto').classList.add('activa');
+  actualizarSelector();
+  irAVista('v-sim');
+  reiniciarEjecucion();
+  aviso('Las celdas con 🔒 son del reto. Escribe tu programa desde @0.', 'ok');
+}
+function guardarIntentoReto() { progreso.intentos[reto.n] = copiaMem(programa.mem); guardarProgreso(); }
+function salirDeReto() {
+  reto = null;
+  $('banda-reto').classList.remove('activa');
+  cargarEjemplo(EJEMPLOS[0].id);
+  actualizarSelector();
+}
+function comprobarReto() {
+  parar();
+  const def = reto.def;
+  const bdAnt = BD; BD = def.bd;
+  let fallo = null;
+  for (const caso of def.casos) {
+    const mem = copiaMem(programa.mem);
+    const base = memDeReto(def, caso);
+    reto.bloqueadas.forEach(i => { mem[i] = base[i]; });
+    const e = ejecutarEntero(mem);
+    const nombres = Object.entries(def.datos).map(([, [k]]) => k + ' = ' + caso[k]).join(', ');
+    if (e.error) { fallo = 'Con ' + nombres + ' la máquina se para con un error: ' + e.error; break; }
+    if (!e.fin) { fallo = 'Con ' + nombres + ' el programa no termina.'; break; }
+    for (const [dir, f] of Object.entries(def.res)) {
+      const esperado = f(caso);
+      if (e.mem[+dir].v !== esperado) { fallo = 'Con ' + nombres + ' en @' + dir + ' debería quedar ' + esperado + ', pero queda ' + e.mem[+dir].v + '.'; break; }
+    }
+    if (fallo) break;
+  }
+  BD = bdAnt;
+  const cuerpo = $('res-cuerpo'); cuerpo.textContent = '';
+  const acc = $('res-acciones'); acc.textContent = '';
+  const div = document.createElement('div');
+  const al = leerAlumno();
+  if (fallo) {
+    $('res-titulo').textContent = 'Todavía no';
+    div.className = 'resultado-mal'; div.textContent = fallo;
+    const p = document.createElement('p'); p.className = 'nota'; p.textContent = 'Ejecútalo paso a paso y mira el acumulador después de cada instrucción.';
+    cuerpo.append(div, p);
+    const b = document.createElement('button'); b.className = 'btn primario'; b.textContent = 'Seguir intentándolo'; b.onclick = () => cerrarModal('m-resultado');
+    acc.appendChild(b);
+  } else {
+    const antes = medallaDe(progreso.hechos.length);
+    if (!progreso.hechos.includes(reto.n)) progreso.hechos.push(reto.n);
+    guardarProgreso();
+    const despues = medallaDe(progreso.hechos.length);
+    $('res-titulo').textContent = '¡Reto ' + (reto.n + 1) + ' superado!';
+    div.className = 'resultado-ok';
+    div.textContent = (al ? al.nombre + ' (' + al.grupo + '): ' : '') + 'tu programa funciona con los ' + def.casos.length + ' juegos de datos.';
+    cuerpo.appendChild(div);
+    const sig = reto.n + 1;
+    const b1 = document.createElement('button'); b1.className = 'btn'; b1.textContent = 'Volver a los retos';
+    b1.onclick = () => { cerrarModal('m-resultado'); salirDeReto(); retoSel = Math.min(sig, RETOS.length - 1); irAVista('v-retos'); };
+    acc.appendChild(b1);
+    if (sig < RETOS.length) {
+      const b2 = document.createElement('button'); b2.className = 'btn primario'; b2.textContent = 'Siguiente reto ▶';
+      b2.onclick = () => { cerrarModal('m-resultado'); retoSel = sig; abrirReto(sig); };
+      acc.appendChild(b2);
+    }
+    if (despues && despues !== antes) setTimeout(() => mostrarMedalla(despues), 400);
+  }
+  abrirModal('m-resultado');
+}
+function mostrarMedalla(m) {
+  $('medalla-icono').textContent = m.icono;
+  $('medalla-titulo').textContent = '¡Medalla de ' + m.nombre + '!';
+  $('medalla-titulo').style.color = m.color;
+  const al = leerAlumno();
+  $('medalla-texto').textContent = (al ? al.nombre + ' · ' + al.grupo + '. ' : '') + (m.retos === RETOS.length ? 'Has superado todos los retos. ¡Ya sabes programar una máquina de von Neumann!' : 'Llevas ' + m.retos + ' retos superados.');
+  abrirModal('m-medalla');
+}
+function verMiMedalla() { const m = medallaDe(progreso.hechos.length); if (m) mostrarMedalla(m); }
+
+/* Nombre y grupo (si ya lo escribió en el recurso de binario, se aprovecha) */
+function leerAlumno() {
+  try {
+    const a = JSON.parse(localStorage.getItem(ALMACEN + 'alumno') || 'null');
+    if (a && a.nombre) return a;
+    const b = JSON.parse(localStorage.getItem('binario-ascii-alumno') || 'null');
+    if (b && b.nombre && b.grupo) return { nombre: b.nombre, grupo: b.grupo };
+  } catch (e) { /* sin almacenamiento */ }
+  return null;
+}
+let trasAlumno = null;
+function abrirAlumno(despues) {
+  trasAlumno = despues || null;
+  const a = leerAlumno();
+  $('nombre-alumno').value = a ? a.nombre : '';
+  $('grupo-alumno').value = a ? a.grupo : '';
+  abrirModal('m-alumno');
+  $('nombre-alumno').focus();
+}
+function guardarAlumno() {
+  const nombre = $('nombre-alumno').value.trim().slice(0, 40), grupo = $('grupo-alumno').value.trim().slice(0, 12);
+  if (!nombre || !grupo) return;
+  try { localStorage.setItem(ALMACEN + 'alumno', JSON.stringify({ nombre, grupo })); } catch (e) { /* sin almacenamiento */ }
+  cerrarModal('m-alumno');
+  pintarRetos();
+  if (trasAlumno) { const f = trasAlumno; trasAlumno = null; f(); }
+}
+
+/* ==========================================================================
+   NAVEGACIÓN, TEMA Y ARRANQUE
+   ========================================================================== */
+function irAVista(id) {
+  document.querySelectorAll('.vista').forEach(v => v.classList.toggle('activa', v.id === id));
+  document.querySelectorAll('.pestana[data-vista]').forEach(b => b.classList.toggle('activa', b.dataset.vista === id));
+  if (id === 'v-retos') pintarRetos();
+  if (id === 'v-sim') requestAnimationFrame(pintarBuses);
+  try { localStorage.setItem(ALMACEN + 'vista', id); } catch (e) { /* sin almacenamiento */ }
+}
+document.querySelectorAll('.pestana[data-vista]').forEach(b => b.addEventListener('click', () => irAVista(b.dataset.vista)));
+$('btn-qr').onclick = () => abrirModal('m-qr');
+function aplicarTema(t) { if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark'); else document.documentElement.removeAttribute('data-theme'); }
+$('btn-tema').onclick = () => {
+  const nuevo = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  aplicarTema(nuevo);
+  try { localStorage.setItem(ALMACEN + 'tema', nuevo); } catch (e) { /* sin almacenamiento */ }
+};
+try { aplicarTema(localStorage.getItem(ALMACEN + 'tema')); } catch (e) { /* sin almacenamiento */ }
+[...$('grupo-vista').children].forEach(b => b.onclick = () => {
+  vistaMem = b.dataset.v;
+  try { localStorage.setItem(ALMACEN + 'vista-mem', vistaMem); } catch (e) { /* sin almacenamiento */ }
+  pintar();
+});
+try { vistaMem = localStorage.getItem(ALMACEN + 'vista-mem') || 'las2'; } catch (e) { /* sin almacenamiento */ }
+[...$('grupo-tam').children].forEach(b => b.onclick = () => cambiarTam(+b.dataset.t));
+
+/* Tablas de códigos (decodificador y teoría) */
+OPS.forEach((o) => {
+  const tr = document.createElement('tr');
+  [o.cod, o.sim, o.nombre].forEach(t => { const td = document.createElement('td'); td.textContent = t; tr.appendChild(td); });
+  $('tabla-deco').appendChild(tr);
+  $('tabla-codigos-teoria').appendChild(tr.cloneNode(true));
+});
+
+/* Teclado: → paso, ← atrás, Esc cierra ventanas */
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') document.querySelectorAll('.fondo-modal.abierto').forEach(m => m.classList.remove('abierto'));
+  const t = ev.target.tagName;
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  if (document.querySelector('.fondo-modal.abierto')) return;
+  if (!$('v-sim').classList.contains('activa')) return;
+  if (ev.key === 'ArrowRight') { ev.preventDefault(); pasoAdelante(); }
+  if (ev.key === 'ArrowLeft') { ev.preventDefault(); pasoAtras(); }
+});
+
+/* Altura visible real (sin barras del navegador ni lo que corta el site) */
+function ajustarAlto() {
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  if (h > 0) document.documentElement.style.setProperty('--alto', Math.round(h) + 'px');
+  if (E) requestAnimationFrame(pintarBuses);
+}
+ajustarAlto();
+window.addEventListener('resize', ajustarAlto);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', ajustarAlto);
+$('mem-scroll').addEventListener('scroll', () => requestAnimationFrame(pintarBuses));
+
+cargarEjemplo(EJEMPLOS[0].id);
+actualizarSelector();
+try { const v = localStorage.getItem(ALMACEN + 'vista'); if (v && $(v)) irAVista(v); } catch (e) { /* sin almacenamiento */ }
+</script>
+</body>
+</html>
