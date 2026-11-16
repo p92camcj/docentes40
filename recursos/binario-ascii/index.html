@@ -1531,10 +1531,14 @@
       html {
         font-size: clamp(10px, min(3.6vw, 2.05vh), 17px);
         font-size: clamp(10px, min(3.6vw, 2.05dvh), 17px);
+        /* --alto: altura visible de verdad, medida con JavaScript (Safari del
+           iPhone y el cuadro incrustado del site no siempre la dan con vh) */
+        font-size: clamp(10px, min(3.6vw, calc(var(--alto, 100dvh) * 0.0205)), 17px);
       }
       .app-shell {
         height: 100vh;
         height: 100dvh;
+        height: var(--alto, 100dvh);
       }
       .largo {
         display: none;
@@ -1757,7 +1761,16 @@
         grid-template-columns: 1fr;
         font-size: 0.78rem;
       }
+      .quiz-workspace {
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Los botones de abajo siempre a la vista, aunque el ejercicio no quepa */
       .quiz-actions {
+        position: sticky;
+        bottom: -0.45rem;
+        z-index: 2;
+        background: var(--bg-surface);
+        padding-bottom: 0.45rem;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         grid-auto-flow: column;
@@ -2456,6 +2469,16 @@
     try { localStorage.setItem('binario-ascii-tema', nuevo); } catch (e) { /* sin almacenamiento */ }
   }
   try { aplicarTema(localStorage.getItem('binario-ascii-tema')); } catch (e) { /* sin almacenamiento */ }
+
+  /* Altura visible real (sin barras del navegador ni lo que corta el site) */
+  function ajustarAlto() {
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    if (h > 0) document.documentElement.style.setProperty('--alto', Math.round(h) + 'px');
+  }
+  ajustarAlto();
+  window.addEventListener('resize', ajustarAlto);
+  window.addEventListener('orientationchange', () => setTimeout(ajustarAlto, 300));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', ajustarAlto);
 
   /* Diapositiva 4: método de los cajones */
   let cajNum = 55;
