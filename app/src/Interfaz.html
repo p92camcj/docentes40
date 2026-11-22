@@ -61,6 +61,14 @@ textarea { resize: vertical; }
 .vacio { color: var(--suave); font-size: .92rem; padding: 6px 0; }
 .avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--acento-claro); flex: none; display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--acento); }
 .persona { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.recorte { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.recorte canvas { width: 200px; height: 200px; border-radius: 50%; background: var(--acento-claro); cursor: grab; touch-action: none; box-shadow: 0 0 0 3px var(--acento); }
+.recorte canvas:active { cursor: grabbing; }
+.mandos { display: grid; gap: 10px; justify-items: center; }
+.cruceta { display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); gap: 4px; }
+.cruceta button, .zoom button { width: 40px; height: 40px; padding: 0; justify-content: center; font-size: 1.1rem; }
+.zoom { display: flex; gap: 8px; align-items: center; }
+.zoom input { width: 130px; }
 .rejilla2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; background: var(--tinta); color: var(--fondo); padding: 10px 16px; border-radius: 8px; font-weight: 700; z-index: 20; max-width: 90vw; }
 .toast.mal { background: var(--error); color: #fff; }
@@ -168,7 +176,7 @@ textarea { resize: vertical; }
     </div>
 
     <div class="vista" id="s-participantes" hidden>
-      <div class="panel"><h3>Participantes</h3><p class="pie">Las tarjetas de la página «Participantes». Sube una foto o un avatar en PNG o JPG: se recorta en círculo y se reduce sola. Pide permiso a cada persona antes de subir su foto, porque la página es pública.</p><div id="aParticipantes"></div></div>
+      <div class="panel"><h3>Participantes</h3><p class="pie">Las tarjetas de la página «Participantes». Sube una foto o un avatar en PNG o JPG y encuádrala: arrástrala, usa las flechas y el zoom. Se reduce sola. Pide permiso a cada persona antes de subir su foto, porque la página es pública.</p><div id="aParticipantes"></div></div>
       <div class="panel"><h3 id="tituloFormA">Añadir a alguien</h3>
         <form class="formulario" id="formA">
           <input type="hidden" id="paId">
@@ -177,6 +185,18 @@ textarea { resize: vertical; }
           <div class="ancho"><label class="et" for="paSite">Dirección de su site (vacía si aún no lo tiene)</label><input type="url" id="paSite"></div>
           <div><label class="et" for="paOrden">Orden</label><input type="number" id="paOrden" min="0" max="999" value="50"></div>
           <div><label class="et" for="paFoto">Foto o avatar</label><input type="file" id="paFoto" accept="image/png,image/jpeg,image/webp"></div>
+          <div class="ancho recorte" id="paRecorte" hidden>
+            <canvas id="paLienzo" width="400" height="400" aria-label="Encuadre de la foto: arrástrala para moverla"></canvas>
+            <div class="mandos">
+              <div class="cruceta">
+                <span></span><button class="boton claro" type="button" data-mover="0,-1" title="Subir la foto">↑</button><span></span>
+                <button class="boton claro" type="button" data-mover="-1,0" title="Mover a la izquierda">←</button><button class="boton claro" type="button" id="paCentrar" title="Volver a centrar">⟲</button><button class="boton claro" type="button" data-mover="1,0" title="Mover a la derecha">→</button>
+                <span></span><button class="boton claro" type="button" data-mover="0,1" title="Bajar la foto">↓</button><span></span>
+              </div>
+              <div class="zoom"><button class="boton claro" type="button" id="paMenos" title="Alejar">−</button><input type="range" id="paZoom" min="1" max="4" step="0.05" value="1" aria-label="Zoom"><button class="boton claro" type="button" id="paMas" title="Acercar">+</button></div>
+              <p class="pie">Arrastra la foto o usa las flechas. La rueda del ratón también hace zoom.</p>
+            </div>
+          </div>
           <div class="ancho persona" id="paVista" hidden><img class="avatar" id="paImg" alt="Vista previa" style="width:72px;height:72px"><button class="boton peligro peq" type="button" id="paQuitar">Quitar la imagen</button></div>
           <div class="acciones ancho"><button class="boton" type="submit">Guardar</button><button class="boton claro" type="button" id="paCancelar">Cancelar</button></div>
         </form>
@@ -186,9 +206,10 @@ textarea { resize: vertical; }
     <div class="vista" id="s-acta" hidden>
       <div class="panel">
         <h3>Acta de sesión para Séneca</h3>
-        <p>Sube el HTML de la presentación de la sesión: el acta sale escrita sola. El horario va siempre de 16:00 a 19:00. Marca quién vino, retoca lo que quieras y pásalo a Séneca con el marcador.</p>
+        <p>Elige la sesión y pulsa «Cargar su acta»: sale escrita sola. El horario va siempre de 16:00 a 19:00. Marca quién vino, retoca lo que quieras y pásalo a Séneca con el marcador.</p>
         <div class="formulario">
-          <div><label class="et" for="actaArchivo">Presentación de la sesión</label><input type="file" id="actaArchivo" accept=".html,.htm,text/html"><p class="pie" id="actaOrigen">Aún no has subido ninguna.</p></div>
+          <div><label class="et" for="actaSesion">Sesión del GT</label><div class="acciones" style="margin:0"><input type="number" id="actaSesion" min="1" max="99" value="1" style="width:80px"><button class="boton" type="button" id="actaCargar">Cargar su acta</button></div><p class="pie">La lee de la presentación publicada. Si no puede, sube el archivo abajo.</p></div>
+          <div><label class="et" for="actaArchivo">… o sube el HTML de la presentación</label><input type="file" id="actaArchivo" accept=".html,.htm,text/html"><p class="pie" id="actaOrigen">Aún no has cargado ninguna.</p></div>
           <div><label class="et" for="actaFecha">Fecha de la sesión</label><input type="date" id="actaFecha"></div>
           <div class="ancho"><span class="et">¿Quién vino?</span><div class="asist" id="actaAsist"></div></div>
         </div>
@@ -440,26 +461,70 @@ textarea { resize: vertical; }
   }
   function editarParticipante(x) {
     $('paId').value = x.id; $('paNombre').value = x.nombre; $('paPapel').value = x.papel; $('paSite').value = x.site; $('paOrden').value = x.orden || 50;
-    avatarNuevo = ''; $('paFoto').value = '';
+    recCerrar(); avatarNuevo = ''; $('paFoto').value = '';
     $('paVista').hidden = !x.avatar; if (x.avatar) $('paImg').src = x.avatar;
     $('tituloFormA').textContent = 'Editar a ' + x.nombre; $('paNombre').focus();
   }
-  function limpiarFormA() { $('formA').reset(); $('paId').value = ''; avatarNuevo = ''; $('paVista').hidden = true; $('tituloFormA').textContent = 'Añadir a alguien'; }
+  function limpiarFormA() { recCerrar(); $('formA').reset(); $('paId').value = ''; avatarNuevo = ''; $('paVista').hidden = true; $('tituloFormA').textContent = 'Añadir a alguien'; }
   $('paCancelar').addEventListener('click', limpiarFormA);
-  $('paQuitar').addEventListener('click', function () { avatarNuevo = 'QUITAR'; $('paVista').hidden = true; $('paFoto').value = ''; aviso('Se quitará al guardar'); });
-  /* Recorta en cuadrado y reduce a 160 px: PNG si cabe (conserva la transparencia), si no WebP y, en último caso, JPG */
+  $('paQuitar').addEventListener('click', function () { recCerrar(); avatarNuevo = 'QUITAR'; $('paVista').hidden = true; $('paFoto').value = ''; aviso('Se quitará al guardar'); });
+  /* Recortador: zoom y encuadre sobre la foto original; el avatar sale a 160 px, PNG si cabe (conserva la transparencia), si no WebP y, en último caso, JPG */
+  var rec = { img: null, z: 1, cx: 0, cy: 0 };
+  function recLado() { return Math.min(rec.img.width, rec.img.height) / rec.z; }
+  function recAjustar() {
+    var m = recLado() / 2;
+    rec.cx = Math.min(Math.max(rec.cx, m), rec.img.width - m);
+    rec.cy = Math.min(Math.max(rec.cy, m), rec.img.height - m);
+  }
+  function recPintar(cv) {
+    var l = recLado(), c = cv.getContext('2d');
+    c.clearRect(0, 0, cv.width, cv.height);
+    c.imageSmoothingQuality = 'high';
+    c.drawImage(rec.img, rec.cx - l / 2, rec.cy - l / 2, l, l, 0, 0, cv.width, cv.height);
+  }
+  var recTemporizador = null;
+  function recActualizar() {
+    if (!rec.img) return;
+    recAjustar(); recPintar($('paLienzo'));
+    clearTimeout(recTemporizador);
+    recTemporizador = setTimeout(function () {
+      var cv = document.createElement('canvas'); cv.width = cv.height = 160; recPintar(cv);
+      var d = cv.toDataURL('image/png');
+      if (d.length > 46000) d = cv.toDataURL('image/webp', 0.9);
+      if (d.length > 46000 || d.indexOf('data:image/webp') !== 0 && d.indexOf('data:image/png') !== 0) d = cv.toDataURL('image/jpeg', 0.85);
+      if (d.length > 46000) { avatarNuevo = ''; aviso('La imagen sigue siendo muy grande. Prueba con otra.', true); return; }
+      avatarNuevo = d;
+    }, 120);
+  }
+  function recZoom(z) { if (!rec.img) return; rec.z = Math.min(Math.max(z, 1), 4); $('paZoom').value = rec.z; recActualizar(); }
+  function recMover(dx, dy) { if (!rec.img) return; var paso = recLado() * 0.05; rec.cx += dx * paso; rec.cy += dy * paso; recActualizar(); }
+  function recCentrar() { if (!rec.img) return; rec.z = 1; $('paZoom').value = 1; rec.cx = rec.img.width / 2; rec.cy = rec.img.height / 2; recActualizar(); }
+  function recCerrar() { rec.img = null; $('paRecorte').hidden = true; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-mover]'), function (b) {
+    b.addEventListener('click', function () { var m = b.getAttribute('data-mover').split(','); recMover(+m[0], +m[1]); });
+  });
+  $('paCentrar').addEventListener('click', recCentrar);
+  $('paZoom').addEventListener('input', function () { recZoom(+this.value); });
+  $('paMenos').addEventListener('click', function () { recZoom(rec.z - 0.25); });
+  $('paMas').addEventListener('click', function () { recZoom(rec.z + 0.25); });
+  $('paLienzo').addEventListener('wheel', function (e) { if (!rec.img) return; e.preventDefault(); recZoom(rec.z * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
+  (function () {
+    var lienzo = $('paLienzo'), arrastre = null;
+    lienzo.addEventListener('pointerdown', function (e) { if (!rec.img) return; arrastre = { x: e.clientX, y: e.clientY }; lienzo.setPointerCapture(e.pointerId); });
+    lienzo.addEventListener('pointermove', function (e) {
+      if (!arrastre) return;
+      var escala = recLado() / lienzo.getBoundingClientRect().width;
+      rec.cx -= (e.clientX - arrastre.x) * escala; rec.cy -= (e.clientY - arrastre.y) * escala;
+      arrastre = { x: e.clientX, y: e.clientY }; recActualizar();
+    });
+    ['pointerup', 'pointercancel'].forEach(function (t) { lienzo.addEventListener(t, function () { arrastre = null; }); });
+  })();
   $('paFoto').addEventListener('change', function () {
     var file = this.files[0]; if (!file) return;
     var img = new Image(), url = URL.createObjectURL(file);
     img.onload = function () {
-      var lado = Math.min(img.width, img.height), cv = document.createElement('canvas'); cv.width = cv.height = 160;
-      cv.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 160, 160);
       URL.revokeObjectURL(url);
-      var d = cv.toDataURL('image/png');
-      if (d.length > 46000) d = cv.toDataURL('image/webp', 0.9);
-      if (d.length > 46000 || d.indexOf('data:image/webp') !== 0 && d.indexOf('data:image/png') !== 0) d = cv.toDataURL('image/jpeg', 0.85);
-      if (d.length > 46000) { aviso('La imagen sigue siendo muy grande. Prueba con otra.', true); return; }
-      avatarNuevo = d; $('paImg').src = d; $('paVista').hidden = false;
+      rec.img = img; $('paVista').hidden = true; $('paRecorte').hidden = false; recCentrar();
     };
     img.onerror = function () { aviso('No se puede leer esa imagen.', true); };
     img.src = url;
@@ -500,26 +565,46 @@ textarea { resize: vertical; }
     var cab = (a.sesion ? 'Sesión ' + a.sesion + '. ' : '') + 'De 16:00 a 19:00 (3 h)' + (a.lugar ? ', en el ' + a.lugar : '') + '.';
     areas.revision.t.value = cab + '\n' + (a.revision || '');
     areas.acuerdos.t.value = a.acuerdos || '';
-    areas.enlaces.t.value = a.enlaces || '';
+    areas.enlaces.t.value = enlacesAlSite(a.enlaces);
     Object.keys(areas).forEach(function (k) { contar(areas[k].t, areas[k].n); });
     $('actaOrigen').textContent = 'Cargada: ' + nombre;
   }
+  /* Los enlaces del acta van siempre al site del GT, nunca a GitHub */
+  var ENLACES_SITE = 'Site del grupo: ' + D.site + '\nSites de los participantes: ' + D.site + '/participantes\nApunta al cielo: ' + D.site + '/apunta-al-cielo\nRecursos: ' + D.site + '/recursos';
+  function enlacesAlSite(t) {
+    var lineas = String(t || '').split('\n').filter(function (l) { return l.trim() && !/github/i.test(l); });
+    return lineas.length ? lineas.join('\n') : ENLACES_SITE;
+  }
+  function leerPresentacion(html, nombre) {
+    var doc = new DOMParser().parseFromString(String(html), 'text/html'), j = doc.getElementById('datos-acta'), a = null;
+    if (j) { try { a = JSON.parse(j.textContent); } catch (e) { a = null; } }
+    if (!a) {
+      var bloques = [], titulos = [];
+      doc.querySelectorAll('[data-bloque]').forEach(function (s) { var b = s.getAttribute('data-bloque'); if (b && b !== 'Descanso' && bloques.indexOf(b) < 0) bloques.push(b); });
+      doc.querySelectorAll('h2').forEach(function (h) { var t = h.textContent.replace(/\s+/g, ' ').trim(); if (t && titulos.indexOf(t) < 0) titulos.push(t); });
+      if (!bloques.length && !titulos.length) { aviso('Ese HTML no es una presentación del GT. Prueba con «Cargar su acta».', true); return; }
+      a = { revision: 'Orden del día: ' + (bloques.length ? bloques : titulos).join('; ') + '.\nSe trabaja: ' + titulos.join('; ') + '.', acuerdos: '', enlaces: '' };
+      aviso('Ese archivo no trae el acta: he resumido la revisión. Escribe los acuerdos.', true);
+    } else aviso('Acta cargada');
+    cargarActa(a, nombre);
+  }
+  $('actaCargar').addEventListener('click', function () {
+    var n = parseInt($('actaSesion').value, 10);
+    if (!(n >= 1 && n <= 99)) { aviso('Escribe el número de la sesión.', true); return; }
+    var ruta = 'sesion' + (n < 10 ? '0' : '') + n + '/';
+    var url = 'https:' + '/' + '/p92camcj.github.io/docentes40/' + ruta + '?v=' + Date.now();
+    aviso('Cargando la sesión ' + n + '…');
+    fetch(url, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error(r.status === 404 ? 'La sesión ' + n + ' aún no está publicada.' : 'Error ' + r.status);
+      return r.text();
+    }).then(function (t) { leerPresentacion(t, 'sesión ' + n); }, function (e) {
+      aviso((e && e.message && e.message.indexOf('sesión') >= 0 ? e.message : 'No he podido leerla desde aquí.') + ' Sube el archivo de la presentación.', true);
+    });
+  });
   $('actaArchivo').addEventListener('change', function () {
     var f = this.files[0]; if (!f) return;
     var r = new FileReader();
-    r.onload = function () {
-      var doc = new DOMParser().parseFromString(String(r.result), 'text/html'), j = doc.getElementById('datos-acta'), a = null;
-      if (j) { try { a = JSON.parse(j.textContent); } catch (e) { a = null; } }
-      if (!a) {
-        var bloques = [], titulos = [];
-        doc.querySelectorAll('[data-bloque]').forEach(function (s) { var b = s.getAttribute('data-bloque'); if (b && b !== 'Descanso' && bloques.indexOf(b) < 0) bloques.push(b); });
-        doc.querySelectorAll('h2').forEach(function (h) { var t = h.textContent.replace(/\s+/g, ' ').trim(); if (t && titulos.indexOf(t) < 0) titulos.push(t); });
-        if (!bloques.length && !titulos.length) { aviso('Ese HTML no parece una presentación del GT.', true); return; }
-        a = { revision: 'Orden del día: ' + (bloques.length ? bloques : titulos).join('; ') + '.\nSe trabaja: ' + titulos.join('; ') + '.', acuerdos: '', enlaces: '' };
-        aviso('Esta presentación no trae acta: la he resumido. Completa los acuerdos.');
-      } else aviso('Acta leída de la presentación');
-      cargarActa(a, f.name);
-    };
+    r.onload = function () { leerPresentacion(r.result, f.name); };
     r.readAsText(f);
   });
   function copiar(t, ok) {

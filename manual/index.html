@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<title>Guía rápida · Docentes 4.0</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="../comun/gt.css">
+<script src="../comun/api.js"></script>
+<script src="../comun/gt.js"></script>
+<style>
+  .portada { background: var(--cielo-claro); border-radius: 18px; padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .portada h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; color: var(--cielo); line-height: 1.1; }
+  .portada p { font-size: 1.08rem; max-width: 60ch; }
+  .reloj { align-self: flex-start; font-weight: 700; font-size: .85rem; padding: 3px 12px; border-radius: 999px; background: var(--papel); color: var(--cielo); }
+
+  .progreso { display: flex; gap: 6px; }
+  .progreso button { flex: 1; height: 8px; border: 0; padding: 0; border-radius: 4px; background: var(--linea); cursor: pointer; }
+  .progreso button.hecho { background: var(--acento); }
+  .progreso button.actual { background: var(--cielo); }
+
+  .paso { background: var(--papel); border: 1px solid var(--linea); border-radius: 18px; padding: 24px 20px; display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 18px; align-items: start; min-height: 300px; }
+  .paso .num { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 2.4rem; background: var(--acento-claro); color: var(--acento); }
+  .paso.tarea { border: 2px solid var(--cielo); }
+  .paso.tarea .num { background: var(--cielo-claro); color: var(--cielo); }
+  .paso h2 { margin-bottom: 8px; }
+  .paso .cuerpo { display: flex; flex-direction: column; gap: 12px; font-size: 1.05rem; }
+  .paso ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+  .paso .boton { align-self: flex-start; font-size: 1rem; padding: 10px 18px; }
+  .nota { background: var(--aviso-claro); color: var(--tinta); border-radius: 10px; padding: 10px 14px; font-size: .95rem; }
+  .nota strong { color: var(--aviso); }
+  .escalera { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .escalera div { border-radius: 10px; padding: 8px; text-align: center; font-size: .85rem; background: var(--cielo-claro); color: var(--tinta); }
+  .escalera div strong { display: block; font-family: var(--display); color: var(--cielo); font-size: 1.1rem; }
+  .ejemplo { border-left: 4px solid var(--cielo); padding: 6px 12px; font-size: .95rem; color: var(--suave); }
+
+  .navegar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .navegar .contador { color: var(--suave); font-size: .9rem; }
+  .navegar .boton { font-size: 1rem; padding: 10px 18px; }
+  .navegar .boton[disabled] { opacity: .35; cursor: default; }
+
+  @media (max-width: 560px) {
+    .paso { grid-template-columns: 1fr; gap: 12px; min-height: 0; }
+    .paso .num { width: 56px; height: 56px; font-size: 1.6rem; }
+    .escalera { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .paso.entra { animation: entra .25s ease-out; }
+    @keyframes entra { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+  }
+  @media print { .navegar, .progreso, .barra-sup { display: none; } .paso[hidden] { display: grid !important; } .paso { break-inside: avoid; min-height: 0; } }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <div class="barra-sup"><button class="tema" data-gt-tema></button></div>
+
+  <header class="portada">
+    <span class="reloj">Se lee en 2 minutos</span>
+    <h1>La web del GT, paso a paso</h1>
+    <p>Hemos estrenado web. Ahora cada uno puede subir su proyecto y compartir recursos sin mandar correos. Son cinco pasos cortos, y en el tercero hay una tarea para ti.</p>
+  </header>
+
+  <div class="progreso" id="progreso" aria-label="Pasos"></div>
+
+  <section class="paso" data-titulo="Todo en un sitio">
+    <span class="num" aria-hidden="true">1</span>
+    <div class="cuerpo">
+      <h2>Todo está en el site del grupo</h2>
+      <p>En el menú del site tienes cuatro apartados:</p>
+      <ul>
+        <li><strong>Sesiones:</strong> la presentación de cada sesión, para repasarla cuando quieras.</li>
+        <li><strong>Apunta al cielo:</strong> el proyecto de cada uno y cómo va avanzando.</li>
+        <li><strong>Recursos:</strong> prompts, presentaciones y enlaces que nos compartimos.</li>
+        <li><strong>Participantes:</strong> quiénes somos y el site de cada uno.</li>
+      </ul>
+      <a class="boton" data-site="">Abrir el site del GT</a>
+    </div>
+  </section>
+
+  <section class="paso" data-titulo="Entrar" hidden>
+    <span class="num" aria-hidden="true">2</span>
+    <div class="cuerpo">
+      <h2>Entra con tu cuenta del centro</h2>
+      <p>Para escribir en la web usas tu cuenta <strong>@g.educaand.es</strong>. No hay contraseñas nuevas.</p>
+      <ul>
+        <li>Pulsa cualquier botón para añadir algo, por ejemplo «Añadir o actualizar mi proyecto».</li>
+        <li>Si te dice que aún no tienes permiso, pulsa <strong>«Pedir acceso»</strong>. A Julio le llega un aviso y te lo da.</li>
+        <li>Solo se hace una vez.</li>
+      </ul>
+      <p class="nota"><strong>¿Te sale «no tienes acceso» o una página de Google rara?</strong> Seguramente el navegador está usando tu cuenta personal. Abre una ventana de incógnito y entra solo con la del centro.</p>
+      <a class="boton claro" data-app="pedir">Pedir acceso</a>
+    </div>
+  </section>
+
+  <section class="paso tarea" data-titulo="Tu tarea" hidden>
+    <span class="num" aria-hidden="true">3</span>
+    <div class="cuerpo">
+      <h2>Tu tarea: apunta al cielo</h2>
+      <p>Piensa en <strong>un proyecto que hoy te parezca demasiado grande</strong> y que te gustaría sacar adelante con ayuda de la IA durante el curso. Puede ser una web para tu materia, una app, un juego, un banco de actividades… Lo que tú quieras.</p>
+      <p class="ejemplo">Por ejemplo: «Una app de reservas para los carritos de portátiles» o «Un juego para repasar el vocabulario de 2.º de ESO».</p>
+      <p>Al rellenarlo eliges en qué peldaño estás. Lo normal ahora es empezar en el 1:</p>
+      <div class="escalera">
+        <div><strong>1</strong>Idea</div>
+        <div><strong>2</strong>Prototipo</div>
+        <div><strong>3</strong>En el aula</div>
+        <div><strong>4</strong>Compartido</div>
+      </div>
+      <p>Son tres datos: un título, para qué sirve y el peldaño. El enlace solo si ya tienes algo que enseñar. Cuando avances, vuelves y subes de peldaño.</p>
+      <a class="boton" data-app="cielo">Rellenar mi proyecto</a>
+    </div>
+  </section>
+
+  <section class="paso" data-titulo="Compartir" hidden>
+    <span class="num" aria-hidden="true">4</span>
+    <div class="cuerpo">
+      <h2>Comparte lo que te funcione</h2>
+      <p>¿Un prompt que te ahorra tiempo, una presentación, una web útil? Súbelo en <strong>Recursos</strong>: título, para qué sirve y el enlace.</p>
+      <p>Julio le echa un vistazo y lo publica. Así todo lo bueno queda en un sitio y no se pierde en el correo.</p>
+      <a class="boton" data-app="recursos">Compartir un recurso</a>
+    </div>
+  </section>
+
+  <section class="paso" data-titulo="Listo" hidden>
+    <span class="num" aria-hidden="true">5</span>
+    <div class="cuerpo">
+      <h2>¡Ya está!</h2>
+      <p>Un último detalle: arriba a la derecha de cada página tienes el botón <strong>Modo oscuro / Modo claro</strong>, por si se lee mejor de una forma u otra.</p>
+      <p>Lo único que te pido para la próxima sesión (<strong>lunes 30 de noviembre</strong>) es tu proyecto en «Apunta al cielo». Así empezamos viendo los de todos.</p>
+      <a class="boton" data-app="cielo">Rellenar mi proyecto ahora</a>
+      <p class="pie">¿Dudas o algo no funciona? Díselo a Julio.</p>
+    </div>
+  </section>
+
+  <nav class="navegar" aria-label="Pasos de la guía">
+    <button class="boton claro" type="button" id="atras">← Atrás</button>
+    <span class="contador" id="contador" aria-live="polite"></span>
+    <button class="boton" type="button" id="adelante">Siguiente →</button>
+  </nav>
+</div>
+<script>
+(function () {
+  GT.tema();
+  var SITE = 'https:' + '/' + '/sites.google.com/g.educaand.es/docentes40';
+  document.querySelectorAll('[data-site]').forEach(function (a) { GT.enlace(a, SITE + a.getAttribute('data-site')); });
+  /* Si la app aún no está publicada, el botón lleva a la página del site correspondiente. */
+  var RESPALDO = { cielo: '/apunta-al-cielo', recursos: '/recursos', pedir: '/apunta-al-cielo' };
+  document.querySelectorAll('[data-app]').forEach(function (a) { var v = a.getAttribute('data-app'); GT.enlace(a, GT.app(v) || SITE + RESPALDO[v]); });
+
+  var pasos = Array.prototype.slice.call(document.querySelectorAll('.paso')), actual = 0, visto = 0;
+  var barra = document.getElementById('progreso');
+  pasos.forEach(function (p, i) {
+    var b = GT.el('button'); b.type = 'button'; b.title = (i + 1) + '. ' + p.getAttribute('data-titulo');
+    b.setAttribute('aria-label', 'Paso ' + b.title);
+    b.addEventListener('click', function () { ir(i); });
+    barra.appendChild(b);
+  });
+  function ir(n) {
+    if (n < 0 || n >= pasos.length) return;
+    actual = n; visto = Math.max(visto, n);
+    pasos.forEach(function (p, i) { p.hidden = i !== n; p.classList.toggle('entra', i === n); });
+    Array.prototype.forEach.call(barra.children, function (b, i) { b.className = i === n ? 'actual' : (i <= visto ? 'hecho' : ''); });
+    document.getElementById('contador').textContent = 'Paso ' + (n + 1) + ' de ' + pasos.length;
+    document.getElementById('atras').disabled = n === 0;
+    var sig = document.getElementById('adelante');
+    sig.disabled = n === pasos.length - 1;
+    sig.textContent = n === pasos.length - 2 ? 'Último paso →' : 'Siguiente →';
+  }
+  document.getElementById('atras').addEventListener('click', function () { ir(actual - 1); });
+  document.getElementById('adelante').addEventListener('click', function () { ir(actual + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input, textarea')) return;
+    if (e.key === 'ArrowRight') ir(actual + 1); else if (e.key === 'ArrowLeft') ir(actual - 1);
+  });
+  ir(0);
+})();
+</script>
+</body>
+</html>

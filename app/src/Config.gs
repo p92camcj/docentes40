@@ -11,7 +11,7 @@ var NOMBRE_APP = 'Docentes 4.0';
 var NOMBRE_CENTRO = 'IES Vega de Mar';
 var DOMINIO_CENTRO = 'g.educaand.es';
 var ZONA_HORARIA = 'Europe/Madrid';
-var VERSION = '1.0.0';
+var VERSION = '1.1.0';
 var PROPIEDAD_LIBRO = 'ID_LIBRO';
 
 /** Páginas del site del GT (las de la web pública que se incrustan allí). */
