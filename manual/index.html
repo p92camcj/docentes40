@@ -83,13 +83,8 @@
     <div class="cuerpo">
       <h2>Entra con tu cuenta del centro</h2>
       <p>Para escribir en la web usas tu cuenta <strong>@g.educaand.es</strong>. No hay contraseñas nuevas.</p>
-      <ul>
-        <li>Pulsa cualquier botón para añadir algo, por ejemplo «Añadir o actualizar mi proyecto».</li>
-        <li>Si te dice que aún no tienes permiso, pulsa <strong>«Pedir acceso»</strong>. A Julio le llega un aviso y te lo da.</li>
-        <li>Solo se hace una vez.</li>
-      </ul>
+      <p>Ya estás dado de alta: pulsa cualquier botón para añadir algo, por ejemplo «Rellenar mi proyecto», y entras directamente.</p>
       <p class="nota"><strong>¿Te sale «no tienes acceso» o una página de Google rara?</strong> Seguramente el navegador está usando tu cuenta personal. Abre una ventana de incógnito y entra solo con la del centro.</p>
-      <a class="boton claro" data-app="pedir">Pedir acceso</a>
     </div>
   </section>
 
@@ -144,7 +139,7 @@
   var SITE = 'https:' + '/' + '/sites.google.com/g.educaand.es/docentes40';
   document.querySelectorAll('[data-site]').forEach(function (a) { GT.enlace(a, SITE + a.getAttribute('data-site')); });
   /* Si la app aún no está publicada, el botón lleva a la página del site correspondiente. */
-  var RESPALDO = { cielo: '/apunta-al-cielo', recursos: '/recursos', pedir: '/apunta-al-cielo' };
+  var RESPALDO = { cielo: '/apunta-al-cielo', recursos: '/recursos' };
   document.querySelectorAll('[data-app]').forEach(function (a) { var v = a.getAttribute('data-app'); GT.enlace(a, GT.app(v) || SITE + RESPALDO[v]); });
 
   var pasos = Array.prototype.slice.call(document.querySelectorAll('.paso')), actual = 0, visto = 0;
