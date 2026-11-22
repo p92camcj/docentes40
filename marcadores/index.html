@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+<title>Marcadores para Séneca · Docentes 4.0</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="../comun/gt.css">
+<script src="../comun/gt.js"></script>
+<style>
+  .portada { background: var(--cielo-claro); border-radius: 18px; padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .portada h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; color: var(--cielo); line-height: 1.1; }
+  .portada p { font-size: 1.08rem; max-width: 64ch; }
+  .flujo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .flujo div { background: var(--papel); border-radius: 12px; padding: 10px; font-size: .9rem; }
+  .flujo strong { display: block; font-family: var(--display); color: var(--cielo); }
+  .paso { background: var(--papel); border: 1px solid var(--linea); border-radius: 18px; padding: 22px 20px; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; align-items: start; }
+  .paso .num { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 1.9rem; background: var(--acento-claro); color: var(--acento); }
+  .paso h2 { margin-bottom: 6px; }
+  .cuerpo { display: flex; flex-direction: column; gap: 12px; font-size: 1.02rem; min-width: 0; }
+  .cuerpo ol, .cuerpo ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 5px; }
+  .nota { background: var(--aviso-claro); color: var(--tinta); border-radius: 10px; padding: 10px 14px; font-size: .95rem; }
+  .nota strong { color: var(--aviso); }
+  .marcador { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; padding: 10px 18px; border-radius: 8px; background: #0b7a3e; color: #fff; text-decoration: none; cursor: grab; border: 2px dashed rgba(255,255,255,.6); }
+  .marcador[aria-disabled="true"] { opacity: .5; }
+  pre.prompt { max-height: 260px; overflow: auto; white-space: pre-wrap; background: var(--fondo); border: 1px solid var(--linea); border-radius: 10px; padding: 12px; font: .82rem/1.45 Consolas, monospace; margin: 0; }
+  .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  label.campo { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .92rem; }
+  input.texto, textarea.codigo { font: inherit; border: 1px solid var(--linea); border-radius: 8px; padding: 8px 10px; background: var(--fondo); color: var(--tinta); }
+  textarea.codigo { min-height: 200px; font: .82rem/1.4 Consolas, monospace; resize: vertical; }
+  .resultado { display: flex; flex-direction: column; gap: 8px; }
+  .resultado .ok { color: #0b7a3e; font-weight: 700; }
+  .resultado .mal { color: #b3261e; font-weight: 700; }
+  .resultado li.grave { color: #b3261e; }
+  .retos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .retos div { border: 1px solid var(--linea); border-left: 5px solid var(--cielo); border-radius: 12px; padding: 12px 14px; font-size: .95rem; }
+  .retos strong { display: block; color: var(--cielo); margin-bottom: 4px; }
+  @media (max-width: 760px) {
+    .flujo, .retos { grid-template-columns: 1fr 1fr; }
+    .paso { grid-template-columns: 1fr; gap: 10px; }
+    .paso .num { width: 48px; height: 48px; font-size: 1.4rem; }
+  }
+  @media (max-width: 460px) { .flujo, .retos { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="envoltura">
+  <div class="barra-sup"><button class="tema" data-gt-tema></button></div>
+
+  <header class="portada">
+    <h1>Marcadores para Séneca</h1>
+    <p>Un marcador es un botón de la barra de Chrome que, en vez de abrir una web, hace algo en la que tienes abierta: marcar todas las casillas, poner la misma observación a un grupo, pegar una columna de notas… Lo escribe Gemini por ti. Tú solo le explicas la tarea y le enseñas cómo está hecha la pantalla.</p>
+    <div class="flujo">
+      <div><strong>1. Radiografía</strong>Le sacas a la pantalla de Séneca su estructura, sin datos.</div>
+      <div><strong>2. Gemini</strong>Le pegas la radiografía y le cuentas la tarea.</div>
+      <div><strong>3. Montador</strong>Pegas su código y sale tu marcador.</div>
+      <div><strong>4. Pruebas</strong>Primero en la Séneca de práctica, después en la real.</div>
+    </div>
+    <p class="nota"><strong>Regla del GT:</strong> Gemini ve cómo está hecha la pantalla, nunca los datos. La radiografía tapa nombres, notas y correos. Los datos que el marcador escribe o lee se quedan en tu navegador.</p>
+  </header>
+
+  <section class="paso">
+    <span class="num" aria-hidden="true">1</span>
+    <div class="cuerpo">
+      <h2>Instala la Radiografía</h2>
+      <ol>
+        <li>Muestra la barra de marcadores de Chrome: <kbd>Ctrl</kbd>+<kbd>Mayús</kbd>+<kbd>B</kbd>.</li>
+        <li>Arrastra este botón verde hasta la barra:</li>
+      </ol>
+      <a class="marcador" id="radiografia" href="#" aria-disabled="true" draggable="true">Radiografía Séneca</a>
+      <ol start="3">
+        <li>Abre en Séneca la pantalla que quieres automatizar, con el grupo ya elegido.</li>
+        <li>Pulsa «Radiografía Séneca» en la barra. Sale un recuadro naranja con el texto: <strong>léelo</strong> (no debe salir ningún nombre del alumnado) y pulsa «Copiar».</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="paso">
+    <span class="num" aria-hidden="true">2</span>
+    <div class="cuerpo">
+      <h2>Pídeselo a Gemini</h2>
+      <p>La primera vez, crea un Gem (un Gemini con instrucciones fijas) para no tener que explicarle Séneca cada vez:</p>
+      <ol>
+        <li>Entra en <strong>gemini.google.com</strong> con tu cuenta <strong>@g.educaand.es</strong>.</li>
+        <li>Menú de la izquierda › <strong>Gems</strong> › <strong>Nuevo Gem</strong>. Nombre: «Marcadores para Séneca».</li>
+        <li>En «Instrucciones», pega esto y guarda:</li>
+      </ol>
+      <pre class="prompt" id="instrucciones">Cargando…</pre>
+      <div class="fila"><button class="boton" type="button" id="copiar-instrucciones">Copiar las instrucciones</button></div>
+      <p>Cada vez que quieras un marcador, abre el Gem y escribe algo así:</p>
+      <pre class="prompt" id="peticion">Quiero un marcador para la pantalla de Séneca de [qué pantalla].
+Tarea: [qué hace a mano, paso a paso].
+Esta es la radiografía de la pantalla:
+[pega aquí la radiografía]</pre>
+      <p class="nota"><strong>Si no puedes crear Gems,</strong> pega las instrucciones al principio de una conversación normal de Gemini, seguidas de tu petición.</p>
+    </div>
+  </section>
+
+  <section class="paso">
+    <span class="num" aria-hidden="true">3</span>
+    <div class="cuerpo">
+      <h2>Monta tu marcador</h2>
+      <p>Copia el código que te da Gemini (el bloque entero, con el botón de copiar del bloque) y pégalo aquí. El montador comprueba que no tenga errores de escritura y que no haga nada prohibido.</p>
+      <label class="campo">Nombre del marcador
+        <input class="texto" id="nombre" maxlength="40" value="Mi marcador Séneca">
+      </label>
+      <label class="campo">Código de Gemini
+        <textarea class="codigo" id="codigo" spellcheck="false" placeholder="(function () { … })();"></textarea>
+      </label>
+      <div class="fila"><button class="boton" type="button" id="montar">Comprobar y montar</button></div>
+      <div class="resultado" id="resultado" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="paso">
+    <span class="num" aria-hidden="true">4</span>
+    <div class="cuerpo">
+      <h2>Pruébalo sin miedo</h2>
+      <p>La <a href="practica/" target="_blank" rel="noopener">Séneca de práctica</a> imita por dentro una pantalla de evaluación de Séneca (marco interior, FORMULARIO, recarga al elegir unidad, Aceptar) con alumnado inventado. Prueba ahí tu marcador antes de usarlo en la real.</p>
+      <div class="retos">
+        <div><strong>Reto 1 · Todos marcados</strong>Marca la casilla «Comunicar a la familia» de todo el grupo.</div>
+        <div><strong>Reto 2 · Observación común</strong>Pide un texto y lo pone en las observaciones de las filas seleccionadas, sin pisar las que ya tengan algo.</div>
+        <div><strong>Reto 3 · Pegar de la hoja</strong>Copias la columna de notas de tu hoja de cálculo (en el mismo orden) y el marcador las pone en «Calificación».</div>
+      </div>
+      <p class="nota"><strong>En la Séneca real:</strong> el marcador rellena y resalta en naranja, pero nunca pulsa Aceptar. Revisa siempre lo que ha hecho antes de guardar. Si algo falla, pulsa <kbd>F12</kbd>, copia el texto rojo de la pestaña «Consola» (sin datos del alumnado) y pégaselo a Gemini con una radiografía nueva.</p>
+    </div>
+  </section>
+
+  <p class="pie">GT Docentes 4.0 · IES Vega de Mar · La Radiografía y el montador funcionan en tu navegador: no envían nada a ningún sitio.</p>
+</div>
+<script>
+(function () {
+  function aUrl(codigo) { return 'javascript:' + encodeURIComponent(codigo).replace(/'/g, '%27'); }
+  function noEjecutar(a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); alert('Este botón no se pulsa aquí: arrástralo a la barra de marcadores y úsalo en Séneca.'); });
+  }
+
+  var rad = document.getElementById('radiografia');
+  noEjecutar(rad);
+  fetch('radiografia.js', { cache: 'no-cache' }).then(function (r) { return r.text(); }).then(function (t) {
+    rad.href = aUrl(t); rad.removeAttribute('aria-disabled');
+  }).catch(function () { rad.textContent = 'No se ha podido cargar: recarga la página'; });
+
+  var pre = document.getElementById('instrucciones');
+  fetch('instrucciones-gem.txt', { cache: 'no-cache' }).then(function (r) { return r.text(); }).then(function (t) { pre.textContent = t; })
+    .catch(function () { pre.textContent = 'No se han podido cargar las instrucciones: recarga la página.'; });
+  document.getElementById('copiar-instrucciones').addEventListener('click', function (e) {
+    var b = e.currentTarget;
+    navigator.clipboard.writeText(pre.textContent).then(function () { b.textContent = 'Copiadas ✓'; setTimeout(function () { b.textContent = 'Copiar las instrucciones'; }, 2500); },
+      function () { b.textContent = 'Selecciónalas y pulsa Ctrl+C'; });
+  });
+
+  /* ---------- montador ---------- */
+  var REVISAR = [
+    [/\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|importScripts/, 'Envía o recibe datos de internet. No lo instales: pídele a Gemini que lo quite.', true],
+    [/createElement\(\s*['"](script|img|iframe)['"]/i, 'Crea un script, una imagen o un marco: podría cargar cosas de fuera. Pregúntale a Gemini para qué.', true],
+    [/\.submit\s*\(|\baceptar\s*\(|\bguardar\w*\s*\(|\bconfirmar\w*\s*\(/i, 'Parece que pulsa Aceptar o Guardar solo. El marcador debe dejar que lo pulses tú: pídele a Gemini que lo quite.', true],
+    [/localStorage|sessionStorage|document\.cookie/, 'Guarda cosas en el navegador o lee las cookies. Comprueba con Gemini que no guarda datos del alumnado.', false],
+    [/window\.open\s*\(|location\.href\s*=/, 'Abre o cambia de página. Comprueba con Gemini adónde va.', false],
+    [/\beval\s*\(|new Function/, 'Ejecuta código escrito en texto (eval). Mejor sin eso.', false],
+    [/innerHTML/, 'Usa innerHTML. Funciona, pero es más seguro textContent.', false]
+  ];
+  function limpiar(t) {
+    t = t.replace(/^\s*```[a-z]*\s*\n?/i, '').replace(/\n?```\s*$/, '').trim();
+    if (/^javascript:/i.test(t)) { try { t = decodeURIComponent(t.slice(11)); } catch (e) { t = t.slice(11); } }
+    return t.trim();
+  }
+  function envuelto(t) { return /^\(\s*(function\s*\(|\(\s*\)\s*=>)/.test(t) && /\)\s*\(\s*\)\s*;?\s*$/.test(t); }
+  function li(texto, grave) { var l = document.createElement('li'); l.textContent = texto; if (grave) l.className = 'grave'; return l; }
+
+  document.getElementById('montar').addEventListener('click', function () {
+    var res = document.getElementById('resultado');
+    while (res.firstChild) res.removeChild(res.firstChild);
+    var codigo = limpiar(document.getElementById('codigo').value);
+    var nombre = document.getElementById('nombre').value.trim() || 'Mi marcador Séneca';
+    if (!codigo) { var v = document.createElement('p'); v.className = 'mal'; v.textContent = 'Pega primero el código de Gemini.'; res.appendChild(v); return; }
+    if (!envuelto(codigo)) codigo = '(function () {\n' + codigo + '\n})();';
+    try { new Function(codigo); } catch (e) {
+      var m = document.createElement('p'); m.className = 'mal';
+      m.textContent = 'El código tiene un error de escritura y no funcionaría: «' + e.message + '». ¿Lo has copiado entero? Si es así, pega este mensaje a Gemini y pídele el código completo corregido.';
+      res.appendChild(m); return;
+    }
+    var avisos = document.createElement('ul'), graves = 0;
+    REVISAR.forEach(function (r) { if (r[0].test(codigo)) { avisos.appendChild(li(r[1], r[2])); if (r[2]) graves++; } });
+    var p = document.createElement('p'); p.className = graves ? 'mal' : 'ok';
+    p.textContent = graves ? 'Sin errores de escritura, pero hay algo que no debería hacer:' : (avisos.children.length ? 'Listo. Echa un vistazo a esto:' : 'Listo: sin errores de escritura ni nada prohibido.');
+    res.appendChild(p);
+    if (avisos.children.length) res.appendChild(avisos);
+    if (graves) { var q = document.createElement('p'); q.textContent = 'Así no se monta. Copia los avisos en rojo, pégaselos a Gemini y pídele el código completo corregido.'; res.appendChild(q); return; }
+    var a = document.createElement('a'); a.className = 'marcador'; a.textContent = nombre; a.href = aUrl(codigo); a.draggable = true;
+    noEjecutar(a); res.appendChild(a);
+    var ayuda = document.createElement('p');
+    ayuda.textContent = 'Arrástralo a la barra de marcadores. Si Chrome no te deja, pulsa «Copiar dirección», crea un marcador (Ctrl+D › Más) y pégala en «URL».';
+    res.appendChild(ayuda);
+    var b = document.createElement('button'); b.className = 'boton claro'; b.type = 'button'; b.textContent = 'Copiar dirección';
+    b.addEventListener('click', function () { navigator.clipboard.writeText(a.href).then(function () { b.textContent = 'Copiada ✓'; }); });
+    var f = document.createElement('div'); f.className = 'fila'; f.appendChild(b); res.appendChild(f);
+  });
+})();
+</script>
+</body>
+</html>
