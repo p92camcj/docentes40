@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Evaluación · Observaciones</title>
+<style>
+  body { margin: 0; padding: 14px 18px; font: 14px Arial, sans-serif; color: #222; }
+  h2 { font-size: 17px; color: #00594f; margin: 0 0 10px; }
+  .filtros { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; background: #f3f6f8; padding: 10px; border-radius: 6px; margin-bottom: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccd; padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: #00594f; color: #fff; font-weight: bold; }
+  tr:nth-child(even) td { background: #f7f9fa; }
+  textarea { width: 100%; box-sizing: border-box; height: 38px; font: 13px Arial, sans-serif; }
+  .pie { margin-top: 12px; display: flex; gap: 10px; }
+  .btn { padding: 7px 18px; font-weight: bold; border: 1px solid #00594f; border-radius: 4px; cursor: pointer; background: #00594f; color: #fff; }
+  .btn.sec { background: #fff; color: #00594f; }
+  #cargando { color: #a35b00; font-weight: bold; display: none; }
+  #mensaje { margin-top: 10px; font-weight: bold; color: #0b7a3e; }
+</style>
+<script>
+  /* Alumnado inventado: no son personas reales. */
+  var ALUMNOS = {
+    '1001': ['Almagro Ruiz, Lucía', 'Benítez Soto, Marcos', 'Cano Pardo, Irene', 'Delgado Fuentes, Hugo', 'Escobar Lima, Nora', 'Ferrer Vidal, Óscar', 'Gil Romero, Paula', 'Herrera Cid, Iván', 'Ibáñez Mora, Sara', 'Jurado Peña, Leo'],
+    '1002': ['Lara Molina, Alba', 'Marín Ortega, Bruno', 'Navas Quero, Celia', 'Ortiz Ramos, Darío', 'Pascual Sanz, Elena', 'Quesada Toro, Fabio', 'Rivas Ulloa, Gema', 'Salas Vera, Héctor']
+  };
+  function _updateValorCheck(n) { var e = document.getElementById(n); e.value = e.checked ? 'S' : 'N'; }
+  function contar(el, max) {
+    var s = el.value, n = s.length + (s.match(/\n/g) || []).length;
+    if (n > max) { el.value = s.slice(0, max - (s.match(/\n/g) || []).length); }
+  }
+  function valDat() {
+    var u = document.forms.FORMULARIO.X_UNIDAD.value;
+    var zona = document.getElementById('contenido');
+    document.getElementById('cargando').style.display = 'inline';
+    document.getElementById('mensaje').textContent = '';
+    /* Séneca recarga esta zona por AJAX al cambiar el grupo: se imita con un retraso. */
+    setTimeout(function () { pintar(zona, u); document.getElementById('cargando').style.display = 'none'; }, 700 + Math.random() * 800);
+  }
+  function pintar(zona, u) {
+    while (zona.firstChild) zona.removeChild(zona.firstChild);
+    if (!ALUMNOS[u]) return;
+    var t = document.createElement('table'); t.id = 'tablaPaginada'; t.setAttribute('data-totalregistros', ALUMNOS[u].length);
+    var th = t.createTHead().insertRow();
+    ['Sel.', 'Alumno/a', 'Calificación', 'Observaciones (máx. 400)', 'Comunicar a la familia'].forEach(function (x) { var c = document.createElement('th'); c.textContent = x; th.appendChild(c); });
+    var tb = t.createTBody();
+    ALUMNOS[u].forEach(function (nombre, i) {
+      var n = i + 1, f = tb.insertRow();
+      f.insertCell().innerHTML = '<input type="checkbox" name="SELECCION_' + n + '" id="SELECCION_' + n + '" value="N" onclick="_updateValorCheck(\'SELECCION_' + n + '\')">';
+      var c = f.insertCell(); c.textContent = nombre;
+      var h = document.createElement('input'); h.type = 'hidden'; h.name = 'NOMBRE_' + n; h.value = nombre; c.appendChild(h);
+      var sel = '<select name="C_CALIFICACION_' + n + '" id="C_CALIFICACION_' + n + '"><option value="">-</option>';
+      for (var k = 1; k <= 10; k++) sel += '<option value="' + k + '">' + k + '</option>';
+      f.insertCell().innerHTML = sel + '<option value="NE">NE</option></select>';
+      f.insertCell().innerHTML = '<textarea name="C_OBSERVACIONES_' + n + '" id="C_OBSERVACIONES_' + n + '" maxlength="400" onkeyup="contar(this,400)"></textarea>';
+      f.insertCell().innerHTML = '<input type="checkbox" name="L_COMUNICAR_' + n + '" id="L_COMUNICAR_' + n + '" value="N" onclick="_updateValorCheck(\'L_COMUNICAR_' + n + '\')">';
+    });
+    zona.appendChild(t);
+  }
+  function aceptar() {
+    var f = document.forms.FORMULARIO, faltan = 0, n = 0;
+    for (var i = 1; f['C_CALIFICACION_' + i]; i++) { n++; if (!f['C_CALIFICACION_' + i].value) faltan++; }
+    if (!n) { document.getElementById('mensaje').textContent = 'Elige primero un grupo.'; return; }
+    document.getElementById('mensaje').textContent = faltan ? 'Faltan ' + faltan + ' calificaciones (en la Séneca real no dejaría guardar).' : 'Datos guardados correctamente (simulado: no se ha guardado nada).';
+  }
+  function cancelar() { document.forms.FORMULARIO.reset(); valDat(); }
+</script>
+</head>
+<body>
+<h2>Evaluación ordinaria · Observaciones por materia</h2>
+<form name="FORMULARIO" method="POST" onsubmit="return false">
+  <input type="hidden" name="N_V_" value="8af3c21e">
+  <input type="hidden" name="X_MATERIA" value="40217">
+  <div class="filtros">
+    <label>Convocatoria <select name="X_CONVOCATORIA" disabled><option value="3">Evaluación ordinaria</option></select></label>
+    <label>Materia <select name="X_MATERIAOMG" disabled><option value="40217">Tecnología y Digitalización</option></select></label>
+    <label for="X_UNIDAD">Unidad</label>
+    <select name="X_UNIDAD" id="X_UNIDAD" onchange="valDat()">
+      <option value="">Seleccione…</option>
+      <option value="1001">2º ESO A</option>
+      <option value="1002">2º ESO B</option>
+    </select>
+    <span id="cargando">Cargando…</span>
+  </div>
+  <main class="container-fluid" id="contenido"></main>
+  <div class="pie">
+    <button type="button" class="btn" onclick="aceptar()">Aceptar</button>
+    <button type="button" class="btn sec" onclick="cancelar()">Cancelar</button>
+  </div>
+  <div id="mensaje"></div>
+</form>
+</body>
+</html>
