@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../comun/gt.css">
 <script src="../comun/api.js"></script>
 <script src="../comun/gt.js"></script>
+<script src="../comun/ideas.js"></script>
 <style>
   .portada { background: var(--cielo-claro); border-radius: 18px; padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; }
   .portada h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; color: var(--cielo); line-height: 1.1; }
@@ -92,8 +93,9 @@
     <span class="num" aria-hidden="true">3</span>
     <div class="cuerpo">
       <h2>Tu tarea: apunta al cielo</h2>
-      <p>Piensa en <strong>un proyecto que hoy te parezca demasiado grande</strong> y que te gustaría sacar adelante con ayuda de la IA durante el curso. Puede ser una web para tu materia, una app, un juego, un banco de actividades… Lo que tú quieras.</p>
-      <p class="ejemplo">Por ejemplo: «Una app de reservas para los carritos de portátiles» o «Un juego para repasar el vocabulario de 2.º de ESO».</p>
+      <p>Piensa en <strong>un proyecto que hoy te parezca demasiado grande</strong> y que te gustaría sacar adelante con ayuda de la IA durante el curso. Puede ser para tu alumnado o para ti.</p>
+      <p>Algo que te lleve varias sesiones, no una tarde. También vale un proyecto que te quite papeleo y te deje más tiempo para preparar las clases.</p>
+      <button class="boton inspira-boton" type="button" data-gt-inspiracion>¡Necesito inspiración!</button>
       <p>Al rellenarlo eliges en qué peldaño estás. Lo normal ahora es empezar en el 1:</p>
       <div class="escalera">
         <div><strong>1</strong>Idea</div>
@@ -136,6 +138,7 @@
 <script>
 (function () {
   GT.tema();
+  GT.inspiracion();
   var SITE = 'https:' + '/' + '/sites.google.com/g.educaand.es/docentes40';
   document.querySelectorAll('[data-site]').forEach(function (a) { GT.enlace(a, SITE + a.getAttribute('data-site')); });
   /* Si la app aún no está publicada, el botón lleva a la página del site correspondiente. */

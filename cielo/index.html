@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../comun/gt.css">
 <script src="../comun/api.js"></script>
 <script src="../comun/gt.js"></script>
+<script src="../comun/ideas.js"></script>
 <style>
   .cab { background: var(--cielo-claro); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
   .cab h2 { color: var(--cielo); }
@@ -34,13 +35,14 @@
   </div>
   <div class="barra">
     <p>¿Eres del grupo? Entra con tu cuenta educaand para añadir o actualizar tu proyecto. Si es la primera vez, pide acceso y Julio te lo da.</p>
-    <div class="acciones"><a class="boton" id="anadir">Añadir o actualizar mi proyecto</a><a class="boton claro" id="pedir">Pedir acceso</a></div>
+    <div class="acciones"><a class="boton" id="anadir">Añadir o actualizar mi proyecto</a><a class="boton claro" id="pedir">Pedir acceso</a><button class="boton inspira-boton" type="button" data-gt-inspiracion>¡Necesito inspiración!</button></div>
   </div>
   <div class="proyectos" id="proyectos"><p class="estado">Cargando los proyectos…</p></div>
 </div>
 <script>
 (function () {
   GT.tema();
+  GT.inspiracion();
   var PELDANOS = ['Idea', 'Prototipo', 'En el aula', 'Compartido'];
   var anadir = document.getElementById('anadir'), pedir = document.getElementById('pedir');
   if (GT.app('cielo')) { GT.enlace(anadir, GT.app('cielo')); GT.enlace(pedir, GT.app('pedir')); } else { anadir.hidden = pedir.hidden = true; }
