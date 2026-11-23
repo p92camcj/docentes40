@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Buscamos información · TIC I</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Mismo sistema que el simulador de von Neumann: tarjetas con borde grueso,
+     pestañas, escalera de retos y medallas. Tokens claros y oscuros. */
+  :root {
+    --bg-app: #F8FAFC; --bg-surface: #FFFFFF; --bg-subtle: #F1F5F9;
+    --text-main: #0F172A; --text-muted: #475569; --border-color: #CBD5E1;
+    --accent: #0284C7; --accent-dark: #0369A1; --accent-text: #FFFFFF;
+    --ok-bg: #DCFCE7; --ok-border: #16A34A; --ok-text: #14532D;
+    --err-bg: #FEE2E2; --err-border: #DC2626; --err-text: #7F1D1D;
+    --warn-bg: #FEF3C7; --warn-border: #D97706; --warn-text: #78350F;
+    --azul-suave: #EFF6FF; --azul-borde: #BFDBFE; --azul-texto: #1E3A8A;
+    --s1: #7C3AED; --s1-suave: #F5F3FF;
+    --s2: #0891B2; --s2-suave: #ECFEFF;
+    --sombra: rgba(15, 23, 42, 0.65);
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'Consolas', 'Courier New', ui-monospace, monospace;
+    --radius-md: 0.6rem; --radius-lg: 0.9rem;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg-app: #0B1120; --bg-surface: #111827; --bg-subtle: #1E293B;
+    --text-main: #F1F5F9; --text-muted: #94A3B8; --border-color: #334155;
+    --accent: #38BDF8; --accent-dark: #7DD3FC; --accent-text: #0B1120;
+    --ok-bg: #052E16; --ok-border: #22C55E; --ok-text: #BBF7D0;
+    --err-bg: #450A0A; --err-border: #EF4444; --err-text: #FECACA;
+    --warn-bg: #422006; --warn-border: #F59E0B; --warn-text: #FDE68A;
+    --azul-suave: #172554; --azul-borde: #1E40AF; --azul-texto: #BFDBFE;
+    --s1: #A78BFA; --s1-suave: #1E1B4B; --s2: #22D3EE; --s2-suave: #083344;
+    --sombra: rgba(0, 0, 0, 0.7); color-scheme: dark;
+  } }
+  :root[data-theme="dark"] {
+    --bg-app: #0B1120; --bg-surface: #111827; --bg-subtle: #1E293B;
+    --text-main: #F1F5F9; --text-muted: #94A3B8; --border-color: #334155;
+    --accent: #38BDF8; --accent-dark: #7DD3FC; --accent-text: #0B1120;
+    --ok-bg: #052E16; --ok-border: #22C55E; --ok-text: #BBF7D0;
+    --err-bg: #450A0A; --err-border: #EF4444; --err-text: #FECACA;
+    --warn-bg: #422006; --warn-border: #F59E0B; --warn-text: #FDE68A;
+    --azul-suave: #172554; --azul-borde: #1E40AF; --azul-texto: #BFDBFE;
+    --s1: #A78BFA; --s1-suave: #1E1B4B; --s2: #22D3EE; --s2-suave: #083344;
+    --sombra: rgba(0, 0, 0, 0.7); color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; }
+  body { background: var(--bg-app); color: var(--text-main); font-family: var(--font-sans); line-height: 1.4; }
+  button { font: inherit; color: var(--text-main); cursor: pointer; }
+  input, textarea, select { font: inherit; color: var(--text-main); background: var(--bg-surface); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .mono { font-family: var(--font-mono); }
+
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg-surface); }
+  .top-nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;
+    padding-block: 0.45rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--bg-surface); border-bottom: 2px solid var(--border-color); }
+  .marca { display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 1.1rem; min-width: 0; }
+  .marca-icono { flex: none; width: 2.3rem; height: 2.3rem; border-radius: 0.5rem; background: var(--s1); color: #fff; display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.9rem; }
+  .marca small { display: block; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); }
+  .pestanas { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+  .pestana { min-height: 2.5rem; padding: 0.3rem 0.8rem; border: 2px solid var(--border-color); background: var(--bg-subtle); border-radius: var(--radius-md); font-weight: 700; }
+  .pestana.activa { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
+  main { padding-block: 0.9rem 2rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 78rem; margin: 0 auto; }
+  .vista { display: none; }
+  .vista.activa { display: block; }
+  .rejilla { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); align-items: start; }
+  .tarjeta { min-width: 0; background: var(--bg-surface); border: 3px solid var(--border-color); border-radius: var(--radius-lg); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .tarjeta h2 { font-size: 1.3rem; text-wrap: balance; }
+  .tarjeta h3 { font-size: 1.05rem; }
+  .tarjeta ul, .tarjeta ol { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .nota { font-size: 0.92rem; color: var(--text-muted); }
+  .etq { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+  .chip-crit { display: inline-block; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; border: 2px solid var(--azul-borde); background: var(--azul-suave); color: var(--azul-texto); border-radius: 99rem; padding: 0 0.5rem; }
+
+  .btn { min-height: 2.5rem; padding: 0.3rem 0.85rem; border: 2px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-md); font-weight: 700; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primario { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn.mini { min-height: 2rem; padding: 0.1rem 0.55rem; font-size: 0.88rem; }
+  .acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+  /* Teoría */
+  .escala { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; text-align: center; }
+  .escala div { border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.4rem; font-size: 0.9rem; background: var(--bg-subtle); }
+  .escala strong { display: block; }
+  .preguntas-fuente { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.6rem; font-size: 0.95rem; }
+  .preguntas-fuente b { font-family: var(--font-mono); }
+  .cita-ej { font-size: 0.92rem; background: var(--bg-subtle); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; overflow-wrap: anywhere; }
+  .cita-ej i { font-style: italic; }
+
+  /* Ficha de una fuente (simula el aspecto de una web) */
+  .ficha { border: 2px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-surface); }
+  .ficha-barra { display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.3rem 0.6rem; font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); overflow-wrap: anywhere; }
+  .ficha-cuerpo { padding: 0.5rem 0.7rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .ficha-titular { font-weight: 800; font-size: 1.02rem; }
+  .ficha-meta { font-size: 0.85rem; color: var(--text-muted); }
+  .ficha-texto { font-size: 0.93rem; }
+
+  .comprobacion { display: grid; grid-template-columns: 1fr auto; gap: 0.35rem 0.6rem; align-items: center; }
+  .sino { display: inline-flex; border: 2px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; }
+  .sino button { border: 0; background: var(--bg-surface); padding: 0.2rem 0.7rem; min-height: 2.2rem; font-weight: 700; }
+  .sino button + button { border-left: 2px solid var(--border-color); }
+  .sino button.activo { background: var(--accent); color: var(--accent-text); }
+  .campo { display: flex; flex-direction: column; gap: 0.15rem; }
+  .campo label { font-weight: 700; font-size: 0.9rem; }
+  .campo input, .modal input[type=text] { width: 100%; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.35rem 0.6rem; }
+  .dos-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .lista-avisos { list-style: none; padding: 0 !important; font-size: 0.92rem; }
+  .lista-avisos li { padding-left: 1.4rem; position: relative; }
+  .lista-avisos li::before { position: absolute; left: 0; }
+  .lista-avisos li.bien::before { content: "✓"; color: var(--ok-border); font-weight: 800; }
+  .lista-avisos li.mal::before { content: "!"; color: var(--warn-border); font-weight: 800; }
+
+  /* Retos */
+  .retos { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr); gap: 0.9rem; align-items: start; }
+  .alumno-linea { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-weight: 700; }
+  .pill { border: 2px solid var(--border-color); border-radius: 99rem; padding: 0.1rem 0.7rem; font-weight: 800; background: var(--bg-surface); font-size: 0.92rem; }
+  .criterios-nota { display: flex; flex-direction: column; gap: 0.35rem; }
+  .barra-crit { display: grid; grid-template-columns: auto 1fr auto; gap: 0.5rem; align-items: center; font-size: 0.9rem; }
+  .barra-crit .pista-barra { height: 0.6rem; border-radius: 99rem; background: var(--bg-subtle); overflow: hidden; border: 1px solid var(--border-color); }
+  .barra-crit .relleno { height: 100%; background: var(--accent); }
+  .barra-crit .valor { font-family: var(--font-mono); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .sesion-cab { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.95rem; margin-top: 0.3rem; }
+  .sesion-cab .punto { width: 0.8rem; height: 0.8rem; border-radius: 50%; }
+  .escalera { display: flex; flex-direction: column; gap: 0.35rem; }
+  .peldano { display: flex; gap: 0.6rem; align-items: center; text-align: left; border: 2px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-md); padding: 0.4rem 0.6rem; width: 100%; }
+  .peldano .num { font-family: var(--font-mono); font-weight: 800; width: 1.6rem; }
+  .peldano .tit { flex: 1; font-weight: 700; min-width: 0; }
+  .peldano .pts { font-family: var(--font-mono); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .peldano.hecho { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-text); }
+  .peldano.actual { border-color: var(--accent); }
+  .peldano.cerrado { opacity: 0.55; cursor: not-allowed; }
+  .peldano.sel { outline: 3px solid var(--accent); outline-offset: 1px; }
+
+  .enunciado h2 { font-size: 1.35rem; }
+  .item { border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.6rem 0.7rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .item.bien { border-color: var(--ok-border); background: var(--ok-bg); }
+  .item.mal { border-color: var(--err-border); background: var(--err-bg); }
+  .item.medio { border-color: var(--warn-border); background: var(--warn-bg); }
+  .item-p { font-weight: 700; }
+  .opciones { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .opcion { border: 2px solid var(--border-color); background: var(--bg-surface); border-radius: var(--radius-md); padding: 0.3rem 0.7rem; min-height: 2.4rem; text-align: left; }
+  .opcion.elegida { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
+  .opciones.columna { flex-direction: column; }
+  .opciones.columna .opcion { width: 100%; }
+  .explica { font-size: 0.92rem; border-left: 4px solid var(--border-color); padding-left: 0.55rem; }
+  .item.bien .explica { color: var(--ok-text); border-color: var(--ok-border); }
+  .item.mal .explica { color: var(--err-text); border-color: var(--err-border); }
+  .item.medio .explica { color: var(--warn-text); border-color: var(--warn-border); }
+  .lectura { background: var(--bg-subtle); border-radius: var(--radius-md); padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.98rem; max-width: 70ch; }
+  .orden-linea { min-height: 2.8rem; border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+  .orden-linea:empty::before { content: "Toca las piezas en orden"; color: var(--text-muted); font-size: 0.9rem; padding-left: 0.3rem; }
+  textarea.abierta { width: 100%; min-height: 7rem; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.45rem 0.6rem; resize: vertical; }
+  .contador { font-size: 0.85rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .resultado-ok { color: var(--ok-text); background: var(--ok-bg); border: 2px solid var(--ok-border); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; font-weight: 700; }
+  .resultado-mal { color: var(--err-text); background: var(--err-bg); border: 2px solid var(--err-border); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; font-weight: 700; }
+  .ia-caja { border: 2px dashed var(--azul-borde); background: var(--azul-suave); color: var(--azul-texto); border-radius: var(--radius-md); padding: 0.5rem 0.7rem; font-size: 0.93rem; }
+
+  /* Ventanas */
+  .fondo-modal { position: fixed; inset: 0; background: var(--sombra); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+  .fondo-modal.abierto { display: flex; }
+  .modal { background: var(--bg-surface); border-radius: var(--radius-lg); max-width: 34rem; width: 100%; max-height: 90vh; overflow-y: auto; padding: 1.1rem 1.2rem; border: 3px solid var(--border-color); display: flex; flex-direction: column; gap: 0.6rem; }
+  .modal textarea { width: 100%; min-height: 10rem; font-family: var(--font-mono); font-size: 0.9rem; border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 0.5rem; }
+  .medalla-icono { font-size: 5rem; text-align: center; }
+
+  @media (max-width: 900px) {
+    .retos { grid-template-columns: minmax(0, 1fr); }
+    .marca .largo { display: none; }
+  }
+  @media (max-width: 420px) { .dos-campos { grid-template-columns: 1fr; } .escala { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top-nav">
+  <div class="marca"><div class="marca-icono">A2</div><div><span>Buscamos información</span><small class="largo">TIC I · Impacto de la informática</small></div></div>
+  <nav class="pestanas" aria-label="Partes del recurso">
+    <button class="pestana" data-vista="v-aprende">Aprende</button>
+    <button class="pestana activa" data-vista="v-practica">Práctica</button>
+    <button class="pestana" data-vista="v-retos">Retos</button>
+    <button class="pestana" id="btn-tema" title="Cambiar entre tema claro y oscuro" aria-label="Cambiar entre tema claro y oscuro">🌓</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ===================== APRENDE ===================== -->
+  <section class="vista" id="v-aprende">
+    <div class="rejilla">
+      <div class="tarjeta">
+        <h2>Dato, información y conocimiento</h2>
+        <div class="escala">
+          <div><strong>Dato</strong>23</div>
+          <div><strong>Información</strong>Mañana habrá 23 °C en Almería</div>
+          <div><strong>Conocimiento</strong>Hará buen tiempo: dejo el abrigo</div>
+        </div>
+        <p>Un <strong>dato</strong> suelto no dice nada. Con contexto se vuelve <strong>información</strong>. Cuando la entiendes, la relacionas con lo que ya sabes y la usas para decidir, se convierte en <strong>conocimiento</strong>.</p>
+        <p>En la <strong>sociedad de la información</strong> las TIC hacen que la información circule a gran velocidad y llegue a casi todo el mundo. La <strong>sociedad del conocimiento</strong> va un paso más allá: la ciudadanía sabe buscar, contrastar y transformar esa información en conocimiento, y lo comparte.</p>
+      </div>
+      <div class="tarjeta">
+        <h2>Luces y sombras de la transformación digital</h2>
+        <p>La informática ha cambiado el trabajo, la salud, la educación y la forma de relacionarnos. Para valorar su impacto hay que mirar las dos caras:</p>
+        <ul>
+          <li><strong>Positivo</strong>: teletrabajo, telemedicina, trámites sin desplazarse, cursos y bibliotecas abiertas, automatización de tareas peligrosas.</li>
+          <li><strong>Negativo</strong>: brecha digital, desinformación, pérdida de privacidad, uso compulsivo de las pantallas, basura electrónica.</li>
+        </ul>
+        <p class="nota">Un mismo avance puede tener las dos caras. La cita médica por Internet ahorra colas, pero deja fuera a quien no sabe o no puede usarla.</p>
+      </div>
+      <div class="tarjeta">
+        <h2>¿Me fío de esta fuente?</h2>
+        <div class="preguntas-fuente">
+          <b>¿Quién?</b><span>Autor o institución identificados, y con conocimiento del tema.</span>
+          <b>¿Cuándo?</b><span>Fecha visible y reciente para lo que buscas.</span>
+          <b>¿Para qué?</b><span>Informar, no venderte algo ni hacerte enfadar para que compartas.</span>
+          <b>¿En qué se basa?</b><span>Datos, estudios o enlaces que puedes comprobar.</span>
+        </div>
+        <p>Contrasta lo importante en <strong>al menos dos fuentes independientes</strong> y cita siempre de dónde lo has sacado. Así se cita una página web (estilo APA):</p>
+        <div class="cita-ej">Autor, A. (año, día de mes). <i>Título de la página</i>. Nombre del sitio. URL</div>
+        <p class="nota">Si no tiene fecha, se escribe (s. f.). El candado de una web (https) indica que la conexión está cifrada, no que lo que dice sea verdad.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRÁCTICA ===================== -->
+  <section class="vista activa" id="v-practica">
+    <div class="rejilla">
+      <div class="tarjeta" id="detector">
+        <div class="etq">Práctica libre · no puntúa</div>
+        <h2>Analiza una fuente</h2>
+        <p class="nota">Mira la ficha, contesta las cuatro preguntas y decide si te fías. Puedes repetir con todas las fuentes que quieras.</p>
+        <div id="det-ficha"></div>
+        <div class="comprobacion" id="det-preguntas"></div>
+        <div class="campo"><span class="etq">Tu veredicto</span><div class="opciones" id="det-veredicto"></div></div>
+        <div class="acciones"><button class="btn primario" id="det-comprobar">Comprobar</button><button class="btn" id="det-otra">Otra fuente ↻</button></div>
+        <div id="det-resultado" aria-live="polite"></div>
+      </div>
+      <div class="tarjeta" id="taller">
+        <div class="etq">Práctica libre · no puntúa</div>
+        <h2>Taller de citas</h2>
+        <p class="nota">Rellena los datos de una web que hayas consultado y copia la cita para tu infografía.</p>
+        <div class="campo"><label for="c-autor">Autor (Apellido, Inicial.) o institución</label><input id="c-autor" type="text" maxlength="80" value="García, L."></div>
+        <div class="dos-campos">
+          <div class="campo"><label for="c-anio">Año</label><input id="c-anio" type="text" inputmode="numeric" maxlength="4" value="2025"></div>
+          <div class="campo"><label for="c-dia">Día y mes (opcional)</label><input id="c-dia" type="text" maxlength="20" value="3 de marzo"></div>
+        </div>
+        <div class="campo"><label for="c-titulo">Título de la página</label><input id="c-titulo" type="text" maxlength="160" value="La brecha digital en el medio rural"></div>
+        <div class="campo"><label for="c-sitio">Nombre del sitio</label><input id="c-sitio" type="text" maxlength="80" value="Revista Comunidad Digital"></div>
+        <div class="campo"><label for="c-url">Dirección (URL)</label><input id="c-url" type="text" maxlength="200" inputmode="url"></div>
+        <span class="etq">Tu cita</span>
+        <div class="cita-ej" id="c-cita"></div>
+        <ul class="lista-avisos" id="c-avisos"></ul>
+        <div class="acciones"><button class="btn" id="c-copiar">📋 Copiar la cita</button><span class="nota" id="c-copiado" aria-live="polite"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RETOS ===================== -->
+  <section class="vista" id="v-retos">
+    <div class="retos">
+      <div class="tarjeta">
+        <div class="alumno-linea"><span id="alumno-texto"></span><button class="btn mini" id="btn-alumno">Cambiar</button></div>
+        <div class="alumno-linea"><span class="pill" id="pill-hechos"></span><button class="pill" id="pill-medalla"></button></div>
+        <div class="criterios-nota" id="criterios-nota"></div>
+        <div id="escalera"></div>
+        <div class="acciones"><button class="btn mini" id="btn-resumen">📋 Mi resumen para Classroom</button></div>
+      </div>
+      <div class="tarjeta enunciado" id="enunciado" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Nombre y grupo -->
+<div class="fondo-modal" id="m-alumno">
+  <form class="modal" id="f-alumno">
+    <h2>¿Quién eres?</h2>
+    <p class="nota">Sale en tu resumen para que tu profesor lo vea. Solo se guarda en este navegador y nunca se envía a ninguna IA.</p>
+    <label for="nombre-alumno"><strong>Nombre y primer apellido</strong></label>
+    <input type="text" id="nombre-alumno" maxlength="40" autocomplete="name" required>
+    <label for="grupo-alumno"><strong>Grupo</strong></label>
+    <input type="text" id="grupo-alumno" maxlength="12" placeholder="Ej. 1.º Bach. A" required>
+    <div class="acciones" style="justify-content:flex-end"><button type="submit" class="btn primario">Empezar</button></div>
+  </form>
+</div>
+
+<!-- Medalla -->
+<div class="fondo-modal" id="m-medalla">
+  <div class="modal" style="text-align:center">
+    <div class="medalla-icono" id="medalla-icono"></div>
+    <h2 id="medalla-titulo"></h2>
+    <p id="medalla-texto"></p>
+    <div class="acciones" style="justify-content:center"><button class="btn primario" data-cerrar="m-medalla">¡Seguir!</button></div>
+  </div>
+</div>
+
+<!-- Resumen -->
+<div class="fondo-modal" id="m-resumen">
+  <div class="modal">
+    <h2>Tu resumen</h2>
+    <p class="nota">Cópialo y pégalo en la tarea de Classroom.</p>
+    <textarea id="texto-resumen" readonly></textarea>
+    <div class="acciones" style="justify-content:flex-end"><span class="nota" id="resumen-copiado" aria-live="polite"></span><button class="btn" id="btn-copiar-resumen">📋 Copiar</button><button class="btn primario" data-cerrar="m-resumen">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- ======================================================================
+     CONTENIDO DEL RECURSO
+     Lo lee la webapp para saber qué criterios evalúa cada reto y con qué peso.
+     Viene de la SdA «Investigamos y creamos: impacto de la informática»
+     (TIC I), actividad A2. Las URL van con «\/» para que Apps Script no las
+     tome por un comentario.
+     ====================================================================== -->
+<script type="application/json" id="datos-recurso">
+{
+  "id": "tic1-a2-buscamos-informacion",
+  "version": 1,
+  "sda": "Investigamos y creamos: impacto de la informática",
+  "curso": "TIC I",
+  "actividad": "A2",
+  "tituloActividad": "Buscamos información",
+  "criterios": {
+    "TICO.1.1.1.": "Transformación digital: sociedad de la información y del conocimiento, aspectos positivos y negativos",
+    "TICO.1.2.1.": "Uso seguro y responsable: fuentes fiables, contraste y cita"
+  },
+  "umbral": 7,
+  "medallas": [
+    { "retos": 2, "nombre": "Bronce", "icono": "🥉", "color": "#B45309" },
+    { "retos": 4, "nombre": "Plata", "icono": "🥈", "color": "#64748B" },
+    { "retos": 6, "nombre": "Oro", "icono": "🥇", "color": "#CA8A04" },
+    { "retos": 8, "nombre": "Diamante", "icono": "💎", "color": "#7C3AED" }
+  ],
+  "retos": [
+    { "id": "r1", "sesion": 1, "criterios": ["TICO.1.1.1."], "peso": 1, "titulo": "Dato, información o conocimiento",
+      "intro": "Clasifica cada ejemplo.", "categorias": ["Dato", "Información", "Conocimiento"],
+      "items": [
+        { "t": "elegir", "p": "37,8", "ok": "Dato", "ex": "Un número suelto: no sabemos si es una temperatura, un precio o una nota." },
+        { "t": "elegir", "p": "Mañana la temperatura máxima en Almería será de 23 °C.", "ok": "Información", "ex": "El dato tiene contexto: qué es, dónde y cuándo." },
+        { "t": "elegir", "p": "Como mañana hará calor, salgo sin abrigo.", "ok": "Conocimiento", "ex": "Usas la información para tomar una decisión." },
+        { "t": "elegir", "p": "11110000", "ok": "Dato", "ex": "Son bits sin interpretar." },
+        { "t": "elegir", "p": "En la encuesta del instituto, 24 de los 30 alumnos de la clase tienen móvil propio.", "ok": "Información", "ex": "Datos organizados y con contexto." },
+        { "t": "elegir", "p": "A partir de la encuesta, la clase propone normas para usar el móvil en el recreo.", "ok": "Conocimiento", "ex": "Se interpreta la información y se aplica a un problema real." },
+        { "t": "elegir", "p": "Lunes", "ok": "Dato", "ex": "Una palabra suelta: ¿lunes de qué?" },
+        { "t": "elegir", "p": "Una médica combina los análisis con su experiencia para hacer un diagnóstico.", "ok": "Conocimiento", "ex": "Relaciona información con lo que ya sabe para decidir." }
+      ] },
+    { "id": "r2", "sesion": 1, "criterios": ["TICO.1.1.1."], "peso": 1, "titulo": "¿Información o conocimiento?",
+      "intro": "¿Qué describe mejor cada frase: la sociedad de la información o la del conocimiento?", "categorias": ["Sociedad de la información", "Sociedad del conocimiento"],
+      "items": [
+        { "t": "elegir", "p": "Cualquiera puede leer en su móvil las noticias del mundo al momento.", "ok": "Sociedad de la información", "ex": "Es acceso rápido y masivo a la información gracias a las TIC." },
+        { "t": "elegir", "p": "Hay miles de millones de páginas web y cada día se crean más.", "ok": "Sociedad de la información", "ex": "Habla de la cantidad de información disponible." },
+        { "t": "elegir", "p": "Una vecina aprende en un curso en línea a montar su tienda web y da trabajo a dos personas.", "ok": "Sociedad del conocimiento", "ex": "La información se transforma en aprendizaje que crea valor." },
+        { "t": "elegir", "p": "La gente contrasta lo que lee antes de compartirlo.", "ok": "Sociedad del conocimiento", "ex": "Pensamiento crítico: no basta con recibir información." },
+        { "t": "elegir", "p": "Los datos viajan por fibra óptica a gran velocidad.", "ok": "Sociedad de la información", "ex": "Es la infraestructura que hace circular la información." },
+        { "t": "elegir", "p": "Un equipo de investigación publica sus resultados en abierto y otros equipos los mejoran.", "ok": "Sociedad del conocimiento", "ex": "El conocimiento se comparte y crece entre todos." },
+        { "t": "elegir", "p": "Recibimos cientos de notificaciones al día.", "ok": "Sociedad de la información", "ex": "Mucha información circulando, sin que eso suponga entenderla." },
+        { "t": "elegir", "p": "En el instituto se aprende a aprender para seguir formándose toda la vida.", "ok": "Sociedad del conocimiento", "ex": "El aprendizaje permanente es una de sus claves." }
+      ] },
+    { "id": "r3", "sesion": 1, "criterios": ["TICO.1.1.1."], "peso": 1, "titulo": "Luces y sombras",
+      "intro": "¿Es un impacto positivo o negativo de la informática?", "categorias": ["Positivo", "Negativo"],
+      "items": [
+        { "t": "elegir", "p": "El teletrabajo permite a una familia vivir en un pueblo pequeño.", "ok": "Positivo", "ex": "Ayuda a fijar población en el medio rural." },
+        { "t": "elegir", "p": "Un abuelo no consigue pedir cita médica porque solo se puede por Internet.", "ok": "Negativo", "ex": "Es brecha digital: deja fuera a quien no sabe o no puede usar la tecnología." },
+        { "t": "elegir", "p": "La telemedicina acerca especialistas a zonas alejadas.", "ok": "Positivo", "ex": "Mejora el acceso a la salud." },
+        { "t": "elegir", "p": "Muchos aparatos viejos acaban en vertederos de otros países.", "ok": "Negativo", "ex": "La basura electrónica contamina y suele afectar a países con menos recursos." },
+        { "t": "elegir", "p": "Pasar horas en una red social sin poder dejarla.", "ok": "Negativo", "ex": "Uso compulsivo: afecta al descanso, al estudio y a las relaciones." },
+        { "t": "elegir", "p": "Cursos y bibliotecas digitales abiertos y gratuitos.", "ok": "Positivo", "ex": "Democratiza el acceso a la cultura y la formación." },
+        { "t": "elegir", "p": "Un bulo se difunde más rápido que su desmentido.", "ok": "Negativo", "ex": "La desinformación se aprovecha de lo fácil que es compartir." },
+        { "t": "elegir", "p": "Robots que revisan tuberías en lugares peligrosos.", "ok": "Positivo", "ex": "La automatización evita riesgos a las personas." },
+        { "t": "elegir", "p": "Las aplicaciones recogen datos de dónde estás sin que lo sepas.", "ok": "Negativo", "ex": "Pérdida de privacidad." },
+        { "t": "elegir", "p": "Hacer un trámite con el ayuntamiento desde casa.", "ok": "Positivo", "ex": "La administración electrónica ahorra tiempo y desplazamientos." }
+      ] },
+    { "id": "r4", "sesion": 1, "criterios": ["TICO.1.1.1."], "peso": 1, "titulo": "Lectura: la transformación digital",
+      "intro": "Lee el texto y contesta.",
+      "lectura": [
+        "La transformación digital es el cambio que provoca la informática en la forma de trabajar, estudiar, comprar o relacionarnos. No consiste solo en usar ordenadores: cambia los procesos. Un banco que antes atendía en la ventanilla ahora ofrece casi todo por una aplicación, y eso modifica qué empleos hacen falta.",
+        "Este cambio trae ventajas claras: rapidez, acceso a servicios desde cualquier lugar y nuevas profesiones, como el análisis de datos o la ciberseguridad. También tiene riesgos. Quien no tiene conexión, dispositivo o formación queda en desventaja: es la brecha digital. Además, cuanto más se digitaliza, más datos personales circulan y más importante es protegerlos.",
+        "Por eso no basta con tener tecnología. Una sociedad del conocimiento necesita personas capaces de buscar información, comprobar si es fiable y usarla para resolver problemas de su entorno."
+      ],
+      "items": [
+        { "t": "elegir", "p": "Según el texto, la transformación digital es…", "op": ["Cambiar los procesos con la informática, no solo usar ordenadores", "Comprar más ordenadores", "Que todo el mundo tenga móvil"], "ok": "Cambiar los procesos con la informática, no solo usar ordenadores", "ex": "El texto insiste en que «cambia los procesos»." },
+        { "t": "elegir", "p": "¿Qué ejemplo de nueva profesión cita?", "op": ["Ciberseguridad", "Cajero de banco", "Mecanografía"], "ok": "Ciberseguridad", "ex": "Cita el análisis de datos y la ciberseguridad." },
+        { "t": "elegir", "p": "¿Qué es la brecha digital?", "op": ["La desventaja de quien no tiene conexión, dispositivo o formación", "Una avería en la red", "Un tipo de virus"], "ok": "La desventaja de quien no tiene conexión, dispositivo o formación", "ex": "Es una desigualdad, no un problema técnico." },
+        { "t": "elegir", "p": "¿Qué necesita una sociedad del conocimiento, además de tecnología?", "op": ["Personas que buscan, comprueban y usan la información", "Más publicidad", "Menos información"], "ok": "Personas que buscan, comprueban y usan la información", "ex": "Es la idea del último párrafo." },
+        { "t": "abierta", "p": "Con tus palabras: escribe una ventaja y un inconveniente de la transformación digital en tu localidad o en tu familia.", "minPalabras": 25,
+          "reglas": [
+            { "nombre": "Nombras una ventaja", "palabras": ["ventaja", "positivo", "permite", "facilita", "mejora", "ayuda", "ahorra", "más rápido", "puedo", "podemos", "beneficio"], "consejo": "Di claramente qué mejora (por ejemplo: «una ventaja es que…»)." },
+            { "nombre": "Nombras un inconveniente", "palabras": ["inconveniente", "negativo", "problema", "riesgo", "desventaja", "pero", "sin embargo", "brecha", "dificulta", "peligro", "privacidad"], "consejo": "Añade qué empeora o a quién perjudica (por ejemplo: «un inconveniente es que…»)." },
+            { "nombre": "Lo sitúas en tu entorno", "palabras": ["pueblo", "ciudad", "localidad", "barrio", "familia", "casa", "abuel", "madre", "padre", "herman", "instituto", "vecin", "ayuntamiento", "centro de salud", "tienda"], "consejo": "Pon un ejemplo cercano: tu familia, tu barrio, tu pueblo o el instituto." }
+          ],
+          "ex": "Se comprueba con reglas fijas: longitud, una ventaja, un inconveniente y un ejemplo cercano." }
+      ] },
+    { "id": "r5", "sesion": 2, "criterios": ["TICO.1.2.1."], "peso": 1, "titulo": "¿Me fío de esta fuente?",
+      "intro": "Todas las fuentes son inventadas para practicar. Decide qué harías con cada una.", "categorias": ["Me fío", "La contrasto antes", "No me fío"],
+      "items": [
+        { "t": "elegir", "ficha": { "url": "https:\/\/estadistica-publica.example\/hogares-tic-2025", "titular": "Equipamiento TIC en los hogares. Año 2025", "meta": "Instituto Público de Estadística · Actualizado el 12 de mayo de 2025", "texto": "Resultados de la encuesta anual a 15 000 hogares. Incluye la metodología y las tablas descargables." }, "ok": "Me fío", "ex": "Organismo público identificado, fecha reciente, explica su metodología y da los datos." },
+        { "ficha": { "url": "https:\/\/lo-que-no-te-cuentan.example\/verdad", "titular": "¡¡LO QUE LAS OPERADORAS NO QUIEREN QUE SEPAS!! Compártelo antes de que lo borren", "meta": "Sin autor · Sin fecha", "texto": "Fuentes muy cercanas nos confirman que el wifi de casa te espía las conversaciones." }, "t": "elegir", "ok": "No me fío", "ex": "Sin autor ni fecha, titular alarmista que pide compartir y «fuentes» que no se pueden comprobar." },
+        { "t": "elegir", "ficha": { "url": "https:\/\/enciclopedia-libre.example\/wiki\/Brecha_digital", "titular": "Brecha digital", "meta": "Enciclopedia colaborativa · Editado hace 3 días · 42 referencias", "texto": "Artículo escrito entre muchas personas voluntarias, con notas al pie que enlazan a estudios y organismos." }, "ok": "La contrasto antes", "ex": "Es un buen punto de partida, pero cualquiera puede editarla: ve a las referencias y comprueba allí." },
+        { "t": "elegir", "ficha": { "url": "https:\/\/videos.example\/canal-techguay\/mejor-movil", "titular": "EL MEJOR MÓVIL DEL AÑO (y no es el que piensas)", "meta": "Canal de un influencer · Vídeo patrocinado por una marca de móviles", "texto": "Prueba durante una semana el móvil que le ha regalado la marca." }, "ok": "La contrasto antes", "ex": "El propósito puede ser comercial: está patrocinado. Compara con análisis independientes." },
+        { "t": "elegir", "ficha": { "url": "https:\/\/diario-digital.example\/tecnologia\/2009\/moviles", "titular": "Los cinco móviles más rápidos del mercado", "meta": "Diario Digital · Por Ana Ruiz · 4 de febrero de 2009", "texto": "Comparativa de velocidad de los modelos más vendidos." }, "ok": "La contrasto antes", "ex": "Medio y autora identificados, pero de 2009: para tecnología está muy desactualizado." },
+        { "t": "elegir", "ficha": { "url": "Mensaje reenviado muchas veces", "titular": "«Me lo ha pasado mi primo, que trabaja en una empresa de informática»", "meta": "Cadena de WhatsApp · Sin fuente", "texto": "A partir del lunes cobrarán por cada mensaje. Reenvíalo a diez contactos." }, "ok": "No me fío", "ex": "Sin fuente comprobable y con petición de reenviar: es el patrón típico de un bulo." },
+        { "t": "elegir", "ficha": { "url": "https:\/\/revista-ciencia.example\/articulos\/teletrabajo-rural", "titular": "Teletrabajo y despoblación: un estudio en 120 municipios", "meta": "Revista científica revisada por expertos · Universidad de Granada y Universidad de Jaén · 2024", "texto": "Explica cómo se recogieron los datos y enlaza a ellos." }, "ok": "Me fío", "ex": "Autores de universidades, revisión por expertos, fecha reciente y datos comprobables." }
+      ] },
+    { "id": "r6", "sesion": 2, "criterios": ["TICO.1.2.1."], "peso": 1, "titulo": "Contrasta antes de compartir",
+      "intro": "Elige la respuesta correcta.",
+      "items": [
+        { "t": "elegir", "p": "Lees en una red social un dato sorprendente. ¿Qué haces primero?", "op": ["Busco de dónde sale y si lo publican otras fuentes fiables", "Lo comparto para que lo sepa más gente", "Me fío si tiene muchos «me gusta»"], "ok": "Busco de dónde sale y si lo publican otras fuentes fiables", "ex": "Los «me gusta» miden popularidad, no veracidad." },
+        { "t": "elegir", "p": "Una web tiene el candado (https). Eso significa que…", "op": ["La conexión está cifrada", "Lo que dice es verdad", "Es una web del Gobierno"], "ok": "La conexión está cifrada", "ex": "El candado protege los datos que viajan, pero cualquier web, también una falsa, puede tenerlo." },
+        { "t": "elegir", "p": "Dos webs dicen lo mismo, pero una copia el texto de la otra. ¿Está contrastado?", "op": ["No, porque no son fuentes independientes", "Sí, porque son dos webs", "Sí, si las dos tienen fecha"], "ok": "No, porque no son fuentes independientes", "ex": "Contrastar es comprobar en fuentes que han llegado al dato por su cuenta." },
+        { "t": "elegir", "p": "Una foto muy compartida te parece falsa. ¿Cómo lo compruebas?", "op": ["Con una búsqueda inversa de imágenes", "Mirando cuántas veces se ha compartido", "Ampliándola mucho"], "ok": "Con una búsqueda inversa de imágenes", "ex": "La búsqueda inversa muestra dónde apareció antes la foto y en qué contexto." },
+        { "t": "elegir", "p": "¿Qué pista indica que una web quiere venderte algo?", "op": ["Mucha publicidad y enlaces de compra", "Que tenga autor y fecha", "Que cite estudios"], "ok": "Mucha publicidad y enlaces de compra", "ex": "Si el propósito es vender, la información puede estar sesgada." },
+        { "t": "elegir", "p": "Para un trabajo, ¿cuántas fuentes independientes conviene consultar sobre un dato importante?", "op": ["Al menos dos o tres", "Una basta si es la primera de la búsqueda", "Ninguna si ya lo sé"], "ok": "Al menos dos o tres", "ex": "Si varias fuentes fiables coinciden, el dato es más seguro." }
+      ] },
+    { "id": "r7", "sesion": 2, "criterios": ["TICO.1.2.1."], "peso": 1, "titulo": "Cita tus fuentes",
+      "intro": "Una infografía responsable dice de dónde saca la información y las imágenes.",
+      "items": [
+        { "t": "ordenar", "p": "Ordena las piezas para formar la cita en estilo APA.", "piezas": ["García, L.", "(2025, 3 de marzo).", "La brecha digital en el medio rural.", "Revista Comunidad Digital.", "https:\/\/revista-comunidad.example\/brecha"], "ex": "Autor, fecha, título, sitio y URL, en ese orden." },
+        { "t": "ordenar", "p": "Ahora una página sin autor: la institución va delante.", "piezas": ["Instituto Público de Estadística.", "(2025).", "Equipamiento TIC en los hogares.", "https:\/\/estadistica-publica.example\/hogares-tic-2025"], "ex": "Cuando el sitio y el autor son el mismo, el nombre del sitio no se repite." },
+        { "t": "elegir", "p": "La página no tiene fecha. ¿Qué escribes en su lugar?", "op": ["(s. f.)", "(2026)", "Nada"], "ok": "(s. f.)", "ex": "«s. f.» significa «sin fecha». No te inventes el año." },
+        { "t": "elegir", "p": "¿Puedes usar cualquier imagen de Internet en tu infografía?", "op": ["Solo si su licencia lo permite (por ejemplo, Creative Commons) y citas al autor", "Sí, si está en Internet es de todos", "Sí, si le cambias el nombre al archivo"], "ok": "Solo si su licencia lo permite (por ejemplo, Creative Commons) y citas al autor", "ex": "Las imágenes tienen derechos de autor. Busca las de licencia libre y cítalas." },
+        { "t": "elegir", "p": "¿Dónde pones las fuentes en la infografía?", "op": ["En un apartado «Fuentes» al final", "No hace falta ponerlas", "Solo se las digo al profesor"], "ok": "En un apartado «Fuentes» al final", "ex": "Quien la lea tiene que poder comprobar de dónde sale cada dato." }
+      ] },
+    { "id": "r8", "sesion": 2, "criterios": ["TICO.1.1.1.", "TICO.1.2.1."], "peso": 1, "titulo": "Esquema de conceptos clave",
+      "intro": "Completa el esquema que usarás para tu infografía.",
+      "items": [
+        { "t": "elegir", "p": "La sociedad de la información se apoya en ____ para que la información circule.", "op": ["las TIC", "la imprenta", "el correo postal"], "ok": "las TIC", "ex": "Tecnologías de la información y la comunicación: redes, ordenadores, móviles." },
+        { "t": "elegir", "p": "Para pasar de información a conocimiento hace falta ____.", "op": ["pensamiento crítico", "más velocidad de conexión", "más pantallas"], "ok": "pensamiento crítico", "ex": "Entender, relacionar y comprobar." },
+        { "t": "elegir", "p": "La desigualdad en el acceso y el uso de las TIC se llama ____.", "op": ["brecha digital", "ancho de banda", "huella digital"], "ok": "brecha digital", "ex": "La huella digital es el rastro que dejamos en Internet." },
+        { "t": "elegir", "p": "Una fuente fiable tiene autor, fecha, propósito informativo y ____.", "op": ["evidencias que se pueden comprobar", "muchos seguidores", "colores llamativos"], "ok": "evidencias que se pueden comprobar", "ex": "Datos, estudios o enlaces." },
+        { "t": "elegir", "p": "Las ____ permiten a quien lee comprobar de dónde sale cada dato.", "op": ["citas", "etiquetas", "notificaciones"], "ok": "citas", "ex": "Por eso se citan las fuentes." },
+        { "t": "elegir", "p": "Renovar los dispositivos sin necesidad aumenta ____.", "op": ["la basura electrónica", "la privacidad", "el conocimiento"], "ok": "la basura electrónica", "ex": "Es uno de los impactos negativos de la informática." }
+      ] }
+  ],
+  "practicaFuentes": [
+    { "url": "https:\/\/salud-publica.example\/pantallas-y-sueno", "titular": "Pantallas y sueño en la adolescencia", "meta": "Servicio Público de Salud · Dra. Marta León · 2025", "texto": "Recomendaciones basadas en tres estudios, enlazados al final de la página.", "autor": true, "fecha": true, "proposito": true, "evidencias": true, "veredicto": "Me fío" },
+    { "url": "https:\/\/ofertazas.example\/portatiles", "titular": "El portátil que necesitas: ¡solo hoy, 50 % de descuento!", "meta": "Tienda en línea · 2025", "texto": "Los expertos coinciden: es el mejor portátil para estudiar. Cómpralo ya.", "autor": false, "fecha": true, "proposito": false, "evidencias": false, "veredicto": "No me fío" },
+    { "url": "https:\/\/blog-de-pablo.example\/ia", "titular": "Mi opinión sobre la inteligencia artificial", "meta": "Blog personal · Pablo · Sin fecha", "texto": "Creo que la IA quitará todos los trabajos en dos años. Lo he leído en varios sitios.", "autor": true, "fecha": false, "proposito": true, "evidencias": false, "veredicto": "La contrasto antes" },
+    { "url": "https:\/\/periodico-andaluz.example\/sociedad\/fibra-rural", "titular": "La fibra óptica llega a 40 pueblos de la comarca", "meta": "Periódico Andaluz · Por Luis Moreno · 10 de octubre de 2025", "texto": "Con declaraciones de los alcaldes y el enlace al plan de la Junta.", "autor": true, "fecha": true, "proposito": true, "evidencias": true, "veredicto": "Me fío" },
+    { "url": "Publicación en una red social", "titular": "«Si cargas el móvil por la noche, explota» 😱", "meta": "Cuenta anónima · 2,3 M de visualizaciones", "texto": "No da ninguna fuente. Pide que lo compartas.", "autor": false, "fecha": true, "proposito": false, "evidencias": false, "veredicto": "No me fío" },
+    { "url": "https:\/\/foro-tecnico.example\/hilo\/8812", "titular": "¿Merece la pena cambiar el disco duro por un SSD?", "meta": "Foro de usuarios · Varias respuestas · 2018", "texto": "Usuarios cuentan su experiencia; uno enlaza a una prueba de velocidad.", "autor": false, "fecha": true, "proposito": true, "evidencias": true, "veredicto": "La contrasto antes" }
+  ]
+}
+</script>
+
+<script>
+'use strict';
+/* ==========================================================================
+   1. MOTOR DE CORRECCIÓN (sin DOM: reglas fijas, se puede probar aparte)
+   ========================================================================== */
+const Motor = (() => {
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+  const palabras = (s) => norm(s).split(/[^a-zñ0-9]+/).filter(Boolean);
+
+  /* Devuelve { nota: 0..1, ok: bool, detalle: [texto…] } */
+  function corregirItem(item, resp) {
+    if (item.t === 'elegir') {
+      const ok = resp === item.ok;
+      return { nota: ok ? 1 : 0, ok, detalle: [] };
+    }
+    if (item.t === 'ordenar') {
+      const r = Array.isArray(resp) ? resp : [];
+      const ok = r.length === item.piezas.length && r.every((p, i) => p === item.piezas[i]);
+      let enSitio = 0; r.forEach((p, i) => { if (p === item.piezas[i]) enSitio++; });
+      return { nota: ok ? 1 : 0, ok, detalle: ok ? [] : [enSitio + ' de ' + item.piezas.length + ' piezas en su sitio.'] };
+    }
+    if (item.t === 'abierta') {
+      const texto = norm(resp);
+      const n = palabras(resp).length;
+      const detalle = [];
+      let cumple = 0;
+      const largo = n >= item.minPalabras;
+      if (largo) cumple++; else detalle.push('Escribe al menos ' + item.minPalabras + ' palabras (llevas ' + n + ').');
+      item.reglas.forEach((r) => {
+        if (r.palabras.some((p) => texto.indexOf(norm(p)) >= 0)) cumple++; else detalle.push(r.consejo);
+      });
+      const nota = cumple / (item.reglas.length + 1);
+      return { nota, ok: nota === 1, detalle };
+    }
+    return { nota: 0, ok: false, detalle: ['Tipo de pregunta desconocido.'] };
+  }
+  /* Puntos de 0 a 10 con un decimal */
+  function corregirReto(reto, respuestas) {
+    const res = reto.items.map((it, i) => corregirItem(it, respuestas[i]));
+    const suma = res.reduce((a, r) => a + r.nota, 0);
+    return { puntos: Math.round(100 * suma / reto.items.length) / 10, items: res };
+  }
+  /* Nota de cada criterio: media ponderada de la mejor nota de sus retos */
+  function notaPorCriterio(datos, mejores) {
+    const out = {};
+    Object.keys(datos.criterios).forEach((c) => {
+      let s = 0, p = 0;
+      datos.retos.forEach((r) => { if (r.criterios.includes(c)) { s += (mejores[r.id] || 0) * r.peso; p += r.peso; } });
+      out[c] = p ? Math.round(10 * s / p) / 10 : 0;
+    });
+    return out;
+  }
+  function medallaDe(datos, superados) { let m = null; datos.medallas.forEach((x) => { if (superados >= x.retos) m = x; }); return m; }
+  function barajar(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+  return { norm, palabras, corregirItem, corregirReto, notaPorCriterio, medallaDe, barajar };
+})();
+
+/* ==========================================================================
+   2. CAPA DE GUARDADO
+   Por defecto, este navegador (localStorage). Dentro de la webapp de Apps
+   Script se usa google.script.run: el servidor sabe quién es por su cuenta
+   educaand y guarda en la hoja. La interfaz solo llama a Almacen.
+   Funciones del servidor previstas: aulaEstado(idRecurso) y
+   aulaGuardarIntento(idRecurso, intento).
+   ========================================================================== */
+const Almacen = (() => {
+  const CLAVE = 'tic1-a2-';
+  const enAppsScript = typeof google !== 'undefined' && google.script && google.script.run;
+  const leer = (k, d) => { try { const v = JSON.parse(localStorage.getItem(CLAVE + k) || 'null'); return v === null ? d : v; } catch (e) { return d; } };
+  const escribir = (k, v) => { try { localStorage.setItem(CLAVE + k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } };
+  const llamar = (fn, ...args) => new Promise((ok, mal) => google.script.run.withSuccessHandler(ok).withFailureHandler(mal)[fn](...args));
+  function seudonimo() {
+    let s = leer('seudonimo', null);
+    if (!s) { s = 'alumno-' + Math.random().toString(36).slice(2, 8); escribir('seudonimo', s); }
+    return s;
+  }
+  return {
+    enAppsScript: !!enAppsScript,
+    seudonimo,
+    alumno: () => leer('alumno', null),
+    guardarAlumno: (a) => escribir('alumno', a),
+    preferencia: (k, v) => (v === undefined ? leer('pref-' + k, null) : escribir('pref-' + k, v)),
+    async estado(idRecurso) {
+      if (enAppsScript) return llamar('aulaEstado', idRecurso);
+      return leer('estado', { mejores: {}, intentos: [] });
+    },
+    async guardarIntento(idRecurso, intento, estado) {
+      if (enAppsScript) return llamar('aulaGuardarIntento', idRecurso, intento);
+      estado.intentos.push(intento);
+      if (estado.intentos.length > 300) estado.intentos = estado.intentos.slice(-300);
+      escribir('estado', estado);
+      return estado;
+    }
+  };
+})();
+
+/* ==========================================================================
+   3. PUNTO DE ENGANCHE PARA EL FEEDBACK POR IA (apagado)
+   La corrección y la nota salen siempre de las reglas fijas. Si la webapp
+   define window.AulaIA.feedback, se le pide además un comentario sobre las
+   respuestas abiertas. Recibe SOLO la producción y un seudónimo: nunca el
+   nombre, el grupo ni la cuenta. Debe devolver una promesa con un texto.
+   ========================================================================== */
+async function pedirFeedbackIA(reto, item, respuesta) {
+  const ia = window.AulaIA;
+  if (!ia || typeof ia.feedback !== 'function') return null;
+  try {
+    const texto = await ia.feedback({ recurso: DATOS.id, reto: reto.id, criterios: reto.criterios, pregunta: item.p, respuesta: String(respuesta).slice(0, 2000), alumno: Almacen.seudonimo() });
+    return typeof texto === 'string' ? texto.slice(0, 1500) : null;
+  } catch (e) { return null; }
+}
+
+/* ==========================================================================
+   4. INTERFAZ
+   ========================================================================== */
+const DATOS = JSON.parse(document.getElementById('datos-recurso').textContent);
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+function abrirModal(id) { $(id).classList.add('abierto'); }
+function cerrarModal(id) { $(id).classList.remove('abierto'); }
+document.querySelectorAll('[data-cerrar]').forEach((b) => b.addEventListener('click', () => cerrarModal(b.dataset.cerrar)));
+document.querySelectorAll('.fondo-modal').forEach((f) => f.addEventListener('click', (ev) => { if (ev.target === f && f.id !== 'm-alumno') f.classList.remove('abierto'); }));
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') document.querySelectorAll('.fondo-modal.abierto').forEach((m) => { if (m.id !== 'm-alumno') m.classList.remove('abierto'); }); });
+
+function pintarFicha(f) {
+  const c = el('div', 'ficha');
+  const barra = el('div', 'ficha-barra'); barra.append(el('span', null, /^https:/.test(f.url) ? '🔒' : '💬'), el('span', null, f.url));
+  const cu = el('div', 'ficha-cuerpo');
+  cu.append(el('div', 'ficha-titular', f.titular), el('div', 'ficha-meta', f.meta), el('div', 'ficha-texto', f.texto));
+  c.append(barra, cu);
+  return c;
+}
+
+/* ---------- Práctica: detector de fuentes ---------- */
+const VEREDICTOS = ['Me fío', 'La contrasto antes', 'No me fío'];
+const PREGUNTAS_DET = [
+  { k: 'autor', p: '¿Quién? Tiene autor o institución identificados', si: 'Sabemos quién lo firma.', no: 'No sabemos quién lo escribe, o es anónimo.' },
+  { k: 'fecha', p: '¿Cuándo? Tiene fecha y es reciente', si: 'La fecha es visible y sirve para el tema.', no: 'No tiene fecha o está desactualizada para este tema.' },
+  { k: 'proposito', p: '¿Para qué? Su propósito es informar', si: 'Busca informar.', no: 'Busca venderte algo o que lo compartas.' },
+  { k: 'evidencias', p: '¿En qué se basa? Da datos o enlaces comprobables', si: 'Puedes comprobar en qué se basa.', no: 'No da nada que se pueda comprobar.' }
+];
+const det = { n: -1, resp: {}, ver: null, orden: [] };
+function otraFuente() {
+  if (!det.orden.length) det.orden = Motor.barajar(DATOS.practicaFuentes.map((_, i) => i)).filter((i) => i !== det.n);
+  det.n = det.orden.shift(); det.resp = {}; det.ver = null;
+  pintarDetector();
+}
+function pintarDetector() {
+  const f = DATOS.practicaFuentes[det.n];
+  $('det-ficha').replaceChildren(pintarFicha(f));
+  const caja = $('det-preguntas'); caja.textContent = '';
+  PREGUNTAS_DET.forEach((q) => {
+    const g = el('div', 'sino'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', q.p);
+    [['Sí', true], ['No', false]].forEach(([t, v]) => {
+      const b = el('button', det.resp[q.k] === v ? 'activo' : '', t); b.type = 'button';
+      b.onclick = () => { det.resp[q.k] = v; pintarDetector(); };
+      g.appendChild(b);
+    });
+    caja.append(el('span', null, q.p), g);
+  });
+  const vv = $('det-veredicto'); vv.textContent = '';
+  VEREDICTOS.forEach((v) => { const b = el('button', 'opcion' + (det.ver === v ? ' elegida' : ''), v); b.type = 'button'; b.onclick = () => { det.ver = v; pintarDetector(); }; vv.appendChild(b); });
+  $('det-resultado').textContent = '';
+}
+function comprobarDetector() {
+  const f = DATOS.practicaFuentes[det.n];
+  const caja = $('det-resultado'); caja.textContent = '';
+  const faltan = PREGUNTAS_DET.filter((q) => det.resp[q.k] === undefined).length + (det.ver ? 0 : 1);
+  if (faltan) { caja.appendChild(el('p', 'resultado-mal', 'Te faltan ' + faltan + ' respuestas.')); return; }
+  const ul = el('ul', 'lista-avisos');
+  let bien = 0;
+  PREGUNTAS_DET.forEach((q) => {
+    const ok = det.resp[q.k] === f[q.k]; if (ok) bien++;
+    ul.appendChild(el('li', ok ? 'bien' : 'mal', (ok ? '' : 'Revisa: ') + (f[q.k] ? q.si : q.no)));
+  });
+  const okV = det.ver === f.veredicto;
+  caja.append(el('p', okV ? 'resultado-ok' : 'resultado-mal', okV ? '¡Bien visto! «' + f.veredicto + '».' : 'El detector diría «' + f.veredicto + '».'), ul,
+    el('p', 'nota', bien + ' de 4 preguntas bien. Cuantas más respuestas «Sí», más te puedes fiar; si falla alguna, contrasta.'));
+}
+$('det-comprobar').onclick = comprobarDetector;
+$('det-otra').onclick = otraFuente;
+
+/* ---------- Práctica: taller de citas ---------- */
+['c-autor', 'c-anio', 'c-dia', 'c-titulo', 'c-sitio', 'c-url'].forEach((id) => $(id).addEventListener('input', pintarCita));
+$('c-url').value = 'https:' + '\/\/revista-comunidad.example\/brecha';
+function textoCita() {
+  const v = (id) => $(id).value.trim();
+  const punto = (s) => (s && !/[.!?]$/.test(s) ? s + '.' : s);
+  const anio = v('c-anio'), dia = v('c-dia');
+  const fecha = '(' + (anio ? anio + (dia ? ', ' + dia : '') : 's. f.') + ').';
+  const autor = v('c-autor'), sitio = v('c-sitio');
+  return { autor: punto(autor), fecha, titulo: punto(v('c-titulo')), sitio: sitio && Motor.norm(sitio) !== Motor.norm(autor.replace(/\.$/, '')) ? punto(sitio) : '', url: v('c-url') };
+}
+function pintarCita() {
+  const c = textoCita();
+  const caja = $('c-cita'); caja.textContent = '';
+  caja.append(document.createTextNode([c.autor, c.fecha].filter(Boolean).join(' ') + ' '), el('i', null, c.titulo), document.createTextNode(' ' + [c.sitio, c.url].filter(Boolean).join(' ')));
+  const av = [];
+  const v = (id) => $(id).value.trim();
+  av.push(v('c-autor') ? ['bien', 'Tiene autor.'] : ['mal', 'Falta el autor: si no hay persona, pon la institución.']);
+  if (!v('c-anio')) av.push(['mal', 'Sin año se escribe (s. f.). ¿Seguro que la página no tiene fecha?']);
+  else if (!/^(19|20)\d\d$/.test(v('c-anio'))) av.push(['mal', 'El año tiene que ser de cuatro cifras, por ejemplo 2025.']);
+  else av.push(['bien', 'Tiene fecha.']);
+  av.push(v('c-titulo') ? ['bien', 'Tiene título (va en cursiva).'] : ['mal', 'Falta el título de la página.']);
+  if (!v('c-url')) av.push(['mal', 'Falta la URL: sin ella no se puede comprobar.']);
+  else if (!/^https?:/.test(v('c-url'))) av.push(['mal', 'La URL tiene que empezar por https: o http:']);
+  else av.push(['bien', 'Tiene URL.']);
+  const ul = $('c-avisos'); ul.textContent = '';
+  av.forEach(([c2, t]) => ul.appendChild(el('li', c2, t)));
+}
+async function copiar(texto, avisoId) {
+  try { await navigator.clipboard.writeText(texto); $(avisoId).textContent = 'Copiado.'; }
+  catch (e) { $(avisoId).textContent = 'No se ha podido copiar: selecciónalo y cópialo a mano.'; }
+}
+$('c-copiar').onclick = () => copiar($('c-cita').textContent, 'c-copiado');
+
+/* ---------- Retos ---------- */
+const SESION_COLOR = { 1: 'var(--s1)', 2: 'var(--s2)' };
+let estado = { mejores: {}, intentos: [] };
+let retoSel = 0;
+let ronda = null; /* { reto, items barajados, respuestas, corregido } */
+
+/* Sesiones abiertas: ?sesion=1 o #sesion-1 deja ver solo esa sesión */
+function sesionesAbiertas() {
+  const q = new URLSearchParams(location.search).get('sesion');
+  const h = (location.hash.match(/^#sesion-(\d)$/) || [])[1];
+  const s = Number(q || h);
+  return s ? [s] : [1, 2];
+}
+const retosVisibles = () => DATOS.retos.filter((r) => sesionesAbiertas().includes(r.sesion));
+const superado = (r) => (estado.mejores[r.id] || 0) >= DATOS.umbral;
+function disponible(i) { const l = retosVisibles(); return i === 0 || superado(l[i - 1]) || superado(l[i]) || l[i - 1].sesion !== l[i].sesion; }
+
+function pintarPanel() {
+  const al = Almacen.alumno();
+  $('alumno-texto').textContent = al ? '👤 ' + al.nombre + ' · ' + al.grupo : '👤 Sin nombre';
+  const vis = retosVisibles();
+  const n = vis.filter(superado).length;
+  $('pill-hechos').textContent = n + ' de ' + vis.length + ' retos';
+  const med = Motor.medallaDe(DATOS, DATOS.retos.filter(superado).length);
+  $('pill-medalla').textContent = med ? med.icono + ' ' + med.nombre : 'Sin medalla';
+  const notas = Motor.notaPorCriterio(DATOS, estado.mejores);
+  const cn = $('criterios-nota'); cn.textContent = '';
+  cn.appendChild(el('div', 'etq', 'Mi nota por criterio'));
+  Object.keys(notas).forEach((c) => {
+    const f = el('div', 'barra-crit'); f.title = DATOS.criterios[c];
+    const pista = el('div', 'pista-barra'); const rel = el('div', 'relleno'); rel.style.width = (notas[c] * 10) + '%'; pista.appendChild(rel);
+    f.append(el('span', 'chip-crit', c), pista, el('span', 'valor', notas[c].toFixed(1).replace('.', ',')));
+    cn.appendChild(f);
+  });
+  const esc = $('escalera'); esc.textContent = '';
+  let ses = 0, lista = null;
+  vis.forEach((r, i) => {
+    if (r.sesion !== ses) {
+      ses = r.sesion;
+      const cab = el('div', 'sesion-cab'); const p = el('span', 'punto'); p.style.background = SESION_COLOR[ses]; cab.append(p, el('span', null, 'Sesión ' + ses));
+      lista = el('div', 'escalera'); esc.append(cab, lista);
+    }
+    const hecho = superado(r), abierto = disponible(i), mejor = estado.mejores[r.id];
+    const b = el('button', 'peldano' + (hecho ? ' hecho' : (abierto ? ' actual' : ' cerrado')) + (i === retoSel ? ' sel' : ''));
+    b.type = 'button';
+    b.append(el('span', 'num', String(DATOS.retos.indexOf(r) + 1)), el('span', 'tit', r.titulo),
+      el('span', 'pts', mejor === undefined ? (abierto ? '▶' : '🔒') : (mejor === 10 ? '⭐ ' : '') + String(mejor).replace('.', ',')));
+    b.onclick = () => { if (abierto) { retoSel = i; ronda = null; pintarRetos(); } };
+    lista.appendChild(b);
+  });
+}
+
+function nuevaRonda(r) {
+  const items = r.categorias ? Motor.barajar(r.items) : r.items.slice();
+  const opciones = items.map((it) => (it.t === 'elegir' ? (it.op ? Motor.barajar(it.op) : r.categorias) : it.t === 'ordenar' ? Motor.barajar(it.piezas) : null));
+  ronda = { reto: r, items, opciones, respuestas: items.map((it) => (it.t === 'ordenar' ? [] : it.t === 'abierta' ? '' : null)), corregido: null, ia: {} };
+}
+
+function pintarRetos() {
+  pintarPanel();
+  const vis = retosVisibles();
+  if (retoSel >= vis.length) retoSel = 0;
+  const r = vis[retoSel];
+  if (!ronda || ronda.reto !== r) nuevaRonda(r);
+  const en = $('enunciado'); en.textContent = '';
+  const cab = el('div', 'acciones');
+  const ses = el('span', 'pill', 'Sesión ' + r.sesion); ses.style.borderColor = SESION_COLOR[r.sesion];
+  cab.appendChild(ses); r.criterios.forEach((c) => { const ch = el('span', 'chip-crit', c); ch.title = DATOS.criterios[c]; cab.appendChild(ch); });
+  en.append(cab, el('h2', null, 'Reto ' + (DATOS.retos.indexOf(r) + 1) + ' · ' + r.titulo), el('p', null, r.intro));
+  if (r.lectura) { const l = el('div', 'lectura'); r.lectura.forEach((t) => l.appendChild(el('p', null, t))); en.appendChild(l); }
+  const corr = ronda.corregido;
+  ronda.items.forEach((it, i) => en.appendChild(pintarItem(it, i, corr ? corr.items[i] : null)));
+  const pie = el('div', 'acciones');
+  if (!corr) {
+    const b = el('button', 'btn primario', '✓ Comprobar'); b.type = 'button'; b.onclick = comprobarRonda; pie.appendChild(b);
+    pie.appendChild(el('span', 'nota', 'Superas el reto con ' + String(DATOS.umbral) + ' o más. Cuenta tu mejor intento.'));
+  } else {
+    const ok = corr.puntos >= DATOS.umbral;
+    en.appendChild(el('div', ok ? 'resultado-ok' : 'resultado-mal', (ok ? '¡Reto superado! ' : 'Todavía no. ') + 'Has sacado ' + String(corr.puntos).replace('.', ',') + ' de 10.' + (ok ? '' : ' Necesitas ' + DATOS.umbral + '.')));
+    const b = el('button', 'btn' + (ok ? '' : ' primario'), '↻ Otra vez (las preguntas cambian de orden)'); b.type = 'button'; b.onclick = () => { nuevaRonda(r); pintarRetos(); }; pie.appendChild(b);
+    const sig = vis[retoSel + 1];
+    if (ok && sig) { const b2 = el('button', 'btn primario', 'Siguiente reto ▶'); b2.type = 'button'; b2.onclick = () => { retoSel++; ronda = null; pintarRetos(); en.scrollIntoView({ block: 'start' }); }; pie.appendChild(b2); }
+  }
+  en.appendChild(pie);
+}
+
+function pintarItem(it, i, c) {
+  const caja = el('div', 'item' + (c ? (c.ok ? ' bien' : c.nota > 0 ? ' medio' : ' mal') : ''));
+  const bloqueado = !!c;
+  if (it.ficha) caja.appendChild(pintarFicha(it.ficha));
+  if (it.p) caja.appendChild(el('div', 'item-p', (ronda.items.length > 1 ? (i + 1) + '. ' : '') + it.p));
+  const op = ronda.opciones[i];
+  if (it.t === 'elegir') {
+    const g = el('div', 'opciones' + (it.op ? ' columna' : '')); g.setAttribute('role', 'group');
+    op.forEach((o) => {
+      const b = el('button', 'opcion' + (ronda.respuestas[i] === o ? ' elegida' : ''), o); b.type = 'button'; b.disabled = bloqueado;
+      b.setAttribute('aria-pressed', ronda.respuestas[i] === o ? 'true' : 'false');
+      b.onclick = () => { ronda.respuestas[i] = o; pintarRetos(); };
+      g.appendChild(b);
+    });
+    caja.appendChild(g);
+  } else if (it.t === 'ordenar') {
+    const linea = el('div', 'orden-linea');
+    ronda.respuestas[i].forEach((p, k) => { const b = el('button', 'opcion elegida', p); b.type = 'button'; b.disabled = bloqueado; b.onclick = () => { ronda.respuestas[i].splice(k, 1); pintarRetos(); }; linea.appendChild(b); });
+    const banco = el('div', 'opciones');
+    op.filter((p) => !ronda.respuestas[i].includes(p)).forEach((p) => { const b = el('button', 'opcion', p); b.type = 'button'; b.disabled = bloqueado; b.onclick = () => { ronda.respuestas[i].push(p); pintarRetos(); }; banco.appendChild(b); });
+    caja.append(linea, banco);
+  } else if (it.t === 'abierta') {
+    const ta = el('textarea', 'abierta'); ta.id = 'abierta-' + ronda.reto.id + '-' + i; ta.maxLength = 2000; ta.value = ronda.respuestas[i]; ta.disabled = bloqueado; ta.setAttribute('aria-label', it.p);
+    const cont = el('div', 'contador', Motor.palabras(ta.value).length + ' palabras (mínimo ' + it.minPalabras + ')');
+    ta.oninput = () => { ronda.respuestas[i] = ta.value; cont.textContent = Motor.palabras(ta.value).length + ' palabras (mínimo ' + it.minPalabras + ')'; };
+    caja.append(ta, cont);
+  }
+  if (c) {
+    let txt;
+    if (it.t === 'elegir') txt = (c.ok ? '✓ ' : '✗ Era «' + it.ok + '». ') + it.ex;
+    else if (it.t === 'ordenar') txt = c.ok ? '✓ ' + it.ex : '✗ ' + c.detalle.join(' ') + ' Orden correcto: ' + it.piezas.join(' ');
+    else txt = c.ok ? '✓ Cumple todo lo que se pide.' : 'Para mejorarla: ' + c.detalle.join(' ');
+    caja.appendChild(el('div', 'explica', txt));
+    if (it.t === 'abierta' && ronda.ia[i]) caja.appendChild(el('div', 'ia-caja', '💬 Comentario del tutor: ' + ronda.ia[i]));
+  }
+  return caja;
+}
+
+async function comprobarRonda() {
+  if (!Almacen.alumno()) { abrirAlumno(comprobarRonda); return; }
+  const r = ronda.reto;
+  const vacias = ronda.items.filter((it, i) => (it.t === 'elegir' ? ronda.respuestas[i] === null : it.t === 'ordenar' ? ronda.respuestas[i].length !== it.piezas.length : !ronda.respuestas[i].trim())).length;
+  if (vacias) {
+    const aviso = $('aviso-vacias') || el('p', 'resultado-mal'); aviso.id = 'aviso-vacias';
+    aviso.textContent = 'Te faltan ' + vacias + (vacias === 1 ? ' respuesta.' : ' respuestas.');
+    $('enunciado').appendChild(aviso); return;
+  }
+  const corr = Motor.corregirReto({ items: ronda.items }, ronda.respuestas);
+  ronda.corregido = corr;
+  const superadosAntes = DATOS.retos.filter(superado).length;
+  const intento = { t: new Date().toISOString(), reto: r.id, sesion: r.sesion, criterios: r.criterios, puntos: corr.puntos,
+    respuestas: ronda.items.map((it, i) => ({ p: it.p || (it.ficha && it.ficha.titular), r: ronda.respuestas[i], nota: corr.items[i].nota })) };
+  estado.mejores[r.id] = Math.max(estado.mejores[r.id] || 0, corr.puntos);
+  try { const e = await Almacen.guardarIntento(DATOS.id, intento, estado); if (e && e.mejores) estado = e; } catch (e) { /* el intento queda en pantalla */ }
+  pintarRetos();
+  const med = Motor.medallaDe(DATOS, DATOS.retos.filter(superado).length);
+  if (med && med !== Motor.medallaDe(DATOS, superadosAntes)) setTimeout(() => mostrarMedalla(med), 400);
+  ronda.items.forEach(async (it, i) => {
+    if (it.t !== 'abierta') return;
+    const txt = await pedirFeedbackIA(r, it, ronda.respuestas[i]);
+    if (txt && ronda && ronda.reto === r) { ronda.ia[i] = txt; pintarRetos(); }
+  });
+}
+
+function mostrarMedalla(m) {
+  $('medalla-icono').textContent = m.icono;
+  $('medalla-titulo').textContent = '¡Medalla de ' + m.nombre + '!';
+  $('medalla-titulo').style.color = m.color;
+  const al = Almacen.alumno();
+  $('medalla-texto').textContent = (al ? al.nombre + ' · ' + al.grupo + '. ' : '') + (m.retos === DATOS.retos.length ? 'Has superado todos los retos de la actividad. ¡Ya sabes buscar, contrastar y citar información!' : 'Llevas ' + m.retos + ' retos superados.');
+  abrirModal('m-medalla');
+}
+$('pill-medalla').onclick = () => { const m = Motor.medallaDe(DATOS, DATOS.retos.filter(superado).length); if (m) mostrarMedalla(m); };
+
+function textoResumen() {
+  const al = Almacen.alumno();
+  const notas = Motor.notaPorCriterio(DATOS, estado.mejores);
+  const lineas = [DATOS.curso + ' · ' + DATOS.actividad + ' ' + DATOS.tituloActividad, al ? al.nombre + ' · ' + al.grupo : 'Sin nombre', ''];
+  DATOS.retos.forEach((r, i) => lineas.push('Reto ' + (i + 1) + ' (' + r.titulo + '): ' + (estado.mejores[r.id] === undefined ? 'sin hacer' : String(estado.mejores[r.id]).replace('.', ',') + ' / 10')));
+  lineas.push('');
+  Object.keys(notas).forEach((c) => lineas.push(c + ' ' + String(notas[c]).replace('.', ',') + ' / 10'));
+  const med = Motor.medallaDe(DATOS, DATOS.retos.filter(superado).length);
+  lineas.push('Medalla: ' + (med ? med.nombre : 'ninguna'), 'Intentos: ' + estado.intentos.length);
+  return lineas.join('\n');
+}
+$('btn-resumen').onclick = () => { $('texto-resumen').value = textoResumen(); $('resumen-copiado').textContent = ''; abrirModal('m-resumen'); };
+$('btn-copiar-resumen').onclick = () => { $('texto-resumen').select(); copiar($('texto-resumen').value, 'resumen-copiado'); };
+
+/* ---------- Nombre y grupo ---------- */
+let trasAlumno = null;
+function abrirAlumno(despues) {
+  trasAlumno = despues || null;
+  const a = Almacen.alumno();
+  $('nombre-alumno').value = a ? a.nombre : '';
+  $('grupo-alumno').value = a ? a.grupo : '';
+  abrirModal('m-alumno'); $('nombre-alumno').focus();
+}
+$('f-alumno').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const nombre = $('nombre-alumno').value.trim().slice(0, 40), grupo = $('grupo-alumno').value.trim().slice(0, 12);
+  if (!nombre || !grupo) return;
+  Almacen.guardarAlumno({ nombre, grupo });
+  cerrarModal('m-alumno'); pintarPanel();
+  if (trasAlumno) { const f = trasAlumno; trasAlumno = null; f(); }
+});
+$('btn-alumno').onclick = () => abrirAlumno();
+
+/* ---------- Navegación, tema y arranque ---------- */
+function irAVista(id) {
+  document.querySelectorAll('.vista').forEach((v) => v.classList.toggle('activa', v.id === id));
+  document.querySelectorAll('.pestana[data-vista]').forEach((b) => b.classList.toggle('activa', b.dataset.vista === id));
+  if (id === 'v-retos') pintarRetos();
+  Almacen.preferencia('vista', id);
+}
+document.querySelectorAll('.pestana[data-vista]').forEach((b) => b.addEventListener('click', () => irAVista(b.dataset.vista)));
+function aplicarTema(t) { if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); }
+$('btn-tema').onclick = () => {
+  const oscuro = document.documentElement.getAttribute('data-theme') === 'dark' || (!document.documentElement.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+  const nuevo = oscuro ? 'light' : 'dark';
+  aplicarTema(nuevo); Almacen.preferencia('tema', nuevo);
+};
+aplicarTema(Almacen.preferencia('tema'));
+otraFuente();
+pintarCita();
+Almacen.estado(DATOS.id).then((e) => { if (e && e.mejores) estado = e; }).catch(() => {}).then(() => {
+  const v = Almacen.preferencia('vista');
+  if (/^#sesion-/.test(location.hash) || new URLSearchParams(location.search).get('sesion')) irAVista('v-retos');
+  else if (v && $(v)) irAVista(v);
+});
+</script>
+</body>
+</html>
